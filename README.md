@@ -7,13 +7,9 @@ from IMAS HDF5 datasets.
 
 ## Status
 
-**Bootstrap skeleton — no shipped API yet.** This is the initial
-scaffolding for `imas-ink`. The 2D library port from `efit.ink` lands in
-Phase 2, the MCP server and namespaced REPL in Phase 3, and the `three_d`
-subpackage (ITER coilset, TF coils, vessel) in Phase 4. Until then, the
-package exports only `__version__` and the `imas-ink` console entry
-point has functional `version`/`--version`/`-V` flags; `serve` and
-`demo` are stubs that exit 2.
+**Alpha — API under active development.** The 2D library, MCP server,
+namespaced REPL, and 3D coilset renderer are all shipped and functional.
+The API stabilises at v0.1.0.
 
 ## Design principles
 
@@ -63,6 +59,7 @@ Registered tools:
 | `imas-ink-plot_convergence` | Convergence status bar chart |
 | `imas-ink-animate_pulse` | Full-pulse GIF animation |
 | `imas-ink-plot_radial_profiles` | 1D radial profiles (p, q, j_tor, …) |
+| `imas-ink-plot_coilset_3d` | 3D coilset + vessel render (requires `[3d]`) |
 | `imas-ink-repl` | Stateful, namespaced Python REPL |
 
 The REPL keeps a per-namespace globals dict so concurrent callers do not
@@ -78,11 +75,9 @@ repl("", namespace="agent-a", reset=True)   # clear that namespace
 Pre-loaded names in every namespace: `ink` (imas_ink), `np` (numpy),
 `plt` (matplotlib.pyplot, lazy).
 
-## Planned API
+## API
 
-The following surfaces are **planned for v0.1.0** and land in Phase 4
-(3D coilset demo). They are listed here so downstream agents know what
-to target.
+The following surfaces are shipped. The API stabilises at v0.1.0.
 
 ### Library (Phase 2 — shipped)
 
@@ -94,10 +89,10 @@ slice_ = ink.extract_slice("imas:hdf5?path=/path/to/iter/135013/", 5)
 
 ### MCP server (shipped — see above)
 
-### 3D coilset demo (Phase 4)
+### 3D coilset demo (shipped)
 
 ```bash
-uv run imas-ink demo iter-coilset --uri "imas:hdf5?path=/path/to/iter/machine/"
+imas-ink demo iter-coilset --uri "imas:hdf5?path=/path/to/iter/machine/" --outfile iter-coilset.png
 ```
 
 ## License

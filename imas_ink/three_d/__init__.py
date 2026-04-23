@@ -1,9 +1,29 @@
-"""3D coilset and vessel rendering — pyvista primary, vedo for primitives.
+"""3D coilset and vessel rendering — pyvista + vtk.
 
-All heavy imports (``pyvista``, ``vedo``, ``vtk``, ``shapely``) are
-lazy-loaded inside submodules so that ``import imas_ink`` does not pull
-VTK.  Consumers should import the specific submodule they need::
+All heavy imports (``pyvista``, ``vtk``) are deferred to function
+bodies in submodules so that ``import imas_ink`` never pulls VTK.
+Import from here for the public API::
 
-    from imas_ink.three_d.coilset import build_coilset
-    mesh = build_coilset("imas:hdf5?path=/path/to/iter/")
+    from imas_ink.three_d import render_coilset, extract_pf_coils
 """
+
+from .coilset import CoilMesh, extract_pf_coils, extract_tf_coils, extract_wall
+from .primitives import (
+    cylindrical_to_cartesian,
+    revolve_polygon,
+    ring_from_rectangle,
+    sweep_section_along_path,
+)
+from .scene import render_coilset
+
+__all__ = [
+    "CoilMesh",
+    "cylindrical_to_cartesian",
+    "extract_pf_coils",
+    "extract_tf_coils",
+    "extract_wall",
+    "render_coilset",
+    "revolve_polygon",
+    "ring_from_rectangle",
+    "sweep_section_along_path",
+]

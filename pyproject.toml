@@ -114,6 +114,7 @@ ignore = ["E501"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
+addopts = "-m 'not render'"
 markers = [
   "render: requires an off-screen rendering backend (VTK)",
   "imas_data: requires IMAS fixture data (set IMAS_INK_ITER_DATA)",

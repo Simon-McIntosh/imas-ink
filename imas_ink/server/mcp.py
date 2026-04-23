@@ -16,6 +16,7 @@ Tools registered
 - ``plot_convergence``     — convergence status bar chart
 - ``animate_pulse``        — full-pulse GIF animation
 - ``plot_radial_profiles`` — 1D radial profiles (p, q, j_tor, …)
+- ``plot_coilset_3d``      — 3D coilset + vessel render (requires [3d])
 - ``repl``                 — stateful, namespaced Python REPL
 """
 
@@ -41,7 +42,7 @@ class InkServer:
     >>> server = InkServer()
     >>> list(server.tool_names())  # doctest: +NORMALIZE_WHITESPACE
     ['plot_equilibrium', 'plot_time_traces', 'plot_convergence',
-     'animate_pulse', 'plot_radial_profiles', 'repl']
+     'animate_pulse', 'plot_radial_profiles', 'plot_coilset_3d', 'repl']
     """
 
     def __init__(self, name: str = "imas-ink") -> None:
@@ -111,6 +112,7 @@ class PlotProvider:
         mcp.tool()(self.plot_convergence)
         mcp.tool()(self.animate_pulse)
         mcp.tool()(self.plot_radial_profiles)
+        mcp.tool()(self.plot_coilset_3d)
 
     async def plot_equilibrium(
         self,
@@ -399,6 +401,64 @@ class PlotProvider:
         else:
             fig, _axes = radial_profile_figure_mpl(profiles)
             return base64.b64encode(render_to_bytes(fig)).decode("ascii")
+
+    async def plot_coilset_3d(
+        self,
+        uri: str,
+        show_wall: bool = True,
+        show_pf: bool = True,
+        show_tf: bool = True,
+        view: str = "iso",
+    ) -> str:
+        """Render the 3D coilset for an IMAS dataset and return PNG bytes.
+
+        Requires the ``[3d]`` extra (pyvista, vtk). If not installed,
+        raises :class:`RuntimeError` with the install command.
+
+        Parameters
+        ----------
+        uri : str
+            IMAS URI, e.g. ``"imas:hdf5?path=/path/to/machine/"``.
+        show_wall : bool
+            Include vessel wall in the render.
+        show_pf : bool
+            Include PF / CS coils.
+        show_tf : bool
+            Include TF coils.
+        view : str
+            Camera preset: ``"iso"``, ``"poloidal"``, or ``"toroidal"``.
+
+        Returns
+        -------
+        str
+            Base64-encoded PNG image.
+        """
+        try:
+            from ..three_d.scene import render_coilset
+        except ImportError as exc:
+            raise RuntimeError(
+                "The [3d] extra is required for 3D rendering. "
+                'Install with: pip install "imas-ink[3d]"'
+            ) from exc
+
+        import tempfile
+
+        with tempfile.TemporaryDirectory() as tmp:
+            import pathlib
+
+            outpath = pathlib.Path(tmp) / "coilset.png"
+            render_coilset(
+                uri,
+                outfile=outpath,
+                show_wall=show_wall,
+                show_pf=show_pf,
+                show_tf=show_tf,
+                view=view,
+                off_screen=True,
+            )
+            png_bytes = outpath.read_bytes()
+
+        return base64.b64encode(png_bytes).decode("ascii")
 
 
 def _register_repl(mcp) -> None:

@@ -14,6 +14,7 @@ EXPECTED_TOOLS = {
     "plot_convergence",
     "animate_pulse",
     "plot_radial_profiles",
+    "plot_coilset_3d",
     "repl",
 }
 
@@ -56,10 +57,8 @@ class TestToolRegistration:
     def test_repl_registered(self, ink_server):
         assert "repl" in ink_server.tool_names()
 
-    def test_no_3d_tools(self, ink_server):
-        """3D coilset tools must not appear — Phase 4 only."""
-        names = ink_server.tool_names()
-        assert "plot_coilset_3d" not in names
+    def test_plot_coilset_3d_registered(self, ink_server):
+        assert "plot_coilset_3d" in ink_server.tool_names()
 
     def test_no_efit_imports(self):
         """The server module must not import anything from efit.*."""
