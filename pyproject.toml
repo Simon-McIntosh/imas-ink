@@ -54,6 +54,8 @@ server = [
   "vedo>=2024.5",
   "vtk>=9.3",
   "shapely>=2.0",
+  "imageio>=2.34",
+  "scipy>=1.11",
 ]
 dev = [
   "ruff>=0.6",

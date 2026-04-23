@@ -719,6 +719,19 @@ wheels = [
 ]
 
 [[package]]
+name = "imageio"
+version = "2.37.3"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "numpy" },
+    { name = "pillow" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/b1/84/93bcd1300216ea50811cee96873b84a1bebf8d0489ffaf7f2a3756bab866/imageio-2.37.3.tar.gz", hash = "sha256:bbb37efbfc4c400fcd534b367b91fcd66d5da639aaa138034431a1c5e0a41451", size = 389673, upload-time = "2026-03-09T11:31:12.573Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/49/fa/391e437a34e55095173dca5f24070d89cbc233ff85bf1c29c93248c6588d/imageio-2.37.3-py3-none-any.whl", hash = "sha256:46f5bb8522cd421c0f5ae104d8268f569d856b29eb1a13b92829d1970f32c9f0", size = 317646, upload-time = "2026-03-09T11:31:10.771Z" },
+]
+
+[[package]]
 name = "imas-core"
 version = "5.6.0"
 source = { registry = "https://pypi.org/simple" }
@@ -765,7 +778,9 @@ dependencies = [
 
 [package.optional-dependencies]
 3d = [
+    { name = "imageio" },
     { name = "pyvista" },
+    { name = "scipy" },
     { name = "shapely" },
     { name = "vedo" },
     { name = "vtk" },
@@ -773,11 +788,13 @@ dependencies = [
 all = [
     { name = "click" },
     { name = "fastmcp" },
+    { name = "imageio" },
     { name = "pre-commit" },
     { name = "pytest" },
     { name = "pytest-cov" },
     { name = "pyvista" },
     { name = "ruff" },
+    { name = "scipy" },
     { name = "shapely" },
     { name = "vedo" },
     { name = "vtk" },
@@ -804,6 +821,8 @@ requires-dist = [
     { name = "fastmcp", marker = "extra == 'all'", specifier = ">=2.0" },
     { name = "fastmcp", marker = "extra == 'server'", specifier = ">=2.0" },
     { name = "h5py", specifier = ">=3.10" },
+    { name = "imageio", marker = "extra == '3d'", specifier = ">=2.34" },
+    { name = "imageio", marker = "extra == 'all'", specifier = ">=2.34" },
     { name = "imas-python", specifier = ">=2.2" },
     { name = "matplotlib", specifier = ">=3.8" },
     { name = "numpy", specifier = ">=1.26" },
@@ -819,6 +838,8 @@ requires-dist = [
     { name = "pyvista", marker = "extra == 'all'", specifier = ">=0.43" },
     { name = "ruff", marker = "extra == 'all'", specifier = ">=0.6" },
     { name = "ruff", marker = "extra == 'dev'", specifier = ">=0.6" },
+    { name = "scipy", marker = "extra == '3d'", specifier = ">=1.11" },
+    { name = "scipy", marker = "extra == 'all'", specifier = ">=1.11" },
     { name = "shapely", marker = "extra == '3d'", specifier = ">=2.0" },
     { name = "shapely", marker = "extra == 'all'", specifier = ">=2.0" },
     { name = "vedo", marker = "extra == '3d'", specifier = ">=2024.5" },
