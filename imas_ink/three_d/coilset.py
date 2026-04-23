@@ -219,14 +219,36 @@ def extract_tf_coils(tf, n_coils: int | None = None) -> list[CoilMesh]:
 def extract_wall(wall) -> pv.PolyData:
     """Extract the vessel / limiter wall as a revolved 3D mesh.
 
-    Attempts (in order):
+    See :func:`extract_walls` for the multi-component variant that returns
+    vessel and first-wall as separate named meshes.
+
+    Returns a merged mesh (first populated of vessel, first-wall/limiter)
+    for backward compatibility.
+    """
+    parts = extract_walls(wall)
+    if not parts:
+        import pyvista as pv
+
+        return pv.PolyData()
+    # Prefer vessel for backward-compat rendering
+    vessel = next((m for name, m in parts if name == "vessel"), None)
+    if vessel is not None:
+        return vessel
+    return parts[0][1]
+
+
+def extract_walls(wall) -> list[tuple[str, pv.PolyData]]:
+    """Extract vessel and first-wall meshes as separate named components.
+
+    Reads:
 
     1. ``wall.description_2d[0].vessel.unit[*].annular.centreline`` +
-       thickness → revolved annular ring per unit.
+       thickness → revolved annular ring per unit → combined as ``"vessel"``.
     2. ``wall.description_2d[0].limiter.unit[0].outline`` → revolved
-       2D polygon (no thickness offset).
+       2D contour → ``"first_wall"``.
 
-    Returns an empty :class:`pyvista.PolyData` if no geometry is found.
+    Returns ``[]`` when no geometry is found.  Either component may be
+    absent — callers should handle both being present, just one, or neither.
 
     Parameters
     ----------
@@ -235,7 +257,9 @@ def extract_wall(wall) -> pv.PolyData:
 
     Returns
     -------
-    pyvista.PolyData
+    list[tuple[str, pyvista.PolyData]]
+        Ordered list of ``(name, mesh)`` pairs.  Typical names:
+        ``"vessel"`` and ``"first_wall"``.
     """
     import numpy as np
     import pyvista as pv
@@ -245,10 +269,12 @@ def extract_wall(wall) -> pv.PolyData:
     try:
         desc = wall.description_2d[0]
     except (AttributeError, IndexError):
-        return pv.PolyData()
+        return []
 
-    # Try vessel annular centreline
-    meshes: list[pv.PolyData] = []
+    parts: list[tuple[str, pv.PolyData]] = []
+
+    # Vessel: one or more annular units → combine
+    vessel_meshes: list[pv.PolyData] = []
     try:
         for unit in desc.vessel.unit:
             ann = unit.annular
@@ -256,38 +282,35 @@ def extract_wall(wall) -> pv.PolyData:
             z_cl = np.asarray(ann.centreline.z, dtype=float)
             if r_cl.size < 3:
                 continue
-            # Build a thin annular shell using thickness if available
             thickness = _safe_float(getattr(ann, "thickness", 0.0))
             if thickness > 0:
-                # Offset the centreline inward/outward
                 r_outer, z_outer = _offset_polygon(r_cl, z_cl, thickness / 2)
                 r_inner, z_inner = _offset_polygon(r_cl, z_cl, -thickness / 2)
-                # Combine into a closed annular cross-section
                 r_section = np.concatenate([r_outer, r_inner[::-1]])
                 z_section = np.concatenate([z_outer, z_inner[::-1]])
-                meshes.append(revolve_polygon(r_section, z_section))
+                vessel_meshes.append(revolve_polygon(r_section, z_section))
             else:
-                meshes.append(revolve_polygon(r_cl, z_cl))
+                vessel_meshes.append(revolve_polygon(r_cl, z_cl))
     except (AttributeError, IndexError):
         pass
 
-    if meshes:
-        combined = meshes[0]
-        for m in meshes[1:]:
+    if vessel_meshes:
+        combined = vessel_meshes[0]
+        for m in vessel_meshes[1:]:
             combined = combined.merge(m)
-        return combined
+        parts.append(("vessel", combined))
 
-    # Fallback: limiter outline
+    # First wall / limiter: outline polygon
     try:
         limiter = desc.limiter.unit[0].outline
         r = np.asarray(limiter.r, dtype=float)
         z = np.asarray(limiter.z, dtype=float)
         if r.size >= 3:
-            return revolve_polygon(r, z)
+            parts.append(("first_wall", revolve_polygon(r, z)))
     except (AttributeError, IndexError):
         pass
 
-    return pv.PolyData()
+    return parts
 
 
 # ------------------------------------------------------------------
@@ -400,10 +423,12 @@ def _safe_float(value, default: float = 0.0) -> float:
         return default
 
 
-# Representative ITER TF winding-pack half-dimensions used when the
-# DD cross_section block is absent (DD < 3.42.0 or unpopulated).
-_TF_DEFAULT_WIDTH = 0.4  # metres, normal (radial) direction
-_TF_DEFAULT_HEIGHT = 0.6  # metres, binormal (toroidal) direction
+# Representative ITER TF case envelope half-dimensions used when the
+# DD cross_section block is absent (DD < 3.42.0 or unpopulated).  These
+# approximate the outboard-leg winding-pack + case envelope (not just the
+# conductor), giving a visually plausible TF coil.
+_TF_DEFAULT_WIDTH = 0.8  # metres, normal (radial) direction
+_TF_DEFAULT_HEIGHT = 1.4  # metres, binormal (toroidal) direction
 
 
 def _extract_tf_section(conductor) -> np.ndarray:

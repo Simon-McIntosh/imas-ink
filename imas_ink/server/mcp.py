@@ -405,33 +405,44 @@ class PlotProvider:
     async def plot_coilset_3d(
         self,
         uri: str,
+        outfile: str,
         show_wall: bool = True,
         show_pf: bool = True,
         show_tf: bool = True,
         view: str = "iso",
     ) -> str:
-        """Render the 3D coilset for an IMAS dataset and return PNG bytes.
+        """Render the 3D coilset for an IMAS dataset to a PNG file on disk.
 
         Requires the ``[3d]`` extra (pyvista, vtk). If not installed,
         raises :class:`RuntimeError` with the install command.
+
+        The rendered PNG is written directly to *outfile* — no base64
+        payload is returned over the wire.  For animations or chained
+        renders, call ``imas-ink-repl`` and drive pyvista directly; the
+        REPL exposes ``ink`` (``imas_ink``) so you can
+        ``from imas_ink.three_d.scene import render_coilset``.
 
         Parameters
         ----------
         uri : str
             IMAS URI, e.g. ``"imas:hdf5?path=/path/to/machine/"``.
+        outfile : str
+            Absolute path to the PNG file to write.  Parent directories
+            are created if needed.
         show_wall : bool
-            Include vessel wall in the render.
+            Include vessel + first wall in the render.
         show_pf : bool
             Include PF / CS coils.
         show_tf : bool
             Include TF coils.
         view : str
-            Camera preset: ``"iso"``, ``"poloidal"``, or ``"toroidal"``.
+            Camera preset: ``"iso"``, ``"iso_close"``, ``"poloidal"``,
+            or ``"toroidal"``.
 
         Returns
         -------
         str
-            Base64-encoded PNG image.
+            Absolute path to the written PNG file.
         """
         try:
             from ..three_d.scene import render_coilset
@@ -441,24 +452,19 @@ class PlotProvider:
                 'Install with: pip install "imas-ink[3d]"'
             ) from exc
 
-        import tempfile
+        import pathlib
 
-        with tempfile.TemporaryDirectory() as tmp:
-            import pathlib
-
-            outpath = pathlib.Path(tmp) / "coilset.png"
-            render_coilset(
-                uri,
-                outfile=outpath,
-                show_wall=show_wall,
-                show_pf=show_pf,
-                show_tf=show_tf,
-                view=view,
-                off_screen=True,
-            )
-            png_bytes = outpath.read_bytes()
-
-        return base64.b64encode(png_bytes).decode("ascii")
+        outpath = pathlib.Path(outfile).expanduser().resolve()
+        render_coilset(
+            uri,
+            outfile=outpath,
+            show_wall=show_wall,
+            show_pf=show_pf,
+            show_tf=show_tf,
+            view=view,
+            off_screen=True,
+        )
+        return str(outpath)
 
 
 def _register_repl(mcp) -> None:
