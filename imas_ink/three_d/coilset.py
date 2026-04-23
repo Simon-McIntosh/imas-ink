@@ -170,28 +170,14 @@ def extract_tf_coils(tf, n_coils: int | None = None) -> list[CoilMesh]:
         if total_n <= 0:
             total_n = len(stored_coils)
 
-    # Extract cross-section dimensions (from first conductor)
+    # Extract cross-section geometry from DD paths
+    #   tf/coil/conductor/cross_section — introduced in DD 3.42.0 (AoS)
+    #   geometry_type identifier: 1=polygon, 2=circle, 3=rectangle,
+    #                             4=square, 5=annulus.
+    # Fall back to representative ITER TF winding-pack dimensions when the
+    # cross_section block is absent (DD < 3.42.0 or unpopulated).
     first_conductor = stored_coils[0].conductor[0] if stored_coils[0].conductor else None
-    dr = 0.4  # default TF winding-pack half-width [m]
-    dz = 0.6  # default TF winding-pack half-height [m]
-    if first_conductor is not None:
-        cs = getattr(first_conductor, "cross_section", None)
-        if cs is not None:
-            delta_r = _safe_float(getattr(cs, "delta_r", 0.0))
-            delta_phi = _safe_float(getattr(cs, "delta_phi", 0.0))
-            if delta_r > 0:
-                dz = delta_r
-            if delta_phi > 0:
-                dr = delta_phi
-
-    section = np.array(
-        [
-            [-dr / 2, -dz / 2],
-            [dr / 2, -dz / 2],
-            [dr / 2, dz / 2],
-            [-dr / 2, dz / 2],
-        ]
-    )
+    section = _extract_tf_section(first_conductor)
 
     replicate = len(stored_coils) == 1 and total_n > 1
 
@@ -412,6 +398,99 @@ def _safe_float(value, default: float = 0.0) -> float:
         return v if abs(v) < 1e30 else default
     except (TypeError, ValueError):
         return default
+
+
+# Representative ITER TF winding-pack half-dimensions used when the
+# DD cross_section block is absent (DD < 3.42.0 or unpopulated).
+_TF_DEFAULT_WIDTH = 0.4  # metres, normal (radial) direction
+_TF_DEFAULT_HEIGHT = 0.6  # metres, binormal (toroidal) direction
+
+
+def _extract_tf_section(conductor) -> np.ndarray:
+    """Build a 2D TF conductor cross-section polygon in (normal, binormal).
+
+    Reads ``conductor.cross_section[0]`` (IMAS DD >= 3.42.0) and dispatches
+    on ``cross_section[0].geometry_type.index``:
+
+    ==  ============  ===============================================
+    1   polygon       outline.normal / outline.binormal vertices
+    2   circle        regular 32-gon of diameter ``width``
+    3   rectangle     ``width`` (normal) x ``height`` (binormal)
+    4   square        ``width`` x ``width``
+    5   annulus       outer 32-gon of diameter ``width``
+                      (inner radius is not rendered - surface-only sweep)
+    ==  ============  ===============================================
+
+    Falls back to representative ITER TF winding-pack dimensions
+    (``_TF_DEFAULT_WIDTH`` x ``_TF_DEFAULT_HEIGHT``) when the DD
+    cross_section AoS is absent or geometry_type is unrecognised.
+    """
+    import numpy as np
+
+    def _rectangle(w: float, h: float) -> np.ndarray:
+        return np.array(
+            [
+                [-w / 2.0, -h / 2.0],
+                [w / 2.0, -h / 2.0],
+                [w / 2.0, h / 2.0],
+                [-w / 2.0, h / 2.0],
+            ]
+        )
+
+    def _circle(diameter: float, n: int = 32) -> np.ndarray:
+        theta = np.linspace(0.0, 2.0 * np.pi, n, endpoint=False)
+        r = diameter / 2.0
+        return np.column_stack((r * np.cos(theta), r * np.sin(theta)))
+
+    fallback = _rectangle(_TF_DEFAULT_WIDTH, _TF_DEFAULT_HEIGHT)
+
+    if conductor is None:
+        return fallback
+
+    cs_aos = getattr(conductor, "cross_section", None)
+    if cs_aos is None:
+        return fallback
+    try:
+        cs = cs_aos[0]
+    except (TypeError, IndexError):
+        return fallback
+
+    geom_type = 0
+    try:
+        geom_type = int(cs.geometry_type.index)
+    except (AttributeError, TypeError, ValueError):
+        geom_type = 0
+
+    if geom_type == 1:  # polygon
+        try:
+            normal = np.asarray(cs.outline.normal, dtype=float)
+            binormal = np.asarray(cs.outline.binormal, dtype=float)
+        except (AttributeError, TypeError, ValueError):
+            return fallback
+        if normal.size >= 3 and normal.size == binormal.size:
+            return np.column_stack((normal, binormal))
+        return fallback
+
+    if geom_type == 3:  # rectangle
+        w = _safe_float(getattr(cs, "width", 0.0))
+        h = _safe_float(getattr(cs, "height", 0.0))
+        if w > 0.0 and h > 0.0:
+            return _rectangle(w, h)
+        return fallback
+
+    if geom_type == 4:  # square
+        w = _safe_float(getattr(cs, "width", 0.0))
+        if w > 0.0:
+            return _rectangle(w, w)
+        return fallback
+
+    if geom_type in (2, 5):  # circle or annulus (outer silhouette)
+        diameter = _safe_float(getattr(cs, "width", 0.0))
+        if diameter > 0.0:
+            return _circle(diameter)
+        return fallback
+
+    return fallback
 
 
 def _has_rectangle(geom) -> bool:
