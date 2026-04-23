@@ -288,9 +288,9 @@ def extract_walls(wall) -> list[tuple[str, pv.PolyData]]:
                 r_inner, z_inner = _offset_polygon(r_cl, z_cl, -thickness / 2)
                 r_section = np.concatenate([r_outer, r_inner[::-1]])
                 z_section = np.concatenate([z_outer, z_inner[::-1]])
-                vessel_meshes.append(revolve_polygon(r_section, z_section))
+                vessel_meshes.append(revolve_polygon(r_section, z_section, n_theta=180))
             else:
-                vessel_meshes.append(revolve_polygon(r_cl, z_cl))
+                vessel_meshes.append(revolve_polygon(r_cl, z_cl, n_theta=180))
     except (AttributeError, IndexError):
         pass
 
@@ -306,7 +306,7 @@ def extract_walls(wall) -> list[tuple[str, pv.PolyData]]:
         r = np.asarray(limiter.r, dtype=float)
         z = np.asarray(limiter.z, dtype=float)
         if r.size >= 3:
-            parts.append(("first_wall", revolve_polygon(r, z)))
+            parts.append(("first_wall", revolve_polygon(r, z, n_theta=180)))
     except (AttributeError, IndexError):
         pass
 

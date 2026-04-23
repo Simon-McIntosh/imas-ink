@@ -98,15 +98,55 @@ def ring_from_rectangle(
     return revolve_polygon(r, z, n_theta=n_theta)
 
 
+def _resample_centerline(path: np.ndarray, n: int, closed: bool) -> np.ndarray:
+    """Cubic-spline resample a 3D polyline to *n* evenly-spaced samples.
+
+    Parameters
+    ----------
+    path : (N, 3) array
+        Input polyline vertices.
+    n : int
+        Number of output samples.
+    closed : bool
+        Whether to treat the path as a closed loop (periodic spline).
+
+    Returns
+    -------
+    (n, 3) array of resampled points.
+    """
+    from scipy.interpolate import CubicSpline
+
+    # Cumulative arc length as parameter
+    diffs = np.diff(path, axis=0)
+    seg = np.linalg.norm(diffs, axis=1)
+    s = np.concatenate(([0.0], np.cumsum(seg)))
+    total = s[-1]
+    if total <= 0.0:
+        return path.copy()
+
+    bc = "periodic" if closed else "not-a-knot"
+    if closed and not np.allclose(path[0], path[-1]):
+        # Enforce closure for periodic BC
+        path = np.vstack([path, path[:1]])
+        s = np.concatenate([s, [total + np.linalg.norm(path[-1] - path[-2])]])
+        total = s[-1]
+
+    cs = CubicSpline(s, path, bc_type=bc, axis=0)
+    u = np.linspace(0.0, total, n, endpoint=not closed)
+    return cs(u)
+
+
 def sweep_section_along_path(
     section_rz: np.ndarray,
     centerline_xyz: np.ndarray,
     frame: str = "frenet",
+    resample: int | None = 240,
 ) -> pv.PolyData:
     """Sweep a 2D cross-section along a 3D centerline path.
 
-    Uses a discrete Frenet frame to orient the section at each point
-    along the centerline, then builds quad faces between consecutive
+    Uses a Rotation-Minimizing Frame (RMF, double-reflection parallel
+    transport; Wang et al. ACM TOG 2008) to orient the section at each
+    point along the centerline, then builds quad faces between consecutive
     cross-section rings.
 
     Parameters
@@ -118,7 +158,13 @@ def sweep_section_along_path(
     centerline_xyz : array_like, shape (N, 3)
         Ordered 3D points defining the path.
     frame : str
-        Frame convention. Only ``"frenet"`` is supported.
+        Frame convention. Only ``"frenet"`` / ``"rmf"`` are accepted;
+        both now use the RMF algorithm.
+    resample : int or None
+        If not ``None``, cubic-spline resample the centerline to this
+        many points before sweeping (default 240). Set to ``None`` to
+        disable.  Smooths coarse/angular centrelines such as IMAS TF
+        conductor element chains.
 
     Returns
     -------
@@ -129,6 +175,13 @@ def sweep_section_along_path(
 
     section_rz = np.asarray(section_rz, dtype=float)
     centerline_xyz = np.asarray(centerline_xyz, dtype=float)
+
+    if len(centerline_xyz) < 2:
+        return pv.PolyData()
+
+    if resample is not None and resample > len(centerline_xyz):
+        closed = bool(np.allclose(centerline_xyz[0], centerline_xyz[-1]))
+        centerline_xyz = _resample_centerline(centerline_xyz, resample, closed)
 
     n_path = len(centerline_xyz)
     n_sec = len(section_rz)
