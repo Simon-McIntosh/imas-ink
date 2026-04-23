@@ -1,10 +1,13 @@
 name: ci-3d
 
+# Disabled until Phase 4 ships the first render-marked smoke test.
+# Re-enable by uncommenting the triggers below.
 on:
-  push:
-    branches: [main]
-  pull_request:
-    branches: [main]
+  workflow_dispatch:
+  # push:
+  #   branches: [main]
+  # pull_request:
+  #   branches: [main]
 
 jobs:
   three-d-headless:

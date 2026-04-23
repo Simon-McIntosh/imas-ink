@@ -33,7 +33,7 @@ def main(argv: list[str] | None = None) -> int:
             "  imas-ink version               Print version and exit\n",
         )
         return 0
-    if argv[0] == "version":
+    if argv[0] in {"version", "--version", "-V"}:
         from . import __version__
 
         print(__version__)

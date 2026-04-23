@@ -8,6 +8,7 @@ dynamic = ["version"]
 description = "IMAS-backed plotting and visualisation library for tokamak equilibrium data (2D + 3D) with an MCP server"
 readme = "README.md"
 license = { text = "ITER GIP" }
+license-files = ["LICENSE"]
 requires-python = ">=3.11,<3.14"
 authors = [{ name = "Simon McIntosh", email = "simon.mcintosh@iter.org" }]
 keywords = [

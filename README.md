@@ -7,10 +7,13 @@ from IMAS HDF5 datasets.
 
 ## Status
 
-Pre-release (`v0` series). The 2D API is ported from `efit.ink` in the
-ITER EFIT codebase; the `three_d` subpackage renders coilsets, TF coils,
-and vessel geometry using pyvista with vedo primitives for axisymmetric
-extrusion and swept cross-sections.
+**Bootstrap skeleton — no shipped API yet.** This is the initial
+scaffolding for `imas-ink`. The 2D library port from `efit.ink` lands in
+Phase 2, the MCP server and namespaced REPL in Phase 3, and the `three_d`
+subpackage (ITER coilset, TF coils, vessel) in Phase 4. Until then, the
+package exports only `__version__` and the `imas-ink` console entry
+point has functional `version`/`--version`/`-V` flags; `serve` and
+`demo` are stubs that exit 2.
 
 ## Design principles
 
@@ -29,7 +32,7 @@ extrusion and swept cross-sections.
   reusing geometry primitives patterned after the nova codebase (ITER
   GIP). No runtime dependency on nova.
 
-## Install
+## Install (developer, pre-release)
 
 ```bash
 # From source (during development)
@@ -39,7 +42,17 @@ pip install -e '.[server,3d,test]'
 uv sync --extra server --extra 3d --extra test
 ```
 
-## Quick start
+PyPI publication is wired up (trusted publishing on `v*.*.*` tags) but
+no release has been cut yet — install from source until the first
+`v0.1.0` tag.
+
+## Planned API (not shipped yet)
+
+The following library, CLI, and MCP surfaces are **planned for v0.1.0**
+and land across Phases 2–4 of the extraction plan. They are listed here
+so downstream agents know what to target.
+
+### Library (Phase 2)
 
 ```python
 import imas_ink as ink
@@ -49,18 +62,18 @@ fig = ink.equilibrium_figure_mpl(slice_)
 fig.savefig("equilibrium.png", dpi=150)
 ```
 
-### MCP server
+### MCP server (Phase 3)
 
 ```bash
-uv run imas-ink serve
+uv run imas-ink serve   # stub today; functional in Phase 3
 ```
 
-Registers tools `imas-ink-plot_equilibrium`, `imas-ink-plot_time_traces`,
-`imas-ink-plot_convergence`, `imas-ink-animate_pulse`,
-`imas-ink-plot_radial_profiles`, `imas-ink-plot_coilset_3d`, and a
-stateful, namespaced REPL.
+Will register tools `imas-ink-plot_equilibrium`,
+`imas-ink-plot_time_traces`, `imas-ink-plot_convergence`,
+`imas-ink-animate_pulse`, `imas-ink-plot_radial_profiles`,
+`imas-ink-plot_coilset_3d`, and a stateful, namespaced REPL.
 
-### 3D coilset demo
+### 3D coilset demo (Phase 4)
 
 ```bash
 uv run imas-ink demo iter-coilset --uri "imas:hdf5?path=/path/to/iter/machine/"
@@ -68,4 +81,17 @@ uv run imas-ink demo iter-coilset --uri "imas:hdf5?path=/path/to/iter/machine/"
 
 ## License
 
-ITER GIP. See [`LICENSE`](./LICENSE).
+ITER GIP — **proprietary, not OSI-approved open source**. The repository
+is published publicly for collaboration but the licence does not grant
+general open-source rights. See [`LICENSE`](./LICENSE) for the full
+terms.
+
+## Releases
+
+Tags matching `vX.Y.Z` on `main` trigger the `release` workflow, which
+publishes sdist + wheel to PyPI via the [trusted-publishing flow][tp].
+The workflow rejects non-semver tags and tags that are not ancestors of
+`main`. The PyPI project and a `pypi` GitHub environment must be
+pre-configured by a maintainer before the first release.
+
+[tp]: https://docs.pypi.org/trusted-publishers/
