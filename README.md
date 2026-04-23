@@ -46,32 +46,53 @@ PyPI publication is wired up (trusted publishing on `v*.*.*` tags) but
 no release has been cut yet — install from source until the first
 `v0.1.0` tag.
 
-## Planned API (not shipped yet)
+## MCP Server
 
-The following library, CLI, and MCP surfaces are **planned for v0.1.0**
-and land across Phases 2–4 of the extraction plan. They are listed here
-so downstream agents know what to target.
+The MCP server is shipped and functional. Start it with:
 
-### Library (Phase 2)
+```bash
+uv run imas-ink serve   # stdio transport — ready for Copilot CLI / Claude Desktop
+```
+
+Registered tools:
+
+| Tool | Description |
+|------|-------------|
+| `imas-ink-plot_equilibrium` | Poloidal cross-section (single frame) |
+| `imas-ink-plot_time_traces` | Ip, beta_pol, li_3, q95 over time |
+| `imas-ink-plot_convergence` | Convergence status bar chart |
+| `imas-ink-animate_pulse` | Full-pulse GIF animation |
+| `imas-ink-plot_radial_profiles` | 1D radial profiles (p, q, j_tor, …) |
+| `imas-ink-repl` | Stateful, namespaced Python REPL |
+
+The REPL keeps a per-namespace globals dict so concurrent callers do not
+step on each other:
+
+```python
+repl("x = 1", namespace="agent-a")          # sets x in agent-a
+repl("x + 1", namespace="agent-a")          # → 2
+repl("x", namespace="agent-b")              # NameError — isolated
+repl("", namespace="agent-a", reset=True)   # clear that namespace
+```
+
+Pre-loaded names in every namespace: `ink` (imas_ink), `np` (numpy),
+`plt` (matplotlib.pyplot, lazy).
+
+## Planned API
+
+The following surfaces are **planned for v0.1.0** and land in Phase 4
+(3D coilset demo). They are listed here so downstream agents know what
+to target.
+
+### Library (Phase 2 — shipped)
 
 ```python
 import imas_ink as ink
 
 slice_ = ink.extract_slice("imas:hdf5?path=/path/to/iter/135013/", 5)
-fig = ink.equilibrium_figure_mpl(slice_)
-fig.savefig("equilibrium.png", dpi=150)
 ```
 
-### MCP server (Phase 3)
-
-```bash
-uv run imas-ink serve   # stub today; functional in Phase 3
-```
-
-Will register tools `imas-ink-plot_equilibrium`,
-`imas-ink-plot_time_traces`, `imas-ink-plot_convergence`,
-`imas-ink-animate_pulse`, `imas-ink-plot_radial_profiles`,
-`imas-ink-plot_coilset_3d`, and a stateful, namespaced REPL.
+### MCP server (shipped — see above)
 
 ### 3D coilset demo (Phase 4)
 

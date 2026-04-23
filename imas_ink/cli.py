@@ -1,7 +1,13 @@
 """imas-ink command-line interface.
 
-Currently a placeholder — the full CLI lands in Phase 3 (server) and
-Phase 4 (3D demo). The ``imas-ink`` console entry point dispatches here.
+Dispatches sub-commands:
+
+- ``serve``   — start the MCP server (stdio transport, FastMCP).
+- ``demo``    — 3-D coilset demo (Phase 4, not yet implemented).
+- ``version`` — print the package version and exit.
+
+The ``fastmcp`` dependency is imported lazily inside the ``serve`` branch
+so that ``imas-ink --version`` does not pull in server dependencies.
 """
 
 from __future__ import annotations
@@ -20,7 +26,7 @@ def main(argv: list[str] | None = None) -> int:
     Returns
     -------
     int
-        Process exit code.
+        Process exit code (0 on success, 2 on error/unimplemented).
     """
     argv = list(sys.argv[1:] if argv is None else argv)
     if not argv or argv[0] in {"-h", "--help"}:
@@ -28,7 +34,7 @@ def main(argv: list[str] | None = None) -> int:
             "imas-ink — IMAS plotting library + MCP server\n"
             "\n"
             "Usage:\n"
-            "  imas-ink serve                 Start MCP server (Phase 3)\n"
+            "  imas-ink serve                 Start MCP server (stdio)\n"
             "  imas-ink demo iter-coilset     Render ITER coilset (Phase 4)\n"
             "  imas-ink version               Print version and exit\n",
         )
@@ -39,10 +45,13 @@ def main(argv: list[str] | None = None) -> int:
         print(__version__)
         return 0
     if argv[0] == "serve":
-        print("imas-ink serve: MCP server lands in Phase 3.", file=sys.stderr)
-        return 2
+        # Lazy import so version / help don't load server dependencies.
+        from .server.mcp import serve
+
+        serve()
+        return 0
     if argv[0] == "demo":
-        print("imas-ink demo: demos land in Phase 4.", file=sys.stderr)
+        print("imas-ink demo: 3D coilset demo lands in Phase 4.", file=sys.stderr)
         return 2
     print(f"imas-ink: unknown command {argv[0]!r}", file=sys.stderr)
     return 2
