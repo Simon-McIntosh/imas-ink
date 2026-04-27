@@ -41,6 +41,7 @@ dependencies = [
   "pandas>=2.2",
   "pillow>=10.0",
   "imas-python>=2.2",
+  "netCDF4>=1.6",
   "h5py>=3.10",
 ]
 
