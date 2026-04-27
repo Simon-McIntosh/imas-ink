@@ -221,8 +221,10 @@ def _render_probes_mpl(ax: Axes, probes: MagneticProbes) -> None:
         r_f = r[finite]
         z_f = z[finite]
         a_f = ang[finite]
+        # IMAS poloidal_angle is clockwise from +R (COCOS 17).
+        # Matplotlib uses CCW: direction = (cos(θ), -sin(θ)) for CW θ.
         segs = [
-            [(r_f[i], z_f[i]), (r_f[i] + L * np.cos(a_f[i]), z_f[i] + L * np.sin(a_f[i]))]
+            [(r_f[i], z_f[i]), (r_f[i] + L * np.cos(a_f[i]), z_f[i] - L * np.sin(a_f[i]))]
             for i in range(r_f.size)
         ]
         lc = LineCollection(
