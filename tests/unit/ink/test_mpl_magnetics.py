@@ -98,9 +98,10 @@ class TestRenderProbesMpl:
         # seg is [[r_start, z_start], [r_end, z_end]]
         dr = seg[1, 0] - seg[0, 0]
         dz = seg[1, 1] - seg[0, 1]
-        # The direction should match the declared angle
+        # CW angle convention: direction vector is (cos(θ), -sin(θ))
+        # so arctan2(dz, dr) = -θ
         actual_angle = np.arctan2(dz, dr)
-        assert_allclose(actual_angle, angle, atol=1e-6)
+        assert_allclose(actual_angle, -angle, atol=1e-6)
 
         # Length should equal probe_arrow_length
         length = np.sqrt(dr**2 + dz**2)

@@ -3,6 +3,14 @@
 Combines extraction, contouring, component construction, and rendering
 into single-call convenience functions. Each function returns a
 ``(fig, ax)`` pair so the caller can further customise or save.
+
+Architecture
+------------
+``geometry_figure_mpl`` creates a clean machine cross-section (wall,
+coils, probes, flux loops) — no equilibrium data required. Higher-level
+builders like ``equilibrium_figure_mpl`` call it and then layer
+equilibrium-specific components on top.  Agents can also compose
+layers via the persistent REPL using ``render_mpl(ax, component)``.
 """
 
 from __future__ import annotations
@@ -118,6 +126,80 @@ def radial_profile_figure_mpl(
     return fig, list(axes)
 
 
+def geometry_figure_mpl(
+    geom: MachineGeometry,
+    style: InkStyle | None = None,
+    figsize: tuple[float, float] = (6, 7),
+    show_probes: bool = True,
+    show_flux_loops: bool = True,
+) -> tuple[matplotlib.figure.Figure, Axes]:
+    """Build a poloidal cross-section showing only machine geometry.
+
+    Renders wall outline, PF coils, magnetic probes, and flux loops —
+    no equilibrium data required.  Returns ``(fig, ax)`` for further
+    composition (e.g. layering equilibrium contours on top).
+
+    Parameters
+    ----------
+    geom : MachineGeometry
+        Static machine geometry (wall, coils, probes, flux loops).
+    style : InkStyle, optional
+        Visual style. Defaults to :data:`DEFAULT_STYLE`.
+    figsize : tuple[float, float]
+        Figure size in inches ``(width, height)``.
+    show_probes : bool
+        If *True* and probe positions are available, render probe markers.
+    show_flux_loops : bool
+        If *True* and flux loop positions are available, render loop markers.
+
+    Returns
+    -------
+    tuple[Figure, Axes]
+        The matplotlib figure and axes objects.
+    """
+    import matplotlib
+    import matplotlib.pyplot as plt
+
+    matplotlib.use("Agg")
+
+    if style is None:
+        style = DEFAULT_STYLE
+
+    fig, ax = plt.subplots(figsize=figsize, facecolor=style.figure_facecolor)
+
+    # --- geometry components ---
+    coils = CoilRects(geom.coil_rects, style=style)
+    wall = WallOutline(geom.wall_r, geom.wall_z, style=style)
+
+    render_mpl(ax, coils)
+    render_mpl(ax, wall)
+    if show_probes and geom.probe_r.size > 0:
+        probes = MagneticProbes(
+            positions_r=geom.probe_r,
+            positions_z=geom.probe_z,
+            angles=geom.probe_angle,
+            style=style,
+        )
+        render_mpl(ax, probes)
+    if show_flux_loops and geom.flux_loop_r.size > 0:
+        loops = FluxLoops(
+            positions_r=geom.flux_loop_r,
+            positions_z=geom.flux_loop_z,
+            style=style,
+        )
+        render_mpl(ax, loops)
+
+    # --- viewport ---
+    rmin, rmax, zmin, zmax = geom.viewport
+    ax.set_xlim(rmin, rmax)
+    ax.set_ylim(zmin, zmax)
+    ax.set_aspect("equal")
+    ax.axis("off")
+
+    fig.tight_layout()
+    return fig, ax
+
+
 def equilibrium_figure_mpl(
     sl: EquilibriumSlice,
     geom: MachineGeometry,
@@ -129,8 +211,9 @@ def equilibrium_figure_mpl(
 ) -> tuple[matplotlib.figure.Figure, Axes]:
     """Build a complete poloidal cross-section figure.
 
-    Creates a matplotlib figure with coils, wall, flux contours,
-    separatrix, O-point marker, X-point markers, and time label.
+    Creates the machine geometry via :func:`geometry_figure_mpl` and
+    layers equilibrium-specific components on top: flux contours,
+    separatrix, O-point, X-point markers, and time label.
 
     Parameters
     ----------
@@ -155,17 +238,17 @@ def equilibrium_figure_mpl(
     tuple[Figure, Axes]
         The matplotlib figure and axes objects.
     """
-    import matplotlib
-    import matplotlib.pyplot as plt
     from matplotlib.patches import PathPatch
     from matplotlib.path import Path as MplPath
-
-    matplotlib.use("Agg")
 
     if style is None:
         style = DEFAULT_STYLE
 
-    fig, ax = plt.subplots(figsize=figsize, facecolor=style.figure_facecolor)
+    # --- base geometry layer ---
+    fig, ax = geometry_figure_mpl(
+        geom, style=style, figsize=figsize,
+        show_probes=show_probes, show_flux_loops=show_flux_loops,
+    )
 
     # --- psi field (optionally mask PFR) ---
     psi = sl.psi_2d
@@ -189,9 +272,7 @@ def equilibrium_figure_mpl(
     wall_patch = PathPatch(wall_path, facecolor="none", edgecolor="none")
     ax.add_patch(wall_patch)
 
-    # --- build components ---
-    coils = CoilRects(geom.coil_rects, style=style)
-    wall = WallOutline(geom.wall_r, geom.wall_z, style=style)
+    # --- equilibrium components ---
     flux = FluxContours(
         cx.flux_surfaces(sl.psi_axis, sl.psi_boundary, n=n_levels),
         style=style,
@@ -205,38 +286,12 @@ def equilibrium_figure_mpl(
     xpoints = XPointMarkers(sl.x_points, style=style)
     timelabel = TimeLabel(sl.time, converged=sl.converged, style=style)
 
-    # --- render in z-order ---
-    render_mpl(ax, coils)
-    render_mpl(ax, wall)
-    if show_probes and geom.probe_r.size > 0:
-        probes = MagneticProbes(
-            positions_r=geom.probe_r,
-            positions_z=geom.probe_z,
-            angles=geom.probe_angle,
-            style=style,
-        )
-        render_mpl(ax, probes)
-    if show_flux_loops and geom.flux_loop_r.size > 0:
-        loops = FluxLoops(
-            positions_r=geom.flux_loop_r,
-            positions_z=geom.flux_loop_z,
-            style=style,
-        )
-        render_mpl(ax, loops)
     render_mpl(ax, flux, clip_path=wall_patch)
     render_mpl(ax, sep, clip_path=wall_patch)
     render_mpl(ax, opoint)
     render_mpl(ax, xpoints)
     render_mpl(ax, timelabel)
 
-    # --- viewport ---
-    rmin, rmax, zmin, zmax = geom.viewport
-    ax.set_xlim(rmin, rmax)
-    ax.set_ylim(zmin, zmax)
-    ax.set_aspect("equal")
-    ax.axis("off")
-
-    fig.tight_layout()
     return fig, ax
 
 

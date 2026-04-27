@@ -12,6 +12,7 @@ Run the server::
 Tools registered
 ----------------
 - ``plot_equilibrium``     — poloidal cross-section (single frame)
+- ``plot_geometry``        — machine geometry only (wall, coils, probes, flux loops)
 - ``plot_time_traces``     — Ip, beta_pol, li_3, q95 time traces
 - ``plot_convergence``     — convergence status bar chart
 - ``animate_pulse``        — full-pulse GIF animation
@@ -41,8 +42,9 @@ class InkServer:
     --------
     >>> server = InkServer()
     >>> list(server.tool_names())  # doctest: +NORMALIZE_WHITESPACE
-    ['plot_equilibrium', 'plot_time_traces', 'plot_convergence',
-     'animate_pulse', 'plot_radial_profiles', 'plot_coilset_3d', 'repl']
+    ['plot_equilibrium', 'plot_geometry', 'plot_time_traces',
+     'plot_convergence', 'animate_pulse', 'plot_radial_profiles',
+     'plot_coilset_3d', 'repl']
     """
 
     def __init__(self, name: str = "imas-ink") -> None:
@@ -108,6 +110,7 @@ class PlotProvider:
     def register(self, mcp) -> None:
         """Register all plotting tools on *mcp*."""
         mcp.tool()(self.plot_equilibrium)
+        mcp.tool()(self.plot_geometry)
         mcp.tool()(self.plot_time_traces)
         mcp.tool()(self.plot_convergence)
         mcp.tool()(self.animate_pulse)
@@ -156,11 +159,12 @@ class PlotProvider:
             eq = entry.get("equilibrium")
             wall = entry.get("wall")
             pf = entry.get("pf_active")
+            magnetics = entry.get("magnetics")
         finally:
             entry.close()
 
         sl = extract_slice(eq, time_index)
-        geom = extract_geometry(wall, pf)
+        geom = extract_geometry(wall, pf, magnetics)
         style = (
             InkStyle(flux_n_levels=n_levels) if n_levels != DEFAULT_STYLE.flux_n_levels else None
         )
@@ -172,6 +176,55 @@ class PlotProvider:
             fig, _ax = equilibrium_figure_mpl(sl, geom, style=style)
             png_bytes = render_to_bytes(fig)
             return base64.b64encode(png_bytes).decode("ascii")
+
+    async def plot_geometry(
+        self,
+        uri: str,
+        show_probes: bool = True,
+        show_flux_loops: bool = True,
+    ) -> str:
+        """Render machine geometry (wall, coils, probes, flux loops).
+
+        No equilibrium data required — useful for validating sensor
+        positions and machine layout before running a solver.
+
+        Parameters
+        ----------
+        uri : str
+            IMAS URI pointing to machine description data containing
+            ``wall``, ``pf_active``, and optionally ``magnetics`` IDSs.
+        show_probes : bool
+            Whether to show magnetic probe markers and orientation ticks.
+        show_flux_loops : bool
+            Whether to show flux loop position markers.
+
+        Returns
+        -------
+        str
+            Base64-encoded PNG.
+        """
+        import matplotlib
+
+        matplotlib.use("Agg")
+
+        from ..extract import extract_geometry
+        from ..figures import geometry_figure_mpl
+        from ..io import render_to_bytes
+
+        entry = _open_entry(uri)
+        try:
+            wall = entry.get("wall")
+            pf = entry.get("pf_active")
+            magnetics = entry.get("magnetics")
+        finally:
+            entry.close()
+
+        geom = extract_geometry(wall, pf, magnetics)
+        fig, _ax = geometry_figure_mpl(
+            geom, show_probes=show_probes, show_flux_loops=show_flux_loops,
+        )
+        png_bytes = render_to_bytes(fig)
+        return base64.b64encode(png_bytes).decode("ascii")
 
     async def plot_time_traces(
         self,
@@ -318,10 +371,11 @@ class PlotProvider:
             eq = entry.get("equilibrium")
             wall = entry.get("wall")
             pf = entry.get("pf_active")
+            magnetics = entry.get("magnetics")
         finally:
             entry.close()
 
-        geom = extract_geometry(wall, pf)
+        geom = extract_geometry(wall, pf, magnetics)
         style = (
             InkStyle(flux_n_levels=n_levels) if n_levels != DEFAULT_STYLE.flux_n_levels else None
         )
