@@ -38,7 +38,7 @@ from .primitives import (
     ring_from_rectangle,
     sweep_section_along_path,
 )
-from .scene import render_coilset
+from .scene import render_coilset, render_cutaway_with_flux
 from .walls import (
     FirstWall,
     VesselShell,
@@ -80,6 +80,7 @@ __all__ = [
     "psi_grid_interpolator",
     "read_equilibrium",
     "render_coilset",
+    "render_cutaway_with_flux",
     "revolve_polygon",
     "revolve_wall_outline",
     "ring_from_rectangle",

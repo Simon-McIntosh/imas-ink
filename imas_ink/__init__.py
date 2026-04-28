@@ -131,6 +131,9 @@ def __getattr__(name: str):
         "build_flux_overlay",
         "offset_along_normal",
     }
+    _SCENE_NAMES = {
+        "render_cutaway_with_flux",
+    }
     if name in _MANIFOLD_NAMES:
         from .three_d import manifold
 
@@ -151,6 +154,10 @@ def __getattr__(name: str):
         from .three_d import flux_projection
 
         return getattr(flux_projection, name)
+    if name in _SCENE_NAMES:
+        from .three_d import scene
+
+        return getattr(scene, name)
     raise AttributeError(f"module {__name__!r} has no attribute {name!r}")
 
 __all__ = [
@@ -235,6 +242,8 @@ __all__ = [
     "psi_grid_interpolator",
     # 3D equilibrium (lazy — from imas_ink.three_d.equilibrium)
     "read_equilibrium",
+    # 3D scene (lazy — from imas_ink.three_d.scene)
+    "render_cutaway_with_flux",
     # altair backend
     "render_alt",
     # mpl backend

@@ -209,6 +209,7 @@ def contours_on_cap(
     levels: np.ndarray | None = None,
     n_levels: int = 12,
     plane_normal: tuple[float, float, float] = (0.0, 1.0, 0.0),
+    cap_polygon_2d: tuple[np.ndarray, np.ndarray] | None = None,
 ) -> tuple[list, np.ndarray]:
     """Extract ψ contour polylines clipped to the cap polygon.
 
@@ -229,6 +230,13 @@ def contours_on_cap(
         Number of interior levels when *levels* is ``None``.
     plane_normal:
         Unit normal of the cap plane.
+    cap_polygon_2d:
+        Optional ``(R_array, Z_array)`` defining the 2D clipping polygon.
+        When provided, this polygon is used directly for contour clipping
+        instead of deriving the boundary from *cap_mesh* via ConvexHull.
+        This is essential for **non-convex** caps (e.g. ITER first-wall
+        with divertor region) where the convex hull would incorrectly
+        include exterior regions.
 
     Returns
     -------
@@ -247,7 +255,13 @@ def contours_on_cap(
     cx = ContourExtractor(R_2d, Z_2d, slice_2d.psi_2d)
 
     # Cap boundary polygon for clipping
-    polygon_rz = _cap_boundary_polygon(cap_mesh)
+    if cap_polygon_2d is not None:
+        r_poly, z_poly = cap_polygon_2d
+        polygon_rz = np.column_stack(
+            [np.asarray(r_poly, dtype=float), np.asarray(z_poly, dtype=float)]
+        )
+    else:
+        polygon_rz = _cap_boundary_polygon(cap_mesh)
 
     all_polylines: list = []
     for lev in levels:
@@ -272,6 +286,7 @@ def build_flux_overlay(
     n_levels: int = 12,
     levels: np.ndarray | None = None,
     plane_normal: tuple[float, float, float] = (0.0, 1.0, 0.0),
+    cap_polygon_2d: tuple[np.ndarray, np.ndarray] | None = None,
 ) -> FluxOverlay:
     """Build a :class:`FluxOverlay` from an equilibrium slice and cap mesh.
 
@@ -296,6 +311,9 @@ def build_flux_overlay(
         Explicit ψ levels for contours.
     plane_normal:
         Unit normal of the cap plane.
+    cap_polygon_2d:
+        Optional ``(R_array, Z_array)`` for non-convex cap polygon clipping.
+        Forwarded to :func:`contours_on_cap`.
 
     Returns
     -------
@@ -319,6 +337,7 @@ def build_flux_overlay(
             levels=levels,
             n_levels=n_levels,
             plane_normal=plane_normal,
+            cap_polygon_2d=cap_polygon_2d,
         )
     else:
         # Compute levels even in field_only mode (for metadata)

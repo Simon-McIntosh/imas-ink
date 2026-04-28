@@ -272,3 +272,100 @@ class TestLevelsDefault:
         expected_levels = make_levels(sl.psi_axis, sl.psi_boundary, n=n)
 
         np.testing.assert_array_equal(returned_levels, expected_levels)
+
+
+# ---------------------------------------------------------------------------
+# test_contours_clipped_to_nonconvex_polygon
+# ---------------------------------------------------------------------------
+
+
+class TestNonConvexPolygonClip:
+    """cap_polygon_2d kwarg enables clipping to non-convex (e.g. L-shape) regions."""
+
+    @staticmethod
+    def _l_shape_polygon():
+        """Return an L-shaped (non-convex) polygon in (R, Z) space.
+
+        Shape (R ∈ [1, 4], Z ∈ [-2, 2]):
+
+            (1,2)-----(4,2)
+            |              |
+            |              |
+            (1,0)---(2,0)  |
+                    |      |
+                    (2,-2)--(4,-2)
+
+        The concavity at (2, 0) means a convex hull would
+        incorrectly include the upper-right region (R ∈ [1, 2], Z ∈ [-2, 0]).
+        """
+        r = np.array([1.0, 4.0, 4.0, 2.0, 2.0, 1.0, 1.0])
+        z = np.array([2.0, 2.0, -2.0, -2.0, 0.0, 0.0, 2.0])
+        return r, z
+
+    def test_contours_inside_l_shape(self):
+        """All contour points must lie inside the L-shape, not just its convex hull."""
+        from matplotlib.path import Path as MplPath
+
+        r_poly, z_poly = self._l_shape_polygon()
+
+        # ψ = R + Z covers the full domain, producing many contour lines
+        sl = _make_slice_rz(
+            r_range=(0.5, 5.0),
+            z_range=(-3.0, 3.0),
+            n=100,
+            psi_func=lambda R, Z: R + Z,
+        )
+        cap = _make_cap_quad(r_range=(0.5, 5.0), z_range=(-3.0, 3.0), n_r=20, n_z=20)
+
+        contours, _ = contours_on_cap(
+            cap,
+            sl,
+            n_levels=8,
+            cap_polygon_2d=(r_poly, z_poly),
+        )
+
+        # Build matplotlib Path for the L-shape (closed)
+        closed = np.column_stack([r_poly, z_poly])
+        path = MplPath(closed)
+
+        assert len(contours) > 0, "Expected at least one contour polyline"
+        for poly in contours:
+            pts = np.asarray(poly.points, dtype=float)
+            R_pts = np.abs(pts[:, 0])
+            Z_pts = pts[:, 2]
+            rz_pts = np.column_stack([R_pts, Z_pts])
+            inside = path.contains_points(rz_pts, radius=-0.05)
+            assert np.all(inside), (
+                f"Found contour points outside the L-shape polygon: "
+                f"R={R_pts[~inside]}, Z={Z_pts[~inside]}"
+            )
+
+    def test_nonconvex_excludes_concavity_region(self):
+        """Points in the concavity (R ∈ [1, 2], Z ∈ [-2, 0]) must not appear."""
+        r_poly, z_poly = self._l_shape_polygon()
+
+        sl = _make_slice_rz(
+            r_range=(0.5, 5.0),
+            z_range=(-3.0, 3.0),
+            n=100,
+            psi_func=lambda R, Z: R + Z,
+        )
+        cap = _make_cap_quad(r_range=(0.5, 5.0), z_range=(-3.0, 3.0), n_r=20, n_z=20)
+
+        contours, _ = contours_on_cap(
+            cap,
+            sl,
+            n_levels=8,
+            cap_polygon_2d=(r_poly, z_poly),
+        )
+
+        for poly in contours:
+            pts = np.asarray(poly.points, dtype=float)
+            R_pts = np.abs(pts[:, 0])
+            Z_pts = pts[:, 2]
+            # The concavity region: R < 2 and Z < 0
+            in_concavity = (R_pts < 1.9) & (Z_pts < -0.1)
+            assert not np.any(in_concavity), (
+                f"Found contour points in the L-shape concavity: "
+                f"R={R_pts[in_concavity]}, Z={Z_pts[in_concavity]}"
+            )
