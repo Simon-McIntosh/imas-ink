@@ -108,6 +108,14 @@ def __getattr__(name: str):
         "revolve_wall_outline",
         "synthesize_vessel_shell",
     }
+    _CUTAWAY_NAMES = {
+        "ClipPlane",
+        "CappedMesh",
+        "capped_clip",
+        "cap_face_of",
+        "capped_clip_multiblock",
+        "auto_camera",
+    }
     if name in _MANIFOLD_NAMES:
         from .three_d import manifold
 
@@ -116,6 +124,10 @@ def __getattr__(name: str):
         from .three_d import walls
 
         return getattr(walls, name)
+    if name in _CUTAWAY_NAMES:
+        from .three_d import cutaway
+
+        return getattr(cutaway, name)
     raise AttributeError(f"module {__name__!r} has no attribute {name!r}")
 
 __all__ = [
@@ -132,6 +144,9 @@ __all__ = [
     # style
     "InkStyle",
     "MachineGeometry",
+    # 3D cutaway (lazy — from imas_ink.three_d.cutaway)
+    "CappedMesh",
+    "ClipPlane",
     # 3D walls (lazy — from imas_ink.three_d.walls)
     "FirstWall",
     # 3D manifold validation (lazy — from imas_ink.three_d)
@@ -151,6 +166,11 @@ __all__ = [
     "__version__",
     # animation
     "animate_pulse",
+    # 3D cutaway (lazy — from imas_ink.three_d.cutaway)
+    "auto_camera",
+    "cap_face_of",
+    "capped_clip",
+    "capped_clip_multiblock",
     # 3D walls (lazy — from imas_ink.three_d.walls)
     "close_or_reject_outline",
     "close_polygon",

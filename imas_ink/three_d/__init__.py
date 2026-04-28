@@ -8,6 +8,14 @@ Import from here for the public API::
 """
 
 from .coilset import CoilMesh, extract_pf_coils, extract_tf_coils, extract_wall
+from .cutaway import (
+    CappedMesh,
+    ClipPlane,
+    auto_camera,
+    cap_face_of,
+    capped_clip,
+    capped_clip_multiblock,
+)
 from .manifold import MeshNotManifoldError, ensure_closed_manifold
 from .primitives import (
     cylindrical_to_cartesian,
@@ -28,11 +36,17 @@ from .walls import (
 )
 
 __all__ = [
+    "CappedMesh",
+    "ClipPlane",
     "CoilMesh",
     "FirstWall",
     "MeshNotManifoldError",
     "VesselShell",
     "WallOutline2D",
+    "auto_camera",
+    "cap_face_of",
+    "capped_clip",
+    "capped_clip_multiblock",
     "close_or_reject_outline",
     "cylindrical_to_cartesian",
     "ensure_closed_manifold",
