@@ -207,10 +207,32 @@ def _rmf_frame(
     return normals, binormals
 
 
+def _densify_polyline(path: np.ndarray, n_target: int) -> np.ndarray:
+    """Linear arc-length resampling of a polyline to *n_target* points.
+
+    Linear interpolation introduces no out-of-plane noise, so this is
+    safe to use ahead of the planar-frame sweep: the SVD plane fit is
+    invariant to point density along the original polyline.
+    """
+    if n_target <= len(path):
+        return path
+    # Cumulative arc length along the input polyline
+    seg = np.linalg.norm(np.diff(path, axis=0), axis=1)
+    s = np.concatenate([[0.0], np.cumsum(seg)])
+    if s[-1] <= 0.0:
+        return path
+    s_new = np.linspace(0.0, s[-1], n_target)
+    out = np.empty((n_target, 3), dtype=float)
+    for k in range(3):
+        out[:, k] = np.interp(s_new, s, path[:, k])
+    return out
+
+
 def sweep_section_along_path(
     section_rz: np.ndarray,
     centerline_xyz: np.ndarray,
     frame: str = "planar",
+    densify: int | None = None,
 ) -> pv.PolyData:
     """Sweep a 2D cross-section along a 3D centerline path.
 
@@ -256,6 +278,9 @@ def sweep_section_along_path(
 
     if len(centerline_xyz) < 2:
         return pv.PolyData()
+
+    if densify is not None and densify > len(centerline_xyz):
+        centerline_xyz = _densify_polyline(centerline_xyz, densify)
 
     n_path = len(centerline_xyz)
     n_sec = len(section_rz)

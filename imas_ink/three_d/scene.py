@@ -13,15 +13,15 @@ if TYPE_CHECKING:
     import pyvista as pv
 
 
-# Tokamak-appropriate non-primary palette: warm copper PF, slate-steel TF,
-# gunmetal vessel, warm tungsten first wall.  Inspired by ITER engineering
-# renders rather than CAD primary colours.
+# Tokamak-appropriate palette: muted bronze/copper for PF, warm tungsten
+# for FW, slate/gunmetal for TF and vessel.  Slightly desaturated from
+# pure CAD tints so the rendered diffuse surfaces don't read as toy-like.
 _COLORS = {
-    "pf": "#b87333",          # warm copper / bronze (PF coils)
-    "cs": "#8b5a3c",          # darker bronze (central solenoid stack)
-    "tf": "#5a6470",          # slate steel (TF case)
-    "vessel": "#3c3f44",      # gunmetal (VV)
-    "first_wall": "#9a8c6c",  # warm tungsten / inconel (FW)
+    "pf": "#a87a4a",          # muted bronze (PF coils)
+    "cs": "#7a5638",          # darker bronze (central solenoid stack)
+    "tf": "#6b7480",          # slate (TF case)
+    "vessel": "#4a4d52",      # dark gunmetal (VV)
+    "first_wall": "#a89a78",  # warm tungsten (FW)
     "wall": "#9aa0a6",        # legacy fallback
 }
 
@@ -126,8 +126,29 @@ def render_coilset(
 
     pl = pv.Plotter(off_screen=off_screen, window_size=list(window_size))
     pl.set_background("white")
-    # 3-point lighting kit (key + fill + back) for proper shading.
-    pl.enable_lightkit()
+    # Single primary key light from upper-front (camera-relative high-left)
+    # plus a soft ambient term gives a strong directional cue that makes
+    # the 3D shapes read prominently — much cleaner than a 3-point kit
+    # when components are tightly packed.
+    pl.remove_all_lights()
+    key = pv.Light(
+        position=(20.0, -25.0, 30.0),
+        focal_point=(0.0, 0.0, 0.0),
+        color="white",
+        intensity=1.0,
+        light_type="scene light",
+    )
+    pl.add_light(key)
+    # Faint ambient light to lift the shadowed side just enough to keep
+    # detail visible without flattening the form.
+    fill = pv.Light(
+        position=(-15.0, 15.0, 5.0),
+        focal_point=(0.0, 0.0, 0.0),
+        color="white",
+        intensity=0.18,
+        light_type="scene light",
+    )
+    pl.add_light(fill)
     try:
         pl.enable_anti_aliasing("ssaa")
     except Exception:
@@ -144,7 +165,16 @@ def render_coilset(
             return
         pl.add_mesh(mesh, **kwargs)
 
-    # PF / CS coils — copper/bronze with mild PBR metallic shading.
+    # Standard Phong-style shading with low specular — gives a clean
+    # matte-engineering look without the metallic glare of PBR.
+    _matte = dict(
+        ambient=0.25,
+        diffuse=0.85,
+        specular=0.08,
+        specular_power=8,
+    )
+
+    # PF / CS coils — bronze, smooth-shaded revolution surfaces.
     if pf_active is not None:
         pf_meshes = extract_pf_coils(pf_active)
         for cm in pf_meshes:
@@ -154,14 +184,11 @@ def render_coilset(
                 color=color,
                 opacity=1.0,
                 label=cm.name,
-                pbr=True,
-                metallic=0.6,
-                roughness=0.45,
                 smooth_shading=True,
+                **_matte,
             )
 
-    # TF coils — brushed steel: PBR with higher metallic factor.
-    # Flat shading (smooth_shading=False) preserves the rectangular
+    # TF coils — slate.  Flat shading preserves the rectangular
     # cross-section's edges instead of rounding them off.
     if tf_ids is not None:
         tf_meshes = extract_tf_coils(tf_ids)
@@ -171,10 +198,8 @@ def render_coilset(
                 color=_COLORS["tf"],
                 opacity=tf_opacity,
                 label=cm.name,
-                pbr=True,
-                metallic=0.7,
-                roughness=0.4,
                 smooth_shading=False,
+                **_matte,
             )
 
     # Wall: vessel (outer) + first wall (plasma-facing).
@@ -188,22 +213,17 @@ def render_coilset(
                 continue
             if name == "vessel":
                 colour, opacity = _COLORS["vessel"], vessel_opacity
-                metallic, roughness = 0.55, 0.55
             elif name == "first_wall":
                 colour, opacity = _COLORS["first_wall"], first_wall_opacity
-                metallic, roughness = 0.4, 0.6
             else:
                 colour, opacity = _COLORS["wall"], 1.0
-                metallic, roughness = 0.4, 0.6
             _add(
                 _maybe_clip(mesh),
                 color=colour,
                 opacity=opacity,
                 label=name,
-                pbr=True,
-                metallic=metallic,
-                roughness=roughness,
                 smooth_shading=True,
+                **_matte,
             )
 
     # Camera
