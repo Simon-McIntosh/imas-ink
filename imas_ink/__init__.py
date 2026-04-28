@@ -29,6 +29,7 @@ except ImportError:  # source checkout without hatch-vcs run
 # -- sentinel ----------------------------------------------------------------
 # -- COCOS -------------------------------------------------------------------
 from ._cocos import make_levels
+from ._dd import DEFAULT_DD_VERSION, resolve_dd_version
 from ._sentinel import EMPTY_THRESHOLD, is_empty, safe_float
 
 # -- types -------------------------------------------------------------------
@@ -116,6 +117,12 @@ def __getattr__(name: str):
         "capped_clip_multiblock",
         "auto_camera",
     }
+    _EQUILIBRIUM_NAMES = {
+        "EquilibriumSlice2D",
+        "read_equilibrium",
+        "extract_slice_2d",
+        "psi_grid_interpolator",
+    }
     if name in _MANIFOLD_NAMES:
         from .three_d import manifold
 
@@ -128,9 +135,14 @@ def __getattr__(name: str):
         from .three_d import cutaway
 
         return getattr(cutaway, name)
+    if name in _EQUILIBRIUM_NAMES:
+        from .three_d import equilibrium
+
+        return getattr(equilibrium, name)
     raise AttributeError(f"module {__name__!r} has no attribute {name!r}")
 
 __all__ = [
+    "DEFAULT_DD_VERSION",
     "DEFAULT_STYLE",
     "EMPTY_THRESHOLD",
     "CoilRect",
@@ -139,6 +151,8 @@ __all__ = [
     "ContourExtractor",
     # types
     "EquilibriumSlice",
+    # 3D equilibrium (lazy — from imas_ink.three_d.equilibrium)
+    "EquilibriumSlice2D",
     # components
     "FluxContours",
     # style
@@ -183,6 +197,8 @@ __all__ = [
     "extract_profiles_1d",
     # extractors
     "extract_slice",
+    # 3D equilibrium (lazy — from imas_ink.three_d.equilibrium)
+    "extract_slice_2d",
     "extract_time_traces",
     # 3D walls (lazy — from imas_ink.three_d.walls)
     "extract_vessel_shells",
@@ -194,12 +210,18 @@ __all__ = [
     "make_levels",
     # geometry
     "mask_pfr",
+    # 3D equilibrium (lazy — from imas_ink.three_d.equilibrium)
+    "psi_grid_interpolator",
+    # 3D equilibrium (lazy — from imas_ink.three_d.equilibrium)
+    "read_equilibrium",
     # altair backend
     "render_alt",
     # mpl backend
     "render_mpl",
     # 3D walls (lazy — from imas_ink.three_d.walls)
     "revolve_wall_outline",
+    # DD version
+    "resolve_dd_version",
     # I/O
     "render_to_bytes",
     "safe_float",
