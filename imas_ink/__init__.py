@@ -123,6 +123,14 @@ def __getattr__(name: str):
         "extract_slice_2d",
         "psi_grid_interpolator",
     }
+    _FLUX_PROJECTION_NAMES = {
+        "FluxOverlay",
+        "FluxMode",
+        "sample_psi_on_cap",
+        "contours_on_cap",
+        "build_flux_overlay",
+        "offset_along_normal",
+    }
     if name in _MANIFOLD_NAMES:
         from .three_d import manifold
 
@@ -139,6 +147,10 @@ def __getattr__(name: str):
         from .three_d import equilibrium
 
         return getattr(equilibrium, name)
+    if name in _FLUX_PROJECTION_NAMES:
+        from .three_d import flux_projection
+
+        return getattr(flux_projection, name)
     raise AttributeError(f"module {__name__!r} has no attribute {name!r}")
 
 __all__ = [
@@ -155,6 +167,9 @@ __all__ = [
     "EquilibriumSlice2D",
     # components
     "FluxContours",
+    # 3D flux projection (lazy — from imas_ink.three_d.flux_projection)
+    "FluxMode",
+    "FluxOverlay",
     # style
     "InkStyle",
     "MachineGeometry",
@@ -182,6 +197,8 @@ __all__ = [
     "animate_pulse",
     # 3D cutaway (lazy — from imas_ink.three_d.cutaway)
     "auto_camera",
+    # 3D flux projection (lazy — from imas_ink.three_d.flux_projection)
+    "build_flux_overlay",
     "cap_face_of",
     "capped_clip",
     "capped_clip_multiblock",
@@ -189,6 +206,8 @@ __all__ = [
     "close_or_reject_outline",
     "close_polygon",
     "coil_bboxes",
+    # 3D flux projection (lazy — from imas_ink.three_d.flux_projection)
+    "contours_on_cap",
     # 3D manifold validation (lazy — from imas_ink.three_d)
     "ensure_closed_manifold",
     # 3D walls (lazy — from imas_ink.three_d.walls)
@@ -210,6 +229,8 @@ __all__ = [
     "make_levels",
     # geometry
     "mask_pfr",
+    # 3D flux projection (lazy — from imas_ink.three_d.flux_projection)
+    "offset_along_normal",
     # 3D equilibrium (lazy — from imas_ink.three_d.equilibrium)
     "psi_grid_interpolator",
     # 3D equilibrium (lazy — from imas_ink.three_d.equilibrium)
@@ -225,6 +246,8 @@ __all__ = [
     # I/O
     "render_to_bytes",
     "safe_float",
+    # 3D flux projection (lazy — from imas_ink.three_d.flux_projection)
+    "sample_psi_on_cap",
     "save_html",
     "save_png",
     "segments_to_dataframe",
