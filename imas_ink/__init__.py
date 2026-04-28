@@ -97,11 +97,25 @@ from .style import DEFAULT_STYLE, InkStyle
 # MeshNotManifoldError and ensure_closed_manifold are re-exported here but
 # lazily loaded: importing imas_ink does NOT pull pyvista/vtk.
 def __getattr__(name: str):
-    _THREE_D_NAMES = {"MeshNotManifoldError", "ensure_closed_manifold"}
-    if name in _THREE_D_NAMES:
+    _MANIFOLD_NAMES = {"MeshNotManifoldError", "ensure_closed_manifold"}
+    _WALL_NAMES = {
+        "WallOutline2D",
+        "FirstWall",
+        "VesselShell",
+        "extract_first_wall",
+        "extract_vessel_shells",
+        "close_or_reject_outline",
+        "revolve_wall_outline",
+        "synthesize_vessel_shell",
+    }
+    if name in _MANIFOLD_NAMES:
         from .three_d import manifold
 
         return getattr(manifold, name)
+    if name in _WALL_NAMES:
+        from .three_d import walls
+
+        return getattr(walls, name)
     raise AttributeError(f"module {__name__!r} has no attribute {name!r}")
 
 __all__ = [
@@ -118,6 +132,8 @@ __all__ = [
     # style
     "InkStyle",
     "MachineGeometry",
+    # 3D walls (lazy — from imas_ink.three_d.walls)
+    "FirstWall",
     # 3D manifold validation (lazy — from imas_ink.three_d)
     "MeshNotManifoldError",
     "OPointMarker",
@@ -135,15 +151,21 @@ __all__ = [
     "__version__",
     # animation
     "animate_pulse",
+    # 3D walls (lazy — from imas_ink.three_d.walls)
+    "close_or_reject_outline",
     "close_polygon",
     "coil_bboxes",
     # 3D manifold validation (lazy — from imas_ink.three_d)
     "ensure_closed_manifold",
+    # 3D walls (lazy — from imas_ink.three_d.walls)
+    "extract_first_wall",
     "extract_geometry",
     "extract_profiles_1d",
     # extractors
     "extract_slice",
     "extract_time_traces",
+    # 3D walls (lazy — from imas_ink.three_d.walls)
+    "extract_vessel_shells",
     "find_xpoints",
     "is_closed_contour",
     # sentinel
@@ -156,6 +178,8 @@ __all__ = [
     "render_alt",
     # mpl backend
     "render_mpl",
+    # 3D walls (lazy — from imas_ink.three_d.walls)
+    "revolve_wall_outline",
     # I/O
     "render_to_bytes",
     "safe_float",
@@ -163,5 +187,9 @@ __all__ = [
     "save_png",
     "segments_to_dataframe",
     "split_path_segs",
+    # 3D walls (lazy — from imas_ink.three_d.walls)
+    "synthesize_vessel_shell",
+    "VesselShell",
+    "WallOutline2D",
     "wall_clip_vertices",
 ]

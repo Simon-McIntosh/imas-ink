@@ -219,8 +219,10 @@ def extract_tf_coils(tf, n_coils: int | None = None) -> list[CoilMesh]:
 def extract_wall(wall) -> pv.PolyData:
     """Extract the vessel / limiter wall as a revolved 3D mesh.
 
-    See :func:`extract_walls` for the multi-component variant that returns
-    vessel and first-wall as separate named meshes.
+    .. deprecated::
+        Use :func:`imas_ink.three_d.walls.extract_first_wall` and
+        :func:`imas_ink.three_d.walls.extract_vessel_shells` instead.
+        This function will be removed when all callers migrate.
 
     Returns a merged mesh (first populated of vessel, first-wall/limiter)
     for backward compatibility.
@@ -240,12 +242,11 @@ def extract_wall(wall) -> pv.PolyData:
 def extract_walls(wall) -> list[tuple[str, pv.PolyData]]:
     """Extract vessel and first-wall meshes as separate named components.
 
-    Reads:
-
-    1. ``wall.description_2d[0].vessel.unit[*].annular.centreline`` +
-       thickness → revolved annular ring per unit → combined as ``"vessel"``.
-    2. ``wall.description_2d[0].limiter.unit[0].outline`` → revolved
-       2D contour → ``"first_wall"``.
+    .. deprecated::
+        Use :func:`imas_ink.three_d.walls.extract_first_wall` and
+        :func:`imas_ink.three_d.walls.extract_vessel_shells` instead.
+        This function is retained as a backward-compatible shim and will
+        be removed when all callers migrate to the typed API.
 
     Returns ``[]`` when no geometry is found.  Either component may be
     absent — callers should handle both being present, just one, or neither.
@@ -261,54 +262,26 @@ def extract_walls(wall) -> list[tuple[str, pv.PolyData]]:
         Ordered list of ``(name, mesh)`` pairs.  Typical names:
         ``"vessel"`` and ``"first_wall"``.
     """
-    import numpy as np
     import pyvista as pv
 
     from .primitives import revolve_polygon
-
-    try:
-        desc = wall.description_2d[0]
-    except (AttributeError, IndexError):
-        return []
+    from .walls import extract_first_wall, extract_vessel_shells
 
     parts: list[tuple[str, pv.PolyData]] = []
 
-    # Vessel: one or more annular units → combine
-    vessel_meshes: list[pv.PolyData] = []
-    try:
-        for unit in desc.vessel.unit:
-            ann = unit.annular
-            r_cl = np.asarray(ann.centreline.r, dtype=float)
-            z_cl = np.asarray(ann.centreline.z, dtype=float)
-            if r_cl.size < 3:
-                continue
-            thickness = _safe_float(getattr(ann, "thickness", 0.0))
-            if thickness > 0:
-                r_outer, z_outer = _offset_polygon(r_cl, z_cl, thickness / 2)
-                r_inner, z_inner = _offset_polygon(r_cl, z_cl, -thickness / 2)
-                r_section = np.concatenate([r_outer, r_inner[::-1]])
-                z_section = np.concatenate([z_outer, z_inner[::-1]])
-                vessel_meshes.append(revolve_polygon(r_section, z_section, n_theta=180))
-            else:
-                vessel_meshes.append(revolve_polygon(r_cl, z_cl, n_theta=180))
-    except (AttributeError, IndexError):
-        pass
-
-    if vessel_meshes:
+    # Vessel shells → combine into single "vessel" mesh
+    shells = extract_vessel_shells(wall)
+    if shells:
+        vessel_meshes = [revolve_polygon(s.r, s.z, n_theta=180) for s in shells]
         combined = vessel_meshes[0]
         for m in vessel_meshes[1:]:
             combined = combined.merge(m)
         parts.append(("vessel", combined))
 
-    # First wall / limiter: outline polygon
-    try:
-        limiter = desc.limiter.unit[0].outline
-        r = np.asarray(limiter.r, dtype=float)
-        z = np.asarray(limiter.z, dtype=float)
-        if r.size >= 3:
-            parts.append(("first_wall", revolve_polygon(r, z, n_theta=180)))
-    except (AttributeError, IndexError):
-        pass
+    # First wall
+    fw = extract_first_wall(wall)
+    if fw is not None:
+        parts.append(("first_wall", revolve_polygon(fw.r, fw.z, n_theta=180)))
 
     return parts
 
@@ -365,33 +338,6 @@ def _rotate_z(points: np.ndarray, angle: float) -> np.ndarray:
     c, s = np.cos(angle), np.sin(angle)
     rot = np.array([[c, -s, 0], [s, c, 0], [0, 0, 1]])
     return points @ rot.T
-
-
-def _offset_polygon(r: np.ndarray, z: np.ndarray, offset: float) -> tuple[np.ndarray, np.ndarray]:
-    """Naïve inward/outward offset of a 2D polygon.
-
-    Moves each vertex along the local outward normal by *offset*.
-    Positive offset = outward, negative = inward.
-    """
-    import numpy as np
-
-    n = len(r)
-    r_off = np.empty(n)
-    z_off = np.empty(n)
-    for i in range(n):
-        i_prev = (i - 1) % n
-        i_next = (i + 1) % n
-        dr = r[i_next] - r[i_prev]
-        dz = z[i_next] - z[i_prev]
-        length = np.hypot(dr, dz)
-        if length < 1e-12:
-            r_off[i] = r[i]
-            z_off[i] = z[i]
-        else:
-            # Outward normal (assuming CCW winding)
-            r_off[i] = r[i] + offset * dz / length
-            z_off[i] = z[i] - offset * dr / length
-    return r_off, z_off
 
 
 def _safe_name(coil, fallback: str = "coil") -> str:
