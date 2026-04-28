@@ -8,6 +8,7 @@ Import from here for the public API::
 """
 
 from .coilset import CoilMesh, extract_pf_coils, extract_tf_coils, extract_wall
+from .manifold import MeshNotManifoldError, ensure_closed_manifold
 from .primitives import (
     cylindrical_to_cartesian,
     revolve_polygon,
@@ -18,7 +19,9 @@ from .scene import render_coilset
 
 __all__ = [
     "CoilMesh",
+    "MeshNotManifoldError",
     "cylindrical_to_cartesian",
+    "ensure_closed_manifold",
     "extract_pf_coils",
     "extract_tf_coils",
     "extract_wall",

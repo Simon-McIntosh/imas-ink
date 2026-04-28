@@ -92,6 +92,18 @@ from .mpl import render_mpl
 # -- style -------------------------------------------------------------------
 from .style import DEFAULT_STYLE, InkStyle
 
+
+# -- 3D (lazy) ---------------------------------------------------------------
+# MeshNotManifoldError and ensure_closed_manifold are re-exported here but
+# lazily loaded: importing imas_ink does NOT pull pyvista/vtk.
+def __getattr__(name: str):
+    _THREE_D_NAMES = {"MeshNotManifoldError", "ensure_closed_manifold"}
+    if name in _THREE_D_NAMES:
+        from .three_d import manifold
+
+        return getattr(manifold, name)
+    raise AttributeError(f"module {__name__!r} has no attribute {name!r}")
+
 __all__ = [
     "DEFAULT_STYLE",
     "EMPTY_THRESHOLD",
@@ -106,6 +118,8 @@ __all__ = [
     # style
     "InkStyle",
     "MachineGeometry",
+    # 3D manifold validation (lazy — from imas_ink.three_d)
+    "MeshNotManifoldError",
     "OPointMarker",
     "RadialProfile",
     "RadialProfiles",
@@ -123,6 +137,8 @@ __all__ = [
     "animate_pulse",
     "close_polygon",
     "coil_bboxes",
+    # 3D manifold validation (lazy — from imas_ink.three_d)
+    "ensure_closed_manifold",
     "extract_geometry",
     "extract_profiles_1d",
     # extractors

@@ -108,3 +108,49 @@ class TestSweepSectionAlongPath:
         path = np.array([[0, 0, 0]], dtype=float)
         mesh = sweep_section_along_path(section, path, frame="frenet")
         assert mesh.n_points == 0
+
+    def test_sweep_section_open_path_closes_endcaps(self):
+        """Open-path sweep of a rectangle adds start + end cap triangles.
+
+        Rectangle section (4 vertices) along a 2-point path:
+        - Side faces: 1 segment × 4 quads = 4 quads
+        - Start cap: 2 fan triangles (4 - 2 = 2)
+        - End cap:   2 fan triangles
+        - Total:     4 quads + 4 triangles = 8 cells
+        - Vertices:  2 rings × 4 section pts = 8 points
+        """
+        from imas_ink.three_d.primitives import sweep_section_along_path
+
+        section = np.array(
+            [[-0.5, -0.5], [0.5, -0.5], [0.5, 0.5], [-0.5, 0.5]]
+        )
+        path = np.array([[0, 0, 0], [5, 0, 0]], dtype=float)
+        mesh = sweep_section_along_path(section, path, frame="frenet")
+
+        n_sec = 4
+        n_path = 2
+        n_side_quads = (n_path - 1) * n_sec  # 4
+        n_cap_tris = 2 * (n_sec - 2)  # 4
+
+        assert mesh.n_points == n_path * n_sec  # 8
+        assert mesh.n_cells == n_side_quads + n_cap_tris  # 8
+
+    def test_sweep_section_closed_path_no_endcaps(self):
+        """Closed-loop (ring) path produces no extra cap faces."""
+        from imas_ink.three_d.primitives import sweep_section_along_path
+
+        section = np.array(
+            [[-0.1, -0.1], [0.1, -0.1], [0.1, 0.1], [-0.1, 0.1]]
+        )
+        # Circular ring: first == last point
+        theta = np.linspace(0, 2 * np.pi, 21)
+        path = np.column_stack(
+            [3.0 * np.cos(theta), 3.0 * np.sin(theta), np.zeros_like(theta)]
+        )
+        mesh = sweep_section_along_path(section, path, frame="frenet")
+
+        n_sec = 4
+        n_path = len(path)
+        # Closed: n_segments = n_path, no cap faces
+        n_side_quads = n_path * n_sec
+        assert mesh.n_cells == n_side_quads
