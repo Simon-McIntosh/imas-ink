@@ -13,24 +13,40 @@ if TYPE_CHECKING:
     import pyvista as pv
 
 
-# Default colour palette
+# Tokamak-appropriate non-primary palette: warm copper PF, slate-steel TF,
+# gunmetal vessel, warm tungsten first wall.  Inspired by ITER engineering
+# renders rather than CAD primary colours.
 _COLORS = {
-    "pf": "#2266cc",
-    "cs": "#cc6622",
-    "tf": "#888888",
-    "vessel": "#9aa0a6",
-    "first_wall": "#d7c58f",
-    "wall": "#cccccc",  # legacy fallback
+    "pf": "#b87333",          # warm copper / bronze (PF coils)
+    "cs": "#8b5a3c",          # darker bronze (central solenoid stack)
+    "tf": "#5a6470",          # slate steel (TF case)
+    "vessel": "#3c3f44",      # gunmetal (VV)
+    "first_wall": "#9a8c6c",  # warm tungsten / inconel (FW)
+    "wall": "#9aa0a6",        # legacy fallback
 }
 
-# Camera presets: (position, focal_point, viewup).  The iso preset sits
-# further back than the old 30/20/15 so the full machine fits with room
-# for cut-away animations.
+# Camera presets: (position, focal_point, viewup).
+#
+# - ``iso``        : far iso view, the full machine fits with room for
+#                    cut-away animations.
+# - ``iso_close``  : original close-in iso for unclipped renders.
+# - ``poloidal``   : looking along +x (one half of the torus).
+# - ``toroidal``   : looking down -z onto the equatorial plane.
+# - ``cutaway_rhs``: ~normal to the xz cut plane (camera on +y side),
+#                    tilted slightly toward +x and slightly above the
+#                    midplane.  Use with ``clip_normal=(0,1,0)`` to keep
+#                    the y >= 0 half-torus and view straight onto the
+#                    RHS poloidal cross-section.
 _CAMERA_PRESETS: dict[str, tuple[tuple, tuple, tuple]] = {
     "iso": ((42, 30, 22), (0, 0, 0), (0, 0, 1)),
     "iso_close": ((30, 20, 15), (0, 0, 0), (0, 0, 1)),
     "poloidal": ((25, 0, 0), (0, 0, 0), (0, 0, 1)),
     "toroidal": ((0, 0, 30), (0, 0, 0), (0, 1, 0)),
+    # Camera viewed from -y (the cut side, since clip_normal=(0,1,0) keeps
+    # y>=0 material): looking back along +y at the y=0 poloidal cross-
+    # section.  Camera sits slightly inboard of the major-radius RHS so
+    # the right-hand-side first wall + TF cut faces sit centre-frame.
+    "cutaway_rhs": ((4, -28, 6), (6, 0, 1), (0, 0, 1)),
 }
 
 
@@ -110,29 +126,55 @@ def render_coilset(
 
     pl = pv.Plotter(off_screen=off_screen, window_size=list(window_size))
     pl.set_background("white")
+    # 3-point lighting kit (key + fill + back) for proper shading.
+    pl.enable_lightkit()
+    try:
+        pl.enable_anti_aliasing("ssaa")
+    except Exception:
+        # Older pyvista may not support ssaa; fall back silently.
+        pass
 
     def _maybe_clip(mesh: pv.PolyData) -> pv.PolyData:
         if clip_normal is None or mesh.n_points == 0:
             return mesh
         return mesh.clip(normal=clip_normal, origin=clip_origin, invert=False)
 
-    # PF / CS coils
+    def _add(mesh, **kwargs):
+        if mesh is None or mesh.n_points == 0:
+            return
+        pl.add_mesh(mesh, **kwargs)
+
+    # PF / CS coils — copper/bronze with mild PBR metallic shading.
     if pf_active is not None:
         pf_meshes = extract_pf_coils(pf_active)
         for cm in pf_meshes:
             color = _COLORS["cs"] if cm.metadata.get("is_cs_segment") else _COLORS["pf"]
-            pl.add_mesh(_maybe_clip(cm.mesh), color=color, opacity=1.0, label=cm.name)
+            _add(
+                _maybe_clip(cm.mesh),
+                color=color,
+                opacity=1.0,
+                label=cm.name,
+                pbr=True,
+                metallic=0.6,
+                roughness=0.45,
+                smooth_shading=True,
+            )
 
-    # TF coils
+    # TF coils — brushed steel: PBR with higher metallic factor.
+    # Flat shading (smooth_shading=False) preserves the rectangular
+    # cross-section's edges instead of rounding them off.
     if tf_ids is not None:
         tf_meshes = extract_tf_coils(tf_ids)
         for cm in tf_meshes:
-            pl.add_mesh(
+            _add(
                 _maybe_clip(cm.mesh),
                 color=_COLORS["tf"],
                 opacity=tf_opacity,
                 label=cm.name,
-                smooth_shading=True,
+                pbr=True,
+                metallic=0.7,
+                roughness=0.4,
+                smooth_shading=False,
             )
 
     # Wall: vessel (outer) + first wall (plasma-facing).
@@ -146,15 +188,21 @@ def render_coilset(
                 continue
             if name == "vessel":
                 colour, opacity = _COLORS["vessel"], vessel_opacity
+                metallic, roughness = 0.55, 0.55
             elif name == "first_wall":
                 colour, opacity = _COLORS["first_wall"], first_wall_opacity
+                metallic, roughness = 0.4, 0.6
             else:
                 colour, opacity = _COLORS["wall"], 1.0
-            pl.add_mesh(
+                metallic, roughness = 0.4, 0.6
+            _add(
                 _maybe_clip(mesh),
                 color=colour,
                 opacity=opacity,
                 label=name,
+                pbr=True,
+                metallic=metallic,
+                roughness=roughness,
                 smooth_shading=True,
             )
 

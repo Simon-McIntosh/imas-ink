@@ -195,7 +195,7 @@ def extract_tf_coils(tf, n_coils: int | None = None) -> list[CoilMesh]:
             for k in range(total_n):
                 phi_offset = 2 * np.pi * k / total_n
                 rotated = _rotate_z(centerline_xyz, phi_offset)
-                mesh = sweep_section_along_path(section, rotated, frame="frenet")
+                mesh = sweep_section_along_path(section, rotated, frame="planar")
                 coils.append(
                     CoilMesh(
                         name=f"TF{k + 1}",
@@ -204,7 +204,7 @@ def extract_tf_coils(tf, n_coils: int | None = None) -> list[CoilMesh]:
                     )
                 )
         else:
-            mesh = sweep_section_along_path(section, centerline_xyz, frame="frenet")
+            mesh = sweep_section_along_path(section, centerline_xyz, frame="planar")
             coils.append(
                 CoilMesh(
                     name=f"TF{idx + 1}",
