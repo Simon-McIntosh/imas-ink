@@ -43,6 +43,9 @@ dependencies = [
   "imas-python>=2.2",
   "netCDF4>=1.6",
   "h5py>=3.10",
+  # Security floor constraints for transitive dependencies
+  "urllib3>=2.7.0",          # CVE-2026-44432, CVE-2026-44431
+  "python-multipart>=0.0.27",  # CVE-2026-42561, CVE-2026-40347
 ]
 
 [project.optional-dependencies]
