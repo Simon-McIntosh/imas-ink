@@ -52,6 +52,8 @@ from .animate import animate_pulse
 from .components import (
     CoilRects,
     FluxContours,
+    FluxLoops,
+    MagneticProbes,
     OPointMarker,
     RadialProfile,
     ScatterPoints,
@@ -89,6 +91,15 @@ from .io import render_to_bytes, save_html, save_png
 
 # -- matplotlib backend ------------------------------------------------------
 from .mpl import render_mpl
+
+# -- figure builders ---------------------------------------------------------
+from .figures import (
+    equilibrium_chart_alt,
+    equilibrium_figure_mpl,
+    geometry_figure_mpl,
+    radial_profile_figure_mpl,
+    time_trace_figure_mpl,
+)
 
 # -- style -------------------------------------------------------------------
 from .style import DEFAULT_STYLE, InkStyle
