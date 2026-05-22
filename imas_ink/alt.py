@@ -20,6 +20,8 @@ import numpy as np
 from .components import (
     CoilRects,
     FluxContours,
+    FluxLoops,
+    MagneticProbes,
     OPointMarker,
     RadialProfile,
     ScatterPoints,
@@ -93,6 +95,8 @@ _RENDERERS: dict[type, str] = {
     TimeSeries: "_render_timeseries_alt",
     RadialProfile: "_render_radialprofile_alt",
     ScatterPoints: "_render_scatter_alt",
+    MagneticProbes: "_render_probes_alt",
+    FluxLoops: "_render_fluxloops_alt",
 }
 
 
@@ -413,4 +417,64 @@ def _render_scatter_alt(sc: ScatterPoints) -> alt.Chart:
             tooltip=["x:Q", "y:Q"],
         )
         .properties(width=style.altair_width, height=300)
+    )
+
+
+def _render_probes_alt(probes: MagneticProbes) -> alt.Chart | alt.LayerChart:
+    """Render :class:`MagneticProbes` — positions as squares, optional direction ticks."""
+    import altair as alt
+    import pandas as pd
+
+    style = probes.style
+    r = np.asarray(probes.positions_r)
+    z = np.asarray(probes.positions_z)
+    ang = np.asarray(probes.angles)
+
+    if r.size == 0:
+        return alt.Chart(pd.DataFrame({"r": [], "z": []})).mark_point()
+
+    df = pd.DataFrame({"r": r, "z": z})
+    markers = (
+        alt.Chart(df)
+        .mark_point(shape="square", color=style.probe_color, size=style.probe_markersize**2)
+        .encode(x=alt.X("r:Q", title="R [m]"), y=alt.Y("z:Q", title="Z [m]"))
+    )
+
+    finite = np.isfinite(ang)
+    if np.any(finite):
+        half = style.probe_arrow_length / 2.0
+        r_f, z_f, a_f = r[finite], z[finite], ang[finite]
+        tick_df = pd.DataFrame({
+            "r": r_f - half * np.cos(a_f),
+            "z": z_f - half * np.sin(a_f),
+            "r2": r_f + half * np.cos(a_f),
+            "z2": z_f + half * np.sin(a_f),
+        })
+        ticks = (
+            alt.Chart(tick_df)
+            .mark_rule(color=style.probe_color, strokeWidth=style.probe_arrow_linewidth)
+            .encode(x="r:Q", y="z:Q", x2="r2:Q", y2="z2:Q")
+        )
+        return alt.layer(markers, ticks)
+
+    return markers
+
+
+def _render_fluxloops_alt(loops: FluxLoops) -> alt.Chart:
+    """Render :class:`FluxLoops` — positions as small circles."""
+    import altair as alt
+    import pandas as pd
+
+    style = loops.style
+    r = np.asarray(loops.positions_r)
+    z = np.asarray(loops.positions_z)
+
+    if r.size == 0:
+        return alt.Chart(pd.DataFrame({"r": [], "z": []})).mark_point()
+
+    df = pd.DataFrame({"r": r, "z": z})
+    return (
+        alt.Chart(df)
+        .mark_point(shape="circle", color=style.flux_loop_color, size=style.flux_loop_markersize**2)
+        .encode(x=alt.X("r:Q", title="R [m]"), y=alt.Y("z:Q", title="Z [m]"))
     )
