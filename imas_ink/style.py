@@ -90,6 +90,12 @@ class InkStyle:
     zorder_flux_loops: int = 6
     zorder_label: int = 7
 
+    # Vacuum / SOL contours (outside LCFS, full grid, no wall clip)
+    vacuum_color: str = "#aaaaaa"
+    vacuum_linewidth: float = 0.4
+    vacuum_linestyle: str = "solid"
+    vacuum_n_levels: int = 10
+
     # 1D plots
     trace_linewidth: float = 1.2
     trace_markersize: float = 3.0

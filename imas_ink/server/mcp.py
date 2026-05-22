@@ -123,6 +123,7 @@ class PlotProvider:
         time_index: int = 0,
         n_levels: int = 6,
         show_xpoints: bool = True,
+        show_vacuum_surfaces: bool = False,
         backend: str = "mpl",
     ) -> str:
         """Render a single-frame poloidal cross-section.
@@ -137,6 +138,10 @@ class PlotProvider:
             Number of interior flux surface contours.
         show_xpoints : bool
             Whether to show X-point markers.
+        show_vacuum_surfaces : bool
+            Whether to render vacuum / SOL contours in light grey outside
+            the LCFS.  Contours span the full psi range on the grid and
+            are not clipped — useful for diagnosing unconverged frames.
         backend : str
             ``"mpl"`` for PNG, ``"alt"`` for HTML.
 
@@ -173,7 +178,9 @@ class PlotProvider:
             chart = equilibrium_chart_alt(sl, geom, style=style)
             return chart.to_html()
         else:
-            fig, _ax = equilibrium_figure_mpl(sl, geom, style=style)
+            fig, _ax = equilibrium_figure_mpl(
+                sl, geom, style=style, show_vacuum_surfaces=show_vacuum_surfaces
+            )
             png_bytes = render_to_bytes(fig)
             return base64.b64encode(png_bytes).decode("ascii")
 

@@ -121,6 +121,51 @@ class ContourExtractor:
         levels = make_levels(psi_axis, psi_bnd, n)
         return [self.lines_at(lev) for lev in levels]
 
+    def vacuum_surfaces(
+        self,
+        psi_axis: float,
+        psi_bnd: float,
+        n: int = 10,
+    ) -> list[list[np.ndarray]]:
+        """Extract *n* vacuum / SOL flux surface isolines outside the LCFS.
+
+        Levels span from just outside the LCFS to the extremum of the psi
+        field on the computational grid — automatically covering the full
+        vacuum region regardless of COCOS sign convention.  Contours are
+        **not** clipped so that unconverged slices (where the LCFS may lie
+        outside the first wall) remain fully visible.
+
+        The level spacing is computed from the vacuum psi range
+        ``(psi_bnd, psi_grid_edge)`` so that *n* contours are distributed
+        evenly across the entire vacuum field rather than being cramped near
+        the LCFS.
+
+        Parameters
+        ----------
+        psi_axis : float
+            Poloidal flux at the magnetic axis (used only to determine the
+            sign convention / vacuum direction).
+        psi_bnd : float
+            Poloidal flux at the last closed flux surface.
+        n : int
+            Number of vacuum levels.  Default 10.
+
+        Returns
+        -------
+        list[list[np.ndarray]]
+            ``segments[level_index]`` is a list of ``(N, 2)`` arrays.
+        """
+        # Grid extremum in the vacuum direction (works for either COCOS sign)
+        if psi_axis < psi_bnd:
+            # Vacuum psi is LARGER than psi_bnd (e.g. COCOS-3 / WEST DDv3)
+            psi_grid_edge = float(self.psi_2d.max())
+        else:
+            # Vacuum psi is SMALLER than psi_bnd (e.g. COCOS-17 / DDv4)
+            psi_grid_edge = float(self.psi_2d.min())
+        # n evenly-spaced levels between LCFS and grid edge (endpoints excluded)
+        levels = np.linspace(psi_bnd, psi_grid_edge, n + 2)[1:-1]
+        return [self.lines_at(lev) for lev in levels]
+
     def separatrix(self, psi_bnd: float) -> list[np.ndarray]:
         """Extract the separatrix (LCFS) contour segments.
 

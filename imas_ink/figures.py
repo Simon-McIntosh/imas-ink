@@ -208,6 +208,7 @@ def equilibrium_figure_mpl(
     mask_pfr_flag: bool = True,
     show_probes: bool = True,
     show_flux_loops: bool = True,
+    show_vacuum_surfaces: bool = False,
 ) -> tuple[matplotlib.figure.Figure, Axes]:
     """Build a complete poloidal cross-section figure.
 
@@ -232,6 +233,14 @@ def equilibrium_figure_mpl(
         If *True* and probe positions are available, render probe markers.
     show_flux_loops : bool
         If *True* and flux loop positions are available, render loop markers.
+    show_vacuum_surfaces : bool
+        If *True*, render vacuum / SOL flux surface contours in light grey
+        outside the LCFS.  Levels span the full psi range on the
+        computational grid and are **not** clipped to the wall — this makes
+        unconverged frames (LCFS outside the first wall, spurious O-points)
+        fully visible.  Uses :attr:`InkStyle.vacuum_color`,
+        :attr:`InkStyle.vacuum_linewidth`, and
+        :attr:`InkStyle.vacuum_n_levels`.
 
     Returns
     -------
@@ -291,6 +300,22 @@ def equilibrium_figure_mpl(
     render_mpl(ax, opoint)
     render_mpl(ax, xpoints)
     render_mpl(ax, timelabel)
+
+    # --- vacuum surfaces (unclipped, full grid) ---
+    if show_vacuum_surfaces:
+        import dataclasses
+
+        vac_style = dataclasses.replace(
+            style,
+            flux_color=style.vacuum_color,
+            flux_linewidth=style.vacuum_linewidth,
+            flux_linestyle=style.vacuum_linestyle,
+        )
+        cx_vac = ContourExtractor(sl.R_2d, sl.Z_2d, sl.psi_2d)
+        vac_segs = cx_vac.vacuum_surfaces(
+            sl.psi_axis, sl.psi_boundary, n=style.vacuum_n_levels
+        )
+        render_mpl(ax, FluxContours(vac_segs, style=vac_style))
 
     return fig, ax
 
