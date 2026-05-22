@@ -44,7 +44,7 @@ class InkServer:
     >>> list(server.tool_names())  # doctest: +NORMALIZE_WHITESPACE
     ['plot_equilibrium', 'plot_geometry', 'plot_time_traces',
      'plot_convergence', 'animate_pulse', 'plot_radial_profiles',
-     'plot_coilset_3d', 'repl']
+     'plot_coilset_3d', 'serve_chart', 'repl']
     """
 
     def __init__(self, name: str = "imas-ink") -> None:
@@ -116,6 +116,7 @@ class PlotProvider:
         mcp.tool()(self.animate_pulse)
         mcp.tool()(self.plot_radial_profiles)
         mcp.tool()(self.plot_coilset_3d)
+        mcp.tool()(self.serve_chart)
 
     async def plot_equilibrium(
         self,
@@ -527,6 +528,48 @@ class PlotProvider:
         )
         return str(outpath)
 
+    async def serve_chart(
+        self,
+        html: str,
+        port: int = 8766,
+    ) -> str:
+        """Push HTML to the ink display server for live browser viewing.
+
+        Starts the display server automatically on first call (lazy init).
+        The server listens on ``127.0.0.1:PORT`` and uses Server-Sent
+        Events to push a reload notification to any open browser tab
+        whenever new HTML is pushed.
+
+        Parameters
+        ----------
+        html : str
+            Self-contained HTML string — typically the output of a
+            ``plot_*(..., backend="alt")`` call or ``chart.to_html()``.
+        port : int
+            Display server port (default 8766). Must match the SSH tunnel
+            forwarding rule on the client side.
+
+        Returns
+        -------
+        str
+            Human-readable confirmation including the server URL.
+
+        Notes
+        -----
+        Requires an SSH tunnel forwarding port *port* from the remote
+        host to localhost on the workstation::
+
+            ssh -L 8766:localhost:8766 <host>
+            # or: imas-codex tunnel start iter --ink
+        """
+        from .display import push_chart
+
+        url = push_chart(html, port=port)
+        return (
+            f"Chart pushed to {url}\n"
+            f"Open that URL in your browser (SSH tunnel to port {port} must be active)."
+        )
+
 
 def _register_repl(mcp) -> None:
     """Register the namespaced stateful REPL tool on *mcp*."""
@@ -553,3 +596,4 @@ def _register_repl(mcp) -> None:
     @mcp.tool(description=repl_description)
     def repl(code: str, namespace: str = "default", reset: bool = False) -> str:
         return _repl(code, namespace=namespace, reset=reset)
+
