@@ -31,6 +31,7 @@ from .components import (
     WallOutline,
     XPointMarkers,
 )
+from .geometry import classify_probe_components
 
 if TYPE_CHECKING:
     import altair as alt
@@ -421,7 +422,18 @@ def _render_scatter_alt(sc: ScatterPoints) -> alt.Chart:
 
 
 def _render_probes_alt(probes: MagneticProbes) -> alt.Chart | alt.LayerChart:
-    """Render :class:`MagneticProbes` — positions as squares, optional direction ticks."""
+    """Render :class:`MagneticProbes` — positions as squares, optional direction ticks.
+
+    The direction tick is drawn along each probe's IMAS ``poloidal_angle``
+    θ, which the Data Dictionary defines as the *sensor normal* (coil
+    axis = measured-field direction), clockwise from +R̂.  The screen-space
+    unit vector is n = (cos θ, -sin θ) — identical to the matplotlib
+    backend and to EFIT's forward model — so the tick shows the true
+    sensing axis with no offset.  The (undirected) tick is centred on the
+    probe.  Co-located multi-component sensors are coloured by component
+    so a tangential B-pol tick is distinct from a co-located
+    normal-component tick.
+    """
     import altair as alt
     import pandas as pd
 
@@ -433,27 +445,50 @@ def _render_probes_alt(probes: MagneticProbes) -> alt.Chart | alt.LayerChart:
     if r.size == 0:
         return alt.Chart(pd.DataFrame({"r": [], "z": []})).mark_point()
 
-    df = pd.DataFrame({"r": r, "z": z})
+    comp = classify_probe_components(r, z, ang)
+    palette = [style.probe_color, style.probe_secondary_color]
+
+    def _comp_color(c: int) -> str:
+        return palette[c] if c < len(palette) else style.probe_secondary_color
+
+    color_arr = [_comp_color(int(c)) for c in comp]
+    df = pd.DataFrame({"r": r, "z": z, "color": color_arr})
     markers = (
         alt.Chart(df)
-        .mark_point(shape="square", color=style.probe_color, size=style.probe_markersize**2)
-        .encode(x=alt.X("r:Q", title="R [m]"), y=alt.Y("z:Q", title="Z [m]"))
+        .mark_point(shape="square", size=style.probe_markersize**2)
+        .encode(
+            x=alt.X("r:Q", title="R [m]"),
+            y=alt.Y("z:Q", title="Z [m]"),
+            color=alt.Color("color:N", scale=None, legend=None),
+        )
     )
 
     finite = np.isfinite(ang)
     if np.any(finite):
         half = style.probe_arrow_length / 2.0
         r_f, z_f, a_f = r[finite], z[finite], ang[finite]
-        tick_df = pd.DataFrame({
-            "r": r_f - half * np.cos(a_f),
-            "z": z_f - half * np.sin(a_f),
-            "r2": r_f + half * np.cos(a_f),
-            "z2": z_f + half * np.sin(a_f),
-        })
+        c_f = [_comp_color(int(c)) for c in comp[finite]]
+        # n = (cos θ, -sin θ): DD sensor-normal / coil-axis direction
+        # (clockwise θ from +R), centred and undirected.
+        tick_df = pd.DataFrame(
+            {
+                "r": r_f - half * np.cos(a_f),
+                "z": z_f + half * np.sin(a_f),
+                "r2": r_f + half * np.cos(a_f),
+                "z2": z_f - half * np.sin(a_f),
+                "color": c_f,
+            }
+        )
         ticks = (
             alt.Chart(tick_df)
-            .mark_rule(color=style.probe_color, strokeWidth=style.probe_arrow_linewidth)
-            .encode(x="r:Q", y="z:Q", x2="r2:Q", y2="z2:Q")
+            .mark_rule(strokeWidth=style.probe_arrow_linewidth)
+            .encode(
+                x="r:Q",
+                y="z:Q",
+                x2="r2:Q",
+                y2="z2:Q",
+                color=alt.Color("color:N", scale=None, legend=None),
+            )
         )
         return alt.layer(markers, ticks)
 

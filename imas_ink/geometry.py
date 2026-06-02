@@ -288,6 +288,119 @@ def close_polygon(vertices: np.ndarray) -> np.ndarray:
     return vertices
 
 
+def classify_probe_components(
+    positions_r: np.ndarray,
+    positions_z: np.ndarray,
+    angles: np.ndarray,
+    *,
+    position_tol: float = 0.01,
+    angle_tol_deg: float = 20.0,
+) -> np.ndarray:
+    r"""Label each magnetic probe by its measurement-component family.
+
+    Many tokamaks (WEST, ITER, ...) mount **multi-component** magnetic
+    sensors: two or more pickup coils share one ``(R, Z)`` location but
+    have distinct coil axes — typically one tangential and one normal to
+    the wall, ~90° apart.  Each coil's ``poloidal_angle`` faithfully
+    encodes its own sensor-normal (= coil-axis = measured-field)
+    direction per the IMAS Data Dictionary
+    (``magnetics/b_field_pol_probe/poloidal_angle``: "Angle of the sensor
+    normal vector ... clockwise theta-like angle ... zero towards
+    increasing major radius").
+
+    Rendering every probe in one colour collapses these distinct
+    components, so a tangential B-pol tick is visually indistinguishable
+    from a co-located normal-component tick — the figure then *looks* as
+    though B-pol probes point normal to the wall.  This function assigns a
+    stable per-probe component index so the renderers can colour each
+    component distinctly **without** altering the DD-defined angle.
+
+    The discriminator is purely geometric and machine-agnostic: probes
+    are grouped by co-location (within *position_tol* metres); within a
+    group, probes are partitioned by orientation (axes differing by more
+    than *angle_tol_deg*, treated as **undirected** — i.e. modulo 180° —
+    because a pickup-coil sensitivity axis is a line, not an arrow).  The
+    first orientation encountered in each group is component 0, the next
+    distinct orientation is component 1, and so on.  Probes with no
+    distinctly-oriented co-located partner are all component 0.  This
+    fires on genuine multi-component sensors (WEST 2-component pairs,
+    ITER saddle sensors) and does **not** fire on single-orientation
+    arrays (AUG, TCV, MAST-U, HL-3) or on toroidally-replicated duplicate
+    probes that share one orientation.
+
+    Parameters
+    ----------
+    positions_r, positions_z : np.ndarray
+        Probe ``(R, Z)`` positions, shape ``(N,)``.
+    angles : np.ndarray
+        Probe ``poloidal_angle`` values in radians, shape ``(N,)``.
+        Non-finite (NaN) entries denote probes without an orientation;
+        they are always assigned component 0.
+    position_tol : float
+        Co-location tolerance in metres.  Default ``0.01`` (1 cm).
+    angle_tol_deg : float
+        Two co-located probes are the *same* component if their axes
+        (modulo 180°) differ by at most this many degrees.  Default
+        ``20``.
+
+    Returns
+    -------
+    np.ndarray
+        Integer component index per probe, shape ``(N,)``.  ``0`` for the
+        primary component (and all singletons); ``1, 2, ...`` for further
+        distinct orientations sharing a location.
+
+    Examples
+    --------
+    >>> r = np.array([3.0, 3.0, 5.0])
+    >>> z = np.array([0.0, 0.0, 0.0])
+    >>> # two co-located probes 90 deg apart, plus one lone probe
+    >>> a = np.array([0.0, np.pi / 2, 0.0])
+    >>> classify_probe_components(r, z, a).tolist()
+    [0, 1, 0]
+    """
+    r = np.asarray(positions_r, dtype=float)
+    z = np.asarray(positions_z, dtype=float)
+    ang = np.asarray(angles, dtype=float)
+    n = r.size
+    comp = np.zeros(n, dtype=int)
+    if n == 0:
+        return comp
+
+    tol2 = position_tol * position_tol
+    atol = np.radians(angle_tol_deg)
+    assigned = np.zeros(n, dtype=bool)
+
+    for i in range(n):
+        if assigned[i]:
+            continue
+        # Collect every probe co-located with i (including i itself).
+        same_pos = np.where((r - r[i]) ** 2 + (z - z[i]) ** 2 <= tol2)[0]
+        # Within this location, bucket probes by undirected orientation.
+        rep_angles: list[float] = []  # one representative angle per component
+        for j in same_pos:
+            aj = ang[j]
+            if not np.isfinite(aj):
+                comp[j] = 0  # orientation-less probes: primary bucket
+                assigned[j] = True
+                continue
+            placed = False
+            for k, rep in enumerate(rep_angles):
+                # Undirected angular distance: |Δ| modulo pi, in [0, pi/2].
+                d = abs((aj - rep) % np.pi)
+                d = min(d, np.pi - d)
+                if d <= atol:
+                    comp[j] = k
+                    placed = True
+                    break
+            if not placed:
+                rep_angles.append(aj)
+                comp[j] = len(rep_angles) - 1
+            assigned[j] = True
+
+    return comp
+
+
 def is_closed_contour(codes: np.ndarray | None) -> bool:
     """Return True if a contourpy path code array ends with CLOSEPOLY (79).
 

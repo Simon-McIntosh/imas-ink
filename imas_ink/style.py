@@ -57,6 +57,13 @@ class InkStyle:
 
     # Magnetic probes (B-pol)
     probe_color: str = "#888888"
+    # Second colour for the secondary orientation component of co-located
+    # multi-component sensors (e.g. WEST/ITER 2-component probe pairs).
+    # The direction tick is drawn along each probe's DD poloidal_angle
+    # (sensor-normal = coil-axis = measured-field axis); the two distinct
+    # axes at one location are coloured differently so a tangential B-pol
+    # tick is not confused with a co-located normal-component tick.
+    probe_secondary_color: str = "#cc7722"
     probe_markersize: float = 2.5
     probe_arrow_length: float = 0.12
     probe_arrow_linewidth: float = 0.6

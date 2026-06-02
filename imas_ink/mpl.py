@@ -28,6 +28,7 @@ from .components import (
     WallOutline,
     XPointMarkers,
 )
+from .geometry import classify_probe_components
 
 if TYPE_CHECKING:
     from matplotlib.axes import Axes
@@ -196,7 +197,27 @@ def _render_xpoints_mpl(ax: Axes, xpoints: XPointMarkers) -> None:
 
 
 def _render_probes_mpl(ax: Axes, probes: MagneticProbes) -> None:
-    """Plot B-pol magnetic probes with optional orientation tick marks."""
+    """Plot B-pol magnetic probes with optional orientation tick marks.
+
+    The direction tick is drawn **along** each probe's IMAS
+    ``poloidal_angle`` θ.  Per the Data Dictionary
+    (``magnetics/b_field_pol_probe/poloidal_angle``) θ is the angle of the
+    *sensor normal vector* — the vector parallel to the coil axis, which
+    for a pickup coil is the direction of the magnetic-field component the
+    probe measures — taken clockwise (COCOS-11/17 θ-like) from +R̂, with
+    θ = 0 pointing towards increasing major radius.  In (R, Z) screen
+    space that unit vector is n = (cos θ, -sin θ) (the -sin maps the DD's
+    clockwise convention onto matplotlib's CCW axes).  EFIT consumes the
+    identical vector (``src/imas.cpp``: ``n = cos θ R̂ - sin θ Ẑ``), so the
+    tick shows the probe's true sensing axis with no offset.
+
+    The sensitivity axis is *undirected* (a coil measures ±B along its
+    axis equally), so the tick is centred on the probe rather than drawn
+    one-sided.  Co-located multi-component sensors (e.g. WEST/ITER
+    tangential+normal pairs sharing one location, ~90° apart) are coloured
+    by component so a tangential B-pol tick is visually distinct from a
+    co-located normal-component tick.
+    """
     s = probes.style
     r = np.asarray(probes.positions_r)
     z = np.asarray(probes.positions_z)
@@ -205,11 +226,17 @@ def _render_probes_mpl(ax: Axes, probes: MagneticProbes) -> None:
     if r.size == 0:
         return
 
+    comp = classify_probe_components(r, z, ang)
+    palette = [s.probe_color, s.probe_secondary_color]
+
+    def _comp_color(c: int) -> str:
+        return palette[c] if c < len(palette) else s.probe_secondary_color
+
     ax.scatter(
         r,
         z,
         s=s.probe_markersize**2,
-        c=s.probe_color,
+        c=[_comp_color(int(c)) for c in comp],
         marker="o",
         linewidths=0,
         zorder=s.zorder_probes,
@@ -217,19 +244,20 @@ def _render_probes_mpl(ax: Axes, probes: MagneticProbes) -> None:
 
     finite = np.isfinite(ang)
     if np.any(finite):
-        L = s.probe_arrow_length
-        r_f = r[finite]
-        z_f = z[finite]
-        a_f = ang[finite]
-        # IMAS poloidal_angle is clockwise from +R (COCOS 17).
-        # Matplotlib uses CCW: direction = (cos(θ), -sin(θ)) for CW θ.
+        half = s.probe_arrow_length / 2.0
+        idx = np.where(finite)[0]
+        # n = (cos θ, -sin θ): DD sensor-normal / coil-axis / measured-field
+        # direction (clockwise θ from +R).  Centre the (undirected) tick.
         segs = [
-            [(r_f[i], z_f[i]), (r_f[i] + L * np.cos(a_f[i]), z_f[i] - L * np.sin(a_f[i]))]
-            for i in range(r_f.size)
+            [
+                (r[i] - half * np.cos(ang[i]), z[i] + half * np.sin(ang[i])),
+                (r[i] + half * np.cos(ang[i]), z[i] - half * np.sin(ang[i])),
+            ]
+            for i in idx
         ]
         lc = LineCollection(
             segs,
-            colors=s.probe_color,
+            colors=[_comp_color(int(comp[i])) for i in idx],
             linewidths=s.probe_arrow_linewidth,
             zorder=s.zorder_probes,
         )
