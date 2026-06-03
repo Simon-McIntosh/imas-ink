@@ -139,15 +139,31 @@ def _render_sep_mpl(
 
 
 def _render_wall_mpl(ax: Axes, wall: WallOutline) -> None:
-    """Plot the first-wall outline polygon."""
+    """Plot all first-wall unit outlines.
+
+    When ``wall.wall_units`` is populated (new multi-unit path), each unit is
+    drawn as a separate line.  Falls back to the single ``wall_r``/``wall_z``
+    pair for backward compatibility when ``wall_units`` is empty.
+    """
     s = wall.style
-    ax.plot(
-        wall.wall_r,
-        wall.wall_z,
-        color=s.wall_color,
-        linewidth=s.wall_linewidth,
-        zorder=s.zorder_wall,
-    )
+    units = getattr(wall, "wall_units", None)
+    if units:
+        for r_u, z_u in units:
+            ax.plot(
+                r_u,
+                z_u,
+                color=s.wall_color,
+                linewidth=s.wall_linewidth,
+                zorder=s.zorder_wall,
+            )
+    else:
+        ax.plot(
+            wall.wall_r,
+            wall.wall_z,
+            color=s.wall_color,
+            linewidth=s.wall_linewidth,
+            zorder=s.zorder_wall,
+        )
 
 
 def _render_coils_mpl(ax: Axes, coils: CoilRects) -> None:

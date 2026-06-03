@@ -169,7 +169,12 @@ def geometry_figure_mpl(
 
     # --- geometry components ---
     coils = CoilRects(geom.coil_rects, style=style)
-    wall = WallOutline(geom.wall_r, geom.wall_z, style=style)
+    wall = WallOutline(
+        geom.wall_r,
+        geom.wall_z,
+        wall_units=geom.wall_units if geom.wall_units else [],
+        style=style,
+    )
 
     render_mpl(ax, coils)
     render_mpl(ax, wall)
@@ -200,6 +205,64 @@ def geometry_figure_mpl(
     return fig, ax
 
 
+def _render_containment_annotation(ax: "Axes", containment: dict) -> None:
+    """Render wall-containment annotation text onto *ax*.
+
+    Drawn UNCLIPPED (axes-transform) so it is always visible regardless of
+    the wall clip path.  Primary signal is ``lcfs_outside`` (geometric vertex
+    count); ``frac`` is secondary and always shown caveated.
+
+    Styling:
+      - ``lcfs_outside > 0`` → red text (boundary exits wall).
+      - ``lcfs_outside == 0`` → grey text (wall contained).
+      - ``frac`` line is always grey (secondary, may be > 1 on healthy diverted
+        plasmas due to private-flux wall vertices — not a bug indicator).
+    """
+    lcfs_outside = containment.get("lcfs_outside", 0)
+    frac = containment.get("frac", float("nan"))
+    boundary_type = containment.get("boundary_type", None)
+    n_xpoints = containment.get("n_xpoints", None)
+
+    # Primary line: lcfs_outside count (geometric signal)
+    primary_color = "red" if lcfs_outside > 0 else "gray"
+    primary_text = f"lcfs_outside={lcfs_outside}"
+
+    # Secondary line: psi-frac (caveated — may be >1 on diverted machines)
+    try:
+        frac_val = float(frac)
+        frac_str = f"psi-frac={frac_val:.2f} (secondary)"
+    except (TypeError, ValueError):
+        frac_str = "psi-frac=N/A (secondary)"
+
+    # Optional topology info
+    extra_parts = []
+    if boundary_type is not None:
+        _btype_name = {1: "limited", 2: "diverted"}.get(boundary_type, f"type={boundary_type}")
+        extra_parts.append(_btype_name)
+    if n_xpoints is not None:
+        extra_parts.append(f"{n_xpoints} X-pt")
+    extra_str = "  ".join(extra_parts)
+
+    lines = [primary_text, frac_str]
+    if extra_str:
+        lines.append(extra_str)
+    annotation = "\n".join(lines)
+
+    ax.text(
+        0.03,
+        0.03,
+        annotation,
+        transform=ax.transAxes,
+        fontsize=7,
+        verticalalignment="bottom",
+        horizontalalignment="left",
+        color=primary_color,
+        bbox={"boxstyle": "round,pad=0.2", "facecolor": "white", "alpha": 0.7,
+              "edgecolor": primary_color},
+        zorder=20,
+    )
+
+
 def equilibrium_figure_mpl(
     sl: EquilibriumSlice,
     geom: MachineGeometry,
@@ -209,6 +272,7 @@ def equilibrium_figure_mpl(
     show_probes: bool = True,
     show_flux_loops: bool = True,
     show_vacuum_surfaces: bool = False,
+    containment_result: dict | None = None,
 ) -> tuple[matplotlib.figure.Figure, Axes]:
     """Build a complete poloidal cross-section figure.
 
@@ -241,6 +305,19 @@ def equilibrium_figure_mpl(
         fully visible.  Uses :attr:`InkStyle.vacuum_color`,
         :attr:`InkStyle.vacuum_linewidth`, and
         :attr:`InkStyle.vacuum_n_levels`.
+    containment_result : dict or None
+        Optional dict from ``efit.wall_containment.compute_psi_frac``.
+        When provided, a containment annotation is drawn in the lower-left
+        corner of the axes.  Keys used:
+
+        - ``lcfs_outside`` (int) — primary signal: LCFS vertices outside
+          the wall polygon (styled red when > 0, grey otherwise).
+        - ``frac`` (float) — secondary ψ-fraction metric (shown caveated).
+        - ``boundary_type`` (int or None) — IMAS topology code.
+        - ``n_xpoints`` (int or None) — number of X-points.
+
+        Pass ``None`` (default) to suppress the annotation entirely
+        (backward-compatible behaviour).
 
     Returns
     -------
@@ -300,6 +377,10 @@ def equilibrium_figure_mpl(
     render_mpl(ax, opoint)
     render_mpl(ax, xpoints)
     render_mpl(ax, timelabel)
+
+    # --- containment annotation (lower-left, UNCLIPPED) ---
+    if containment_result is not None:
+        _render_containment_annotation(ax, containment_result)
 
     # --- vacuum surfaces (unclipped, full grid) ---
     if show_vacuum_surfaces:
@@ -380,7 +461,12 @@ def equilibrium_chart_alt(
         x_points=sl.x_points,
         style=style,
     )
-    wall = WallOutline(geom.wall_r, geom.wall_z, style=style)
+    wall = WallOutline(
+        geom.wall_r,
+        geom.wall_z,
+        wall_units=geom.wall_units if geom.wall_units else [],
+        style=style,
+    )
     coils = CoilRects(geom.coil_rects, style=style)
     opoint = OPointMarker(sl.r_axis, sl.z_axis, style=style)
     xpoints = XPointMarkers(sl.x_points, style=style)

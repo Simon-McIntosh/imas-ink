@@ -108,7 +108,135 @@ def extract_slice(eq_ids, time_index: int) -> EquilibriumSlice:
     )
 
 
-def extract_geometry(wall_ids, pf_ids, magnetics_ids=None) -> MachineGeometry:
+def _select_description_2d(wall_ids):
+    """Select the richest description_2d entry from the wall IDS.
+
+    Mirrors ``efit.wall_containment.select_description_2d`` (and
+    ``src/imas.cpp::selectDesc2d``) exactly:
+      1. If only one entry, return it.
+      2. Untyped (type.index == IMAS_INT_SENTINEL or < 0) scores -1.
+      3. Among entries, higher effective type wins.
+      4. Tie on type → higher unit count wins.
+      5. i==0 seeds the default.
+
+    Note: imas_ink must NOT import efit (circular dependency), so this
+    mirrors the logic natively.
+    """
+    _SENTINEL = -999999999
+
+    def _eff_type(desc) -> int:
+        try:
+            idx = int(desc.limiter.type.index)
+            return -1 if (idx == _SENTINEL or idx < 0) else idx
+        except Exception:
+            return -1
+
+    descs = wall_ids.description_2d
+    n = len(descs)
+    if n <= 1:
+        return descs[0]
+
+    best_idx = 0
+    best_type = _eff_type(descs[0])
+    best_count = len(descs[0].limiter.unit)
+
+    for i in range(1, n):
+        eff_type = _eff_type(descs[i])
+        unit_count = len(descs[i].limiter.unit)
+        better = eff_type > best_type or (
+            eff_type == best_type and unit_count > best_count
+        )
+        if better:
+            best_idx = i
+            best_type = eff_type
+            best_count = unit_count
+
+    return descs[best_idx]
+
+
+_MOBILE_TIME_SENTINEL: float = -1e30
+"""Times more negative than this are IMAS EMPTY sentinels — skip for time selection."""
+
+
+def _select_mobile_unit(desc_2d, time: float | None) -> list:
+    """Return the list of wall units from desc_2d, with mobile-outline nearest-time selection.
+
+    IMAS wall DD structure for mobile components::
+
+        description_2d.mobile.unit[i]       — one mobile PFC
+            .outline[j]                     — time-indexed snapshot
+                .r / .z  (FLT_1D)          — outline coordinates
+                .time    (FLT_0D)           — snapshot time [s]
+
+    When ``desc_2d`` has a ``.mobile`` attribute with at least one ``unit``
+    AND a ``time`` value is provided AND at least one snapshot has a valid
+    (non-sentinel) time, the per-unit nearest-time outline is picked.
+
+    Returns a synthetic list of one-shot unit proxies with ``outline.r/z``
+    set to the nearest-time snapshot.  Falls through to all limiter units when:
+    - ``time`` is None
+    - no mobile attribute
+    - all mobile outline times are sentinels (e.g. WEST static mobile)
+
+    Parameters
+    ----------
+    desc_2d :
+        Selected wall description_2d entry.
+    time : float or None
+        Slice time for mobile-outline selection.  None → return all limiter units.
+
+    Returns
+    -------
+    list of unit objects (from limiter or synthetic mobile proxies)
+    """
+    import types as _types
+
+    mobile = getattr(desc_2d, "mobile", None)
+    if mobile is None or time is None:
+        return list(desc_2d.limiter.unit)
+
+    try:
+        mobile_units = list(mobile.unit)
+    except (AttributeError, TypeError):
+        return list(desc_2d.limiter.unit)
+
+    if not mobile_units:
+        return list(desc_2d.limiter.unit)
+
+    # Try to select nearest-time outline per mobile unit
+    selected: list = []
+    for mu in mobile_units:
+        try:
+            outlines = list(mu.outline)
+        except (AttributeError, TypeError):
+            continue
+        best_ol = None
+        best_dt = float("inf")
+        for ol in outlines:
+            try:
+                t_ol = float(ol.time)
+                if t_ol < _MOBILE_TIME_SENTINEL:
+                    continue  # sentinel — skip
+                dt = abs(t_ol - time)
+                if dt < best_dt:
+                    best_dt = dt
+                    best_ol = ol
+            except (AttributeError, TypeError, ValueError):
+                continue
+        if best_ol is not None:
+            # Build a synthetic unit proxy with .outline.r/.outline.z
+            proxy = _types.SimpleNamespace(
+                outline=_types.SimpleNamespace(r=best_ol.r, z=best_ol.z)
+            )
+            selected.append(proxy)
+
+    # If no valid mobile outlines found (all sentinels), fall back to limiter units
+    if not selected:
+        return list(desc_2d.limiter.unit)
+    return selected
+
+
+def extract_geometry(wall_ids, pf_ids, magnetics_ids=None, time: float | None = None) -> MachineGeometry:
     """Extract static machine geometry from wall, pf_active, and optionally magnetics IDSs.
 
     Parameters
@@ -120,13 +248,41 @@ def extract_geometry(wall_ids, pf_ids, magnetics_ids=None) -> MachineGeometry:
     magnetics_ids
         Optional ``magnetics`` IDS. When provided, B-pol probe and flux
         loop positions are extracted (with DDv3/DDv4 field-name fallback).
+    time : float, optional
+        Slice time for mobile-outline selection (WEST description_2d[1].mobile).
+        When provided, mobile units with a ``.time`` attribute are filtered to
+        the nearest time.  Defaults to None (return all units).
 
     Returns
     -------
     MachineGeometry
     """
-    wall_r = np.asarray(wall_ids.description_2d[0].limiter.unit[0].outline.r)
-    wall_z = np.asarray(wall_ids.description_2d[0].limiter.unit[0].outline.z)
+    # Select the richest description_2d (mirrors selectDesc2d in solver)
+    desc_2d = _select_description_2d(wall_ids)
+
+    # Collect all (or nearest-time mobile) units
+    units = _select_mobile_unit(desc_2d, time)
+
+    # Build wall_units: list of (r_array, z_array) per unit
+    wall_units: list[tuple[np.ndarray, np.ndarray]] = []
+    for unit in units:
+        try:
+            r_u = np.asarray(unit.outline.r)
+            z_u = np.asarray(unit.outline.z)
+            if r_u.size > 0 and r_u.size == z_u.size:
+                wall_units.append((r_u, z_u))
+        except (AttributeError, TypeError):
+            continue
+
+    # Backward compat: wall_r/wall_z are the first unit
+    if wall_units:
+        wall_r, wall_z = wall_units[0]
+    else:
+        # Fallback: original single-unit path (handles malformed IDS gracefully)
+        wall_r = np.asarray(wall_ids.description_2d[0].limiter.unit[0].outline.r)
+        wall_z = np.asarray(wall_ids.description_2d[0].limiter.unit[0].outline.z)
+        wall_units = [(wall_r, wall_z)]
+
     clip_verts = wall_clip_vertices(wall_r, wall_z)
     coils = coil_bboxes(pf_ids)
 
@@ -175,6 +331,7 @@ def extract_geometry(wall_ids, pf_ids, magnetics_ids=None) -> MachineGeometry:
         wall_z=wall_z,
         coil_rects=coils,
         wall_clip_vertices=clip_verts,
+        wall_units=wall_units,
         probe_r=np.asarray(probe_r_list, dtype=float),
         probe_z=np.asarray(probe_z_list, dtype=float),
         probe_angle=np.asarray(probe_angle_list, dtype=float),

@@ -50,15 +50,20 @@ class Separatrix:
 
 @dataclass
 class WallOutline:
-    """First wall outline polygon.
+    """First wall outline polygon (one or more units).
+
+    ``wall_r`` / ``wall_z`` hold the first unit for backward compatibility.
+    ``wall_units`` holds all units as a list of ``(r_array, z_array)`` pairs.
+    When non-empty, renderers iterate ``wall_units`` to draw every unit.
 
     Examples
     --------
-    >>> wall = WallOutline(geom.wall_r, geom.wall_z)
+    >>> wall = WallOutline(geom.wall_r, geom.wall_z, wall_units=geom.wall_units)
     """
 
     wall_r: np.ndarray
     wall_z: np.ndarray
+    wall_units: list[tuple[np.ndarray, np.ndarray]] = field(default_factory=list)
     style: InkStyle = field(default_factory=lambda: DEFAULT_STYLE)
 
 

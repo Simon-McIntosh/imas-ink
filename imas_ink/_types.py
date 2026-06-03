@@ -102,6 +102,11 @@ class XPoint:
 class MachineGeometry:
     """Static machine geometry — wall outline and PF coils.
 
+    ``wall_r`` / ``wall_z`` hold the first wall unit for backward compatibility
+    (used by clip-path construction).  ``wall_units`` holds all limiter units
+    from the selected ``description_2d`` instance as a list of
+    ``(r_array, z_array)`` pairs; renderers iterate this to draw every unit.
+
     Examples
     --------
     >>> geom = extract_geometry(wall_ids, pf_ids)
@@ -109,10 +114,12 @@ class MachineGeometry:
     (0.17, 2.05, -1.83, 1.83)
     """
 
-    wall_r: np.ndarray  # (N,) wall R coords
-    wall_z: np.ndarray  # (N,) wall Z coords
+    wall_r: np.ndarray  # (N,) first wall unit R coords (backward compat)
+    wall_z: np.ndarray  # (N,) first wall unit Z coords (backward compat)
     coil_rects: list[CoilRect]  # PF coil bounding boxes
     wall_clip_vertices: np.ndarray  # (M, 2) closed polygon
+    wall_units: list[tuple[np.ndarray, np.ndarray]] = field(default_factory=list)
+    # list of (r_array, z_array) for every limiter unit in the selected desc_2d
     probe_r: np.ndarray = field(default_factory=lambda: np.array([]))
     probe_z: np.ndarray = field(default_factory=lambda: np.array([]))
     probe_angle: np.ndarray = field(default_factory=lambda: np.array([]))
@@ -121,9 +128,17 @@ class MachineGeometry:
 
     @property
     def viewport(self) -> tuple[float, float, float, float]:
-        """``(rmin, rmax, zmin, zmax)`` bounding box including coils + margin."""
-        all_r = [self.wall_r.min(), self.wall_r.max()]
-        all_z = [self.wall_z.min(), self.wall_z.max()]
+        """``(rmin, rmax, zmin, zmax)`` bounding box including all wall units + coils + margin."""
+        # Use all units if present, otherwise fall back to wall_r/wall_z
+        if self.wall_units:
+            all_r = []
+            all_z = []
+            for r_arr, z_arr in self.wall_units:
+                all_r.extend([float(r_arr.min()), float(r_arr.max())])
+                all_z.extend([float(z_arr.min()), float(z_arr.max())])
+        else:
+            all_r = [self.wall_r.min(), self.wall_r.max()]
+            all_z = [self.wall_z.min(), self.wall_z.max()]
         for c in self.coil_rects:
             all_r.extend([c.r, c.r + c.width])
             all_z.extend([c.z, c.z + c.height])
