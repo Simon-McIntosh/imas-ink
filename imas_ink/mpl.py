@@ -18,11 +18,13 @@ from .components import (
     CoilRects,
     FluxContours,
     FluxLoops,
+    LcfsOutline,
     MagneticProbes,
     OPointMarker,
     RadialProfile,
     ScatterPoints,
     Separatrix,
+    SolContours,
     TimeLabel,
     TimeSeries,
     WallOutline,
@@ -61,6 +63,10 @@ def render_mpl(
     """
     if isinstance(component, FluxContours):
         _render_flux_mpl(ax, component, clip_path)
+    elif isinstance(component, SolContours):
+        _render_sol_mpl(ax, component)
+    elif isinstance(component, LcfsOutline):
+        _render_lcfs_mpl(ax, component)
     elif isinstance(component, Separatrix):
         _render_sep_mpl(ax, component, clip_path)
     elif isinstance(component, WallOutline):
@@ -136,6 +142,54 @@ def _render_sep_mpl(
     if clip_path is not None:
         lc.set_clip_path(clip_path)
     ax.add_collection(lc)
+
+
+def _render_sol_mpl(ax: Axes, sol: SolContours) -> None:
+    """Render SOL / open-field contours at reduced weight in grey.
+
+    These are surfaces that do not enclose the magnetic axis — open
+    field lines, private-flux lobes, and grid-edge artefacts.  They are
+    rendered *unclipped* (no wall clip path) so they remain visible as a
+    diagnostic even when they extend outside the vessel boundary.
+    """
+    s = sol.style
+    for level_segs in sol.segments:
+        if not level_segs:
+            continue
+        lc = LineCollection(
+            level_segs,
+            colors=s.sol_color,
+            linewidths=s.sol_linewidth,
+            linestyles=s.sol_linestyle,
+            zorder=s.zorder_flux,
+        )
+        ax.add_collection(lc)
+
+
+def _render_lcfs_mpl(ax: Axes, lcfs: LcfsOutline) -> None:
+    """Render the IDS-derived LCFS outline (boundary.outline.r/z).
+
+    Renders the outline verbatim from the IDS.  No computation is
+    performed.  If the arrays are empty, nothing is drawn — honest
+    absence beats a computed approximation.
+    """
+    r = np.asarray(lcfs.r)
+    z = np.asarray(lcfs.z)
+    if r.size < 2 or z.size < 2:
+        return
+    s = lcfs.style
+    # Ensure the outline is closed for rendering
+    if not (np.isclose(r[0], r[-1]) and np.isclose(z[0], z[-1])):
+        r = np.append(r, r[0])
+        z = np.append(z, z[0])
+    ax.plot(
+        r,
+        z,
+        color=s.sep_color,
+        linewidth=s.sep_linewidth,
+        linestyle=s.sep_linestyle,
+        zorder=s.zorder_sep,
+    )
 
 
 def _render_wall_mpl(ax: Axes, wall: WallOutline) -> None:

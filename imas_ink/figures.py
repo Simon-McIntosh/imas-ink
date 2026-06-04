@@ -22,15 +22,17 @@ from .components import (
     CoilRects,
     FluxContours,
     FluxLoops,
+    LcfsOutline,
     MagneticProbes,
     OPointMarker,
     Separatrix,
+    SolContours,
     TimeLabel,
     WallOutline,
     XPointMarkers,
 )
 from .contours import ContourExtractor
-from .geometry import mask_pfr
+from .geometry import classify_flux_segments, mask_pfr
 from .mpl import render_mpl
 from .style import DEFAULT_STYLE, InkStyle
 
@@ -324,9 +326,6 @@ def equilibrium_figure_mpl(
     tuple[Figure, Axes]
         The matplotlib figure and axes objects.
     """
-    from matplotlib.patches import PathPatch
-    from matplotlib.path import Path as MplPath
-
     if style is None:
         style = DEFAULT_STYLE
 
@@ -349,31 +348,54 @@ def equilibrium_figure_mpl(
             sl.z_axis,
         )
 
-    # --- contour extraction ---
+    # --- flux contour extraction across the FULL psi domain ---
+    # Confined vs SOL classification is by enclosure of the magnetic
+    # axis — a pure geometric test on the plotted grid (no physics
+    # recomputation).  Wall clipping is intentionally omitted: contours
+    # that extend outside the vessel are drawn in thin grey so they
+    # remain visible rather than being silently erased.
     cx = ContourExtractor(sl.R_2d, sl.Z_2d, psi)
     n_levels = style.flux_n_levels
+    all_level_segs = cx.flux_surfaces(sl.psi_axis, sl.psi_boundary, n=n_levels)
 
-    # --- wall clip path ---
-    wall_path = MplPath(geom.wall_clip_vertices)
-    wall_patch = PathPatch(wall_path, facecolor="none", edgecolor="none")
-    ax.add_patch(wall_patch)
+    confined_by_level: list[list] = []
+    sol_by_level: list[list] = []
+    for level_segs in all_level_segs:
+        confined, sol = classify_flux_segments(level_segs, sl.r_axis, sl.z_axis)
+        confined_by_level.append(confined)
+        sol_by_level.append(sol)
 
-    # --- equilibrium components ---
-    flux = FluxContours(
-        cx.flux_surfaces(sl.psi_axis, sl.psi_boundary, n=n_levels),
-        style=style,
-    )
-    sep = Separatrix(
-        cx.separatrix(sl.psi_boundary),
-        x_points=sl.x_points,
-        style=style,
-    )
-    opoint = OPointMarker(sl.r_axis, sl.z_axis, style=style)
+    flux_confined = FluxContours(confined_by_level, style=style)
+    flux_sol = SolContours(sol_by_level, style=style)
+
+    # --- LCFS: read verbatim from IDS boundary.outline (plot-only rule) ---
+    # If boundary.outline is absent (solver did not write it), render
+    # nothing — honest absence beats a computed approximation.
+    lcfs: LcfsOutline | None = None
+    if sl.boundary_r is not None and sl.boundary_z is not None:
+        br = sl.boundary_r
+        bz = sl.boundary_z
+        if br.size >= 2:
+            lcfs = LcfsOutline(br, bz, style=style)
+
+    # --- X-points: read from IDS only, never computed ---
+    # If boundary.x_point was absent from the IDS (current state while
+    # the solver-side topology-write work is in flight), render no
+    # X markers.  Honest absence is correct.
     xpoints = XPointMarkers(sl.x_points, style=style)
+
+    # --- Other markers ---
+    opoint = OPointMarker(sl.r_axis, sl.z_axis, style=style)
     timelabel = TimeLabel(sl.time, converged=sl.converged, style=style)
 
-    render_mpl(ax, flux, clip_path=wall_patch)
-    render_mpl(ax, sep, clip_path=wall_patch)
+    # Render order: SOL (bottom), confined flux (above), LCFS, O-point,
+    # X-points, time label.  All are UNCLIPPED — no wall clip path is
+    # applied.  This avoids the AUG multi-unit clip-wipeout and makes
+    # unconverged / wall-piercing topology visible.
+    render_mpl(ax, flux_sol)
+    render_mpl(ax, flux_confined)
+    if lcfs is not None:
+        render_mpl(ax, lcfs)
     render_mpl(ax, opoint)
     render_mpl(ax, xpoints)
     render_mpl(ax, timelabel)
@@ -388,15 +410,15 @@ def equilibrium_figure_mpl(
 
         vac_style = dataclasses.replace(
             style,
-            flux_color=style.vacuum_color,
-            flux_linewidth=style.vacuum_linewidth,
-            flux_linestyle=style.vacuum_linestyle,
+            sol_color=style.vacuum_color,
+            sol_linewidth=style.vacuum_linewidth,
+            sol_linestyle=style.vacuum_linestyle,
         )
         cx_vac = ContourExtractor(sl.R_2d, sl.Z_2d, sl.psi_2d)
         vac_segs = cx_vac.vacuum_surfaces(
             sl.psi_axis, sl.psi_boundary, n=style.vacuum_n_levels
         )
-        render_mpl(ax, FluxContours(vac_segs, style=vac_style))
+        render_mpl(ax, SolContours(vac_segs, style=vac_style))
 
     return fig, ax
 

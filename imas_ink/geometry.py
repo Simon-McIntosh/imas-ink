@@ -401,6 +401,95 @@ def classify_probe_components(
     return comp
 
 
+def encloses_point(vertices: np.ndarray, r: float, z: float) -> bool:
+    """Test whether a closed polygon *encloses* the point ``(r, z)``.
+
+    Uses the winding-number (ray-casting) test — pure geometry on the
+    plotted coordinates.  A contour "encloses the magnetic axis" if and
+    only if this returns ``True``.
+
+    This is a **styling** predicate, not a physics computation: it
+    determines whether to draw a flux surface in the confined-plasma
+    colour vs the SOL / open-field grey.
+
+    Parameters
+    ----------
+    vertices : np.ndarray
+        Shape ``(N, 2)`` array of polygon vertices with columns
+        ``[R, Z]``.
+    r, z : float
+        Point to test.
+
+    Returns
+    -------
+    bool
+        ``True`` if ``(r, z)`` is inside the polygon.
+
+    Examples
+    --------
+    >>> v = np.array([[0, -1], [1, 0], [0, 1], [-1, 0], [0, -1]])
+    >>> encloses_point(v, 0.0, 0.0)
+    True
+    >>> encloses_point(v, 2.0, 0.0)
+    False
+    """
+    if vertices.shape[0] < 3:
+        return False
+    # Ray-casting: count crossings of a horizontal ray from (r, z) to +∞
+    inside = False
+    n = len(vertices)
+    xi, yi = float(vertices[0, 0]), float(vertices[0, 1])
+    for j in range(1, n + 1):
+        xj, yj = float(vertices[j % n, 0]), float(vertices[j % n, 1])
+        if ((yi > z) != (yj > z)) and (r < (xj - xi) * (z - yi) / (yj - yi + 1e-300) + xi):
+            inside = not inside
+        xi, yi = xj, yj
+    return inside
+
+
+def classify_flux_segments(
+    level_segs: list[np.ndarray],
+    r_axis: float,
+    z_axis: float,
+) -> tuple[list[np.ndarray], list[np.ndarray]]:
+    """Classify contour segments at one psi level into confined vs SOL.
+
+    A segment is *confined* if it is closed (first ≈ last vertex) AND
+    encloses the magnetic axis.  All other segments — open lines,
+    private-flux lobes that do not enclose the axis, and grid-edge
+    artefacts — are classified as SOL.
+
+    This is a **styling** decision: the classification drives the
+    visual distinction between blue confined surfaces and thin grey
+    SOL/open lines.  It does not compute or invent physics values.
+
+    Parameters
+    ----------
+    level_segs : list[np.ndarray]
+        Segments at one contour level, each ``(N, 2)`` with ``[R, Z]``.
+    r_axis, z_axis : float
+        Magnetic axis position.
+
+    Returns
+    -------
+    tuple[list[np.ndarray], list[np.ndarray]]
+        ``(confined_segs, sol_segs)``
+    """
+    confined: list[np.ndarray] = []
+    sol: list[np.ndarray] = []
+    for seg in level_segs:
+        if len(seg) < 3:
+            sol.append(seg)
+            continue
+        # Closed if first ≈ last vertex
+        closed = np.allclose(seg[0], seg[-1], atol=1e-6)
+        if closed and encloses_point(seg, r_axis, z_axis):
+            confined.append(seg)
+        else:
+            sol.append(seg)
+    return confined, sol
+
+
 def is_closed_contour(codes: np.ndarray | None) -> bool:
     """Return True if a contourpy path code array ends with CLOSEPOLY (79).
 

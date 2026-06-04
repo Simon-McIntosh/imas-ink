@@ -59,7 +59,10 @@ def extract_slice(eq_ids, time_index: int) -> EquilibriumSlice:
     time = float(eq_ids.time[time_index])
     converged = True  # default; refine from convergence info if available
 
-    # X-points: try IDS first, fall back to numerical detection
+    # X-points: read from IDS only.  The find_xpoints numerical fallback
+    # is intentionally absent — imas-ink must not compute physics values.
+    # If boundary.x_point is absent or empty, x_points is an empty list
+    # and no X markers will be rendered (honest absence).
     x_points: list[tuple[float, float]] = []
     try:
         for xp in ts.boundary.x_point:
@@ -69,9 +72,6 @@ def extract_slice(eq_ids, time_index: int) -> EquilibriumSlice:
                 x_points.append((r_x, z_x))
     except (AttributeError, IndexError):
         pass
-    if not x_points and not np.isnan(psi_bnd) and not np.isnan(z_axis):
-        r_2d, z_2d = np.meshgrid(r_grid, z_grid, indexing="ij")
-        x_points = find_xpoints(psi_2d, r_2d, z_2d, psi_bnd, psi_axis, z_axis)
 
     # Boundary shape
     boundary_r = boundary_z = None

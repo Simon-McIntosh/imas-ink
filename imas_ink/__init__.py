@@ -53,11 +53,13 @@ from .components import (
     CoilRects,
     FluxContours,
     FluxLoops,
+    LcfsOutline,
     MagneticProbes,
     OPointMarker,
     RadialProfile,
     ScatterPoints,
     Separatrix,
+    SolContours,
     TimeLabel,
     TimeSeries,
     WallOutline,
@@ -77,8 +79,10 @@ from .extract import (
 
 # -- geometry ----------------------------------------------------------------
 from .geometry import (
+    classify_flux_segments,
     close_polygon,
     coil_bboxes,
+    encloses_point,
     find_xpoints,
     is_closed_contour,
     mask_pfr,
@@ -185,6 +189,8 @@ __all__ = [
     "EquilibriumSlice2D",
     # components
     "FluxContours",
+    "LcfsOutline",
+    "SolContours",
     # 3D flux projection (lazy — from imas_ink.three_d.flux_projection)
     "FluxMode",
     "FluxOverlay",
@@ -239,6 +245,8 @@ __all__ = [
     "extract_time_traces",
     # 3D walls (lazy — from imas_ink.three_d.walls)
     "extract_vessel_shells",
+    "classify_flux_segments",
+    "encloses_point",
     "find_xpoints",
     "is_closed_contour",
     # sentinel

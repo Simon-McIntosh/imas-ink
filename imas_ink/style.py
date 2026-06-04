@@ -24,11 +24,19 @@ class InkStyle:
         my_style = replace(DEFAULT_STYLE, sep_color="#00cc00")
     """
 
-    # Flux contours
+    # Flux contours — confined (closed, encloses magnetic axis)
     flux_color: str = "#3366cc"
     flux_linewidth: float = 0.7
     flux_linestyle: str = "solid"
     flux_n_levels: int = 6
+
+    # SOL / open contours — surfaces that do not enclose the magnetic axis
+    # (open field lines, private-flux lobes, or contours at the grid edge).
+    # Rendered at reduced weight in grey so they are visible but visually
+    # subordinate to the confined plasma region.
+    sol_color: str = "#999999"
+    sol_linewidth: float = 0.35
+    sol_linestyle: str = "solid"
 
     # Separatrix
     sep_color: str = "#cc0000"

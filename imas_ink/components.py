@@ -19,10 +19,12 @@ from .style import DEFAULT_STYLE, InkStyle
 
 @dataclass
 class FluxContours:
-    """Interior flux surface contours.
+    """Interior flux surface contours — confined region only.
 
     Each level is a list of (N, 2) segment arrays produced by
-    :class:`ContourExtractor`.
+    :class:`ContourExtractor`.  Only contours that enclose the magnetic
+    axis (closed, confined plasma) are stored here; SOL/open contours
+    are stored in :class:`SolContours`.
 
     Examples
     --------
@@ -35,8 +37,35 @@ class FluxContours:
 
 
 @dataclass
+class SolContours:
+    """SOL / open field-line contours — surfaces outside the confined plasma.
+
+    Holds contour segments that do *not* enclose the magnetic axis
+    (open field lines, private-flux lobes, or grid-edge contours).
+    These are rendered in a visually subordinate style (thin grey) so
+    that the confined plasma region remains the visual focus.
+
+    Each level is a list of (N, 2) segment arrays.
+
+    Examples
+    --------
+    >>> sol = SolContours(sol_segs_by_level)
+    """
+
+    segments: list[list[np.ndarray]]  # [level][segment] of (N, 2) arrays
+    style: InkStyle = field(default_factory=lambda: DEFAULT_STYLE)
+
+
+@dataclass
 class Separatrix:
     """Last closed flux surface (LCFS) contour segments.
+
+    .. deprecated::
+        Use :class:`LcfsOutline` instead.  This component holds
+        *computed* separatrix segments from the psi field and is
+        retained for backward compatibility only.  The equilibrium
+        figure builder uses :class:`LcfsOutline` (IDS-derived) whenever
+        ``boundary.outline`` data is available.
 
     Examples
     --------
@@ -45,6 +74,26 @@ class Separatrix:
 
     segments: list[np.ndarray]  # list of (N, 2) arrays
     x_points: list[tuple[float, float]] = field(default_factory=list)
+    style: InkStyle = field(default_factory=lambda: DEFAULT_STYLE)
+
+
+@dataclass
+class LcfsOutline:
+    """LCFS outline read verbatim from the IDS.
+
+    Holds the ``boundary.outline.r`` / ``boundary.outline.z`` arrays
+    exactly as written by the solver — no recomputation from ψ.
+
+    When ``r`` and ``z`` are empty (solver did not write boundary data),
+    nothing is rendered.  Honest absence beats computed garbage.
+
+    Examples
+    --------
+    >>> lcfs = LcfsOutline(boundary_r, boundary_z)
+    """
+
+    r: np.ndarray  # shape (N,) — from boundary.outline.r
+    z: np.ndarray  # shape (N,) — from boundary.outline.z
     style: InkStyle = field(default_factory=lambda: DEFAULT_STYLE)
 
 
