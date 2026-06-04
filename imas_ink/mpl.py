@@ -24,6 +24,7 @@ from .components import (
     RadialProfile,
     ReferenceContours,
     ReferenceLcfs,
+    ReferenceXPoints,
     ScatterPoints,
     Separatrix,
     SolContours,
@@ -67,6 +68,8 @@ def render_mpl(
         _render_ref_contours_mpl(ax, component)
     elif isinstance(component, ReferenceLcfs):
         _render_ref_lcfs_mpl(ax, component)
+    elif isinstance(component, ReferenceXPoints):
+        _render_ref_xpoints_mpl(ax, component)
     elif isinstance(component, FluxContours):
         _render_flux_mpl(ax, component, clip_path)
     elif isinstance(component, SolContours):
@@ -239,6 +242,35 @@ def _render_ref_lcfs_mpl(ax: Axes, ref_lcfs: ReferenceLcfs) -> None:
         alpha=s.ref_lcfs_alpha,
         label=label,
         zorder=s.zorder_ref,
+    )
+
+
+def _render_ref_xpoints_mpl(ax: Axes, ref_xp: ReferenceXPoints) -> None:
+    """Render validation-reference X-points as distinct sienna markers.
+
+    The marker shape (``ref_xpt_marker``, default filled plus) is deliberately
+    different from the primary's red 'x', so a reference X-point is immediately
+    separable.  Empty ``points`` renders nothing (honest absence).  A single
+    legend entry is added (label ``ref X-pt (NAME)``).
+    """
+    pts = ref_xp.points
+    if not pts:
+        return
+    s = ref_xp.style
+    r_vals = [p[0] for p in pts]
+    z_vals = [p[1] for p in pts]
+    ax.plot(
+        r_vals,
+        z_vals,
+        marker=s.ref_xpt_marker,
+        markersize=s.ref_xpt_markersize,
+        markeredgewidth=s.ref_xpt_markeredgewidth,
+        markeredgecolor=s.ref_xpt_markeredgecolor,
+        color=s.ref_xpt_color,
+        alpha=s.ref_xpt_alpha,
+        linestyle="none",
+        label=f"ref X-pt ({ref_xp.ref_name})",
+        zorder=s.zorder_ref_xpt,
     )
 
 

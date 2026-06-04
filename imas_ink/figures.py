@@ -27,6 +27,7 @@ from .components import (
     OPointMarker,
     ReferenceContours,
     ReferenceLcfs,
+    ReferenceXPoints,
     Separatrix,
     SolContours,
     TimeLabel,
@@ -436,6 +437,7 @@ def equilibrium_figure_mpl(
     # at axis).  If signs disagree, fall back to normalised levels.
     ref_contours: ReferenceContours | None = None
     ref_lcfs_comp: ReferenceLcfs | None = None
+    ref_xpoints_comp: ReferenceXPoints | None = None
     if reference_slice is not None:
         ref = reference_slice
         import math as _math
@@ -447,6 +449,18 @@ def equilibrium_figure_mpl(
         ref_psi_bnd = ref.psi_boundary
         ref_psi_ax = ref.psi_axis
 
+        # Does the reference carry a usable 2D ψ field?  Some references
+        # (e.g. NICE) write only boundary + global quantities, no profiles_2d.
+        # In that case we still draw the reference LCFS + X-points (the boundary
+        # mismatch remains visible) but skip the field-contour underlay.
+        _ref_psi2d = getattr(ref, "psi_2d", None)
+        ref_has_field = (
+            _ref_psi2d is not None
+            and getattr(_ref_psi2d, "size", 0) > 2
+            and getattr(ref, "R_2d", None) is not None
+            and getattr(ref.R_2d, "size", 0) > 2
+        )
+
         # Some reference codes (e.g. DINA) leave global_quantities.psi_axis as
         # an IMAS sentinel (extracted here as NaN).  Infer it from the 2D field:
         # the axis ψ is the field extremum in the inboard (more-negative for
@@ -455,7 +469,8 @@ def equilibrium_figure_mpl(
         # comes straight from the reference's own psi_2d, not a recomputation).
         _sentinel_threshold = 1e10
         ref_axis_valid = (
-            ref_psi_bnd is not None
+            ref_has_field
+            and ref_psi_bnd is not None
             and not _math.isnan(float(ref_psi_bnd))
             and abs(float(ref_psi_bnd)) < _sentinel_threshold
         )
@@ -481,7 +496,12 @@ def equilibrium_figure_mpl(
             and (_np.sign(float(sl.psi_boundary)) == _np.sign(float(ref_psi_bnd)))
         )
 
-        if use_absolute:
+        if not ref_has_field:
+            # Reference carries no 2D ψ field (e.g. NICE writes boundary only).
+            # Draw no field contours; the reference LCFS + X-points below still
+            # convey the boundary/topology mismatch.  ref_contours stays None.
+            pass
+        elif use_absolute:
             # IDENTICAL absolute psi levels: compute the level array ONCE from
             # the PRIMARY's psi_axis/psi_boundary, then evaluate the REFERENCE
             # field at those exact level values.
@@ -495,9 +515,9 @@ def equilibrium_figure_mpl(
                 style=style,
             )
         else:
-            # Frames irreconcilable (opposite-sign ψ, or no usable reference
-            # field).  Fall back to MATCHED NORMALISED levels (psi_norm): map
-            # the primary's fractional levels onto the reference's own ψ range.
+            # Frames irreconcilable (opposite-sign ψ).  Fall back to MATCHED
+            # NORMALISED levels (psi_norm): map the primary's fractional levels
+            # onto the reference's own ψ range.
             primary_levels = _make_levels(sl.psi_axis, sl.psi_boundary, n=n_levels)
             denom = sl.psi_axis - sl.psi_boundary
             if abs(denom) < 1e-30:
@@ -529,9 +549,18 @@ def equilibrium_figure_mpl(
             if rbr.size >= 2:
                 ref_lcfs_comp = ReferenceLcfs(rbr, rbz, ref_name=reference_name, style=style)
 
+        # Reference X-points — IDS-verbatim (extract_slice reads these from
+        # contour_tree / constraints / boundary).  These are the headline
+        # topology-mismatch signal (e.g. a reference lower X-point behind a
+        # limited reconstruction).  Empty list → nothing drawn (honest absence).
+        ref_xp = getattr(ref, "x_points", None)
+        if ref_xp:
+            ref_xpoints_comp = ReferenceXPoints(list(ref_xp), ref_name=reference_name, style=style)
+
     # Render order: reference underlay FIRST (zorder=1, below everything),
     # then SOL (grey, zorder=2), confined flux (blue, zorder=2), LCFS (red,
-    # zorder=5), O-point, X-points, time label.
+    # zorder=5), O-point, X-points, time label.  Reference X-points render at
+    # zorder_ref_xpt (≈primary-marker level) so the mismatch reads clearly.
     # All are UNCLIPPED — no wall clip path applied.
     if ref_lcfs_comp is not None:
         render_mpl(ax, ref_lcfs_comp)
@@ -543,6 +572,8 @@ def equilibrium_figure_mpl(
         render_mpl(ax, lcfs)
     render_mpl(ax, opoint)
     render_mpl(ax, xpoints)
+    if ref_xpoints_comp is not None:
+        render_mpl(ax, ref_xpoints_comp)
     render_mpl(ax, timelabel)
 
     # --- containment annotation (lower-left, UNCLIPPED) ---

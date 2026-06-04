@@ -242,6 +242,29 @@ class ReferenceLcfs:
 
 
 @dataclass
+class ReferenceXPoints:
+    """X-point markers of the validation reference — IDS-verbatim.
+
+    Holds reference X-point ``(r, z)`` positions read from the reference IDS
+    (contour_tree / constraints / boundary).  Rendered in the reference sienna
+    family with a distinct marker so a reference X-point is visually separable
+    from the primary reconstruction's red X markers.  This is the key signal
+    for topology mismatch (e.g. reference is lower-diverted while the
+    reconstruction is limited / upper-diverted).
+
+    Empty ``points`` renders nothing (honest absence — e.g. limiter reference).
+
+    Examples
+    --------
+    >>> rxp = ReferenceXPoints([(5.12, -3.41)], ref_name="DINA")
+    """
+
+    points: list[tuple[float, float]]
+    ref_name: str = "reference"
+    style: InkStyle = field(default_factory=lambda: DEFAULT_STYLE)
+
+
+@dataclass
 class MagneticProbes:
     """B-pol magnetic probe positions with optional orientation angles.
 

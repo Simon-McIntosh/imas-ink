@@ -18,7 +18,7 @@ import numpy as np
 import pytest
 
 from imas_ink._cocos import make_levels
-from imas_ink.components import ReferenceContours, ReferenceLcfs
+from imas_ink.components import ReferenceContours, ReferenceLcfs, ReferenceXPoints
 from imas_ink.contours import ContourExtractor
 from imas_ink.extract import _extract_x_points
 from imas_ink.style import DEFAULT_STYLE, InkStyle
@@ -340,6 +340,53 @@ class TestReferenceLcfsRenderer:
         assert pytest.approx(line[0].get_linewidth(), abs=0.1) == 3.5
 
 
+class TestReferenceXPointsComponentAndRenderer:
+    """ReferenceXPoints component + renderer."""
+
+    def setup_method(self):
+        import matplotlib
+
+        matplotlib.use("Agg")
+        import matplotlib.pyplot as plt
+
+        self.fig, self.ax = plt.subplots()
+
+    def teardown_method(self):
+        import matplotlib.pyplot as plt
+
+        plt.close(self.fig)
+
+    def test_construct(self):
+        rxp = ReferenceXPoints([(5.12, -3.41)], ref_name="DINA")
+        assert rxp.ref_name == "DINA"
+        assert rxp.points == [(5.12, -3.41)]
+        assert rxp.style is DEFAULT_STYLE
+
+    def test_render_empty_no_line(self):
+        from imas_ink.mpl import render_mpl
+
+        rxp = ReferenceXPoints([], ref_name="DINA")
+        n_before = len(self.ax.lines)
+        render_mpl(self.ax, rxp)
+        assert len(self.ax.lines) == n_before
+
+    def test_render_adds_marker_and_label(self):
+        from imas_ink.mpl import render_mpl
+
+        rxp = ReferenceXPoints([(5.12, -3.41), (4.73, 4.50)], ref_name="DINA")
+        render_mpl(self.ax, rxp)
+        labels = [h.get_label() for h in self.ax.lines]
+        assert any("DINA" in lbl and "X-pt" in lbl for lbl in labels)
+        # Marker is the configured ref_xpt_marker, not the primary 'x'
+        marker_lines = [ln for ln in self.ax.lines if "X-pt" in ln.get_label()]
+        assert marker_lines
+        assert marker_lines[0].get_marker() == DEFAULT_STYLE.ref_xpt_marker
+
+    def test_marker_distinct_from_primary(self):
+        """Reference X marker shape differs from the primary X marker ('x')."""
+        assert DEFAULT_STYLE.ref_xpt_marker != DEFAULT_STYLE.xpt_marker
+
+
 # ---------------------------------------------------------------------------
 # 3. Level-matching tests
 # ---------------------------------------------------------------------------
@@ -540,7 +587,7 @@ class TestEquilibriumFigureWithReference:
             flux_loop_z=np.array([]),
         )
 
-    def _make_slice(self, psi_axis=-50.0, psi_bnd=2.0):
+    def _make_slice(self, psi_axis=-50.0, psi_bnd=2.0, x_points=None):
         """Convert synthetic ns to EquilibriumSlice."""
         from imas_ink._types import EquilibriumSlice
 
@@ -559,7 +606,7 @@ class TestEquilibriumFigureWithReference:
             ip=1e6,
             time=0.5,
             converged=True,
-            x_points=[],
+            x_points=list(x_points) if x_points else [],
             boundary_r=br,
             boundary_z=bz,
         )
@@ -612,6 +659,36 @@ class TestEquilibriumFigureWithReference:
         # At least one label must contain "DINA"
         assert any("DINA" in lbl for lbl in labels)
 
+    def test_reference_xpoints_rendered(self):
+        """Reference slice with x_points -> reference X-pt marker + legend."""
+        import matplotlib.pyplot as plt
+
+        from imas_ink.figures import equilibrium_figure_mpl
+
+        sl = self._make_slice()  # limited primary (no x_points)
+        # Reference is lower-diverted: one X-point at the bottom
+        ref = self._make_slice(psi_axis=-55.0, psi_bnd=2.5, x_points=[(5.1, -3.4)])
+        geom = self._make_geom()
+        fig, ax = equilibrium_figure_mpl(sl, geom, reference_slice=ref, reference_name="DINA")
+        labels = [h.get_label() for h in ax.lines]
+        plt.close(fig)
+        # A "ref X-pt (DINA)" legend entry must be present
+        assert any("X-pt" in lbl and "DINA" in lbl for lbl in labels)
+
+    def test_no_reference_xpoints_when_absent(self):
+        """Reference slice without x_points -> no reference X-pt marker."""
+        import matplotlib.pyplot as plt
+
+        from imas_ink.figures import equilibrium_figure_mpl
+
+        sl = self._make_slice()
+        ref = self._make_slice(psi_axis=-55.0, psi_bnd=2.5, x_points=[])
+        geom = self._make_geom()
+        fig, ax = equilibrium_figure_mpl(sl, geom, reference_slice=ref, reference_name="DINA")
+        labels = [h.get_label() for h in ax.lines]
+        plt.close(fig)
+        assert not any("X-pt" in lbl and "DINA" in lbl for lbl in labels)
+
     def test_with_none_reference_unchanged(self):
         """Passing reference_slice=None is backward compatible."""
         import matplotlib.pyplot as plt
@@ -623,6 +700,47 @@ class TestEquilibriumFigureWithReference:
         fig, _ax = equilibrium_figure_mpl(sl, geom, reference_slice=None)
         plt.close(fig)
         assert fig is not None
+
+    def _make_fieldless_ref(self, x_points):
+        """Reference slice with NO 2D ψ field (e.g. NICE) — boundary + X only."""
+        from imas_ink._types import EquilibriumSlice
+
+        theta = np.linspace(0, 2 * np.pi, 40)
+        br = 6.0 + 1.4 * np.cos(theta)
+        bz = 0.0 + 1.6 * np.sin(theta)
+        return EquilibriumSlice(
+            psi_2d=np.empty((0, 0)),  # no field
+            r_grid=np.array([]),
+            z_grid=np.array([]),
+            psi_axis=float("nan"),
+            psi_boundary=float("nan"),
+            r_axis=6.0,
+            z_axis=0.0,
+            ip=1e6,
+            time=0.5,
+            converged=True,
+            x_points=list(x_points),
+            boundary_r=br,
+            boundary_z=bz,
+        )
+
+    def test_fieldless_reference_lcfs_and_xpoints_only(self):
+        """Reference with no psi_2d: no contour underlay, but LCFS + X-pts shown."""
+        import matplotlib.pyplot as plt
+
+        from imas_ink.figures import equilibrium_figure_mpl
+
+        sl = self._make_slice()
+        ref = self._make_fieldless_ref(x_points=[(5.4, -2.8)])
+        geom = self._make_geom()
+        fig, ax = equilibrium_figure_mpl(sl, geom, reference_slice=ref, reference_name="NICE")
+        line_labels = [h.get_label() for h in ax.lines]
+        plt.close(fig)
+        # LCFS + X-pt legend entries present (boundary mismatch still visible)
+        assert any("ref LCFS (NICE)" in lbl for lbl in line_labels)
+        assert any("X-pt" in lbl and "NICE" in lbl for lbl in line_labels)
+        # No "reference (NICE)" CONTOUR proxy (there is no field to contour)
+        assert not any(lbl.startswith("reference (NICE)") for lbl in line_labels)
 
 
 # ---------------------------------------------------------------------------
