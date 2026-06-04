@@ -17,7 +17,88 @@ from ._types import (
     RadialProfiles,
     TimeTraces,
 )
-from .geometry import coil_bboxes, find_xpoints, wall_clip_vertices
+from .geometry import coil_bboxes, wall_clip_vertices
+
+# contour_tree node critical_type codes (IMAS DDv4 magnetic-topology convention,
+# PR-243): 0 = O-point (extremum / magnetic axis), 1 = X-point (saddle).
+_CRITICAL_TYPE_XPOINT = 1
+
+
+def _dedup_points(
+    points: list[tuple[float, float]], tol: float = 1e-3
+) -> list[tuple[float, float]]:
+    """Drop near-duplicate (R, Z) points (within *tol* in both coordinates)."""
+    out: list[tuple[float, float]] = []
+    for r, z in points:
+        if not any(abs(r - r0) < tol and abs(z - z0) < tol for r0, z0 in out):
+            out.append((r, z))
+    return out
+
+
+def _extract_x_points(ts) -> list[tuple[float, float]]:
+    """Read X-point (R, Z) positions from a time-slice IDS — verbatim, no compute.
+
+    Tries three IDS sources in order (DD-version robust); the first that yields
+    any valid points wins.  Returns an empty list for honest absence
+    (e.g. a limiter slice or a forward model with no topology written).
+
+    Sources
+    -------
+    1. ``boundary.x_point[].r/.z`` — DDv3 outputs (removed from the DD at 4.0.0;
+       written back as a disk alias by EFIT when ``--dd-out 3.x``).
+    2. ``constraints.x_point[].position_reconstructed.r/.z`` — DDv4 EFIT
+       reconstructions.
+    3. ``contour_tree.node[]`` with ``critical_type == 1`` — DDv4 native
+       magnetic topology (forward-model references such as DINA carry their
+       X-points here).
+    """
+
+    def _valid(r: float, z: float) -> bool:
+        return not (np.isnan(r) or np.isnan(z)) and abs(r) < 1e10 and abs(z) < 1e10
+
+    # 1. boundary.x_point (DDv3 / aliased)
+    pts: list[tuple[float, float]] = []
+    try:
+        for xp in ts.boundary.x_point:
+            r_x = safe_float(xp.r)
+            z_x = safe_float(xp.z)
+            if _valid(r_x, z_x):
+                pts.append((r_x, z_x))
+    except (AttributeError, IndexError, TypeError):
+        pass
+    if pts:
+        return _dedup_points(pts)
+
+    # 2. constraints.x_point.position_reconstructed (DDv4 reconstructions)
+    try:
+        for xc in ts.constraints.x_point:
+            pos = xc.position_reconstructed
+            r_x = safe_float(pos.r)
+            z_x = safe_float(pos.z)
+            if _valid(r_x, z_x):
+                pts.append((r_x, z_x))
+    except (AttributeError, IndexError, TypeError):
+        pass
+    if pts:
+        return _dedup_points(pts)
+
+    # 3. contour_tree node[].critical_type == 1 (DDv4 native topology)
+    try:
+        for nd in ts.contour_tree.node:
+            try:
+                ctype = int(nd.critical_type)
+            except (AttributeError, TypeError, ValueError):
+                continue
+            if ctype != _CRITICAL_TYPE_XPOINT:
+                continue
+            r_x = safe_float(nd.r)
+            z_x = safe_float(nd.z)
+            if _valid(r_x, z_x):
+                pts.append((r_x, z_x))
+    except (AttributeError, IndexError, TypeError):
+        pass
+
+    return _dedup_points(pts)
 
 
 def extract_slice(eq_ids, time_index: int) -> EquilibriumSlice:
@@ -59,19 +140,18 @@ def extract_slice(eq_ids, time_index: int) -> EquilibriumSlice:
     time = float(eq_ids.time[time_index])
     converged = True  # default; refine from convergence info if available
 
-    # X-points: read from IDS only.  The find_xpoints numerical fallback
-    # is intentionally absent — imas-ink must not compute physics values.
-    # If boundary.x_point is absent or empty, x_points is an empty list
-    # and no X markers will be rendered (honest absence).
-    x_points: list[tuple[float, float]] = []
-    try:
-        for xp in ts.boundary.x_point:
-            r_x = safe_float(xp.r)
-            z_x = safe_float(xp.z)
-            if not (np.isnan(r_x) or np.isnan(z_x)):
-                x_points.append((r_x, z_x))
-    except (AttributeError, IndexError):
-        pass
+    # X-points: read from IDS only.  No numerical fallback — imas-ink must
+    # never compute physics values.  Read order (all IDS-verbatim):
+    #   1. boundary.x_point — present on DDv3 outputs (boundary/x_point was
+    #      REMOVED from the DD at 4.0.0; on DDv4 it is legitimately absent, and
+    #      EFIT writes it back as a disk alias when --dd-out 3.x is used).
+    #   2. constraints.x_point.position_reconstructed — DDv4 reconstructions
+    #      (EFIT writes the reconstructed X-point here).
+    #   3. contour_tree node[].critical_type == 1 — DDv4 native magnetic
+    #      topology (PR-243 ordering: node[0]=O-point, node[1]=primary X-point).
+    #      This is how forward-model references (e.g. DINA) carry their X-points.
+    # An empty result means honest absence (e.g. a limiter slice) — no markers.
+    x_points = _extract_x_points(ts)
 
     # Boundary shape
     boundary_r = boundary_z = None
@@ -143,9 +223,7 @@ def _select_description_2d(wall_ids):
     for i in range(1, n):
         eff_type = _eff_type(descs[i])
         unit_count = len(descs[i].limiter.unit)
-        better = eff_type > best_type or (
-            eff_type == best_type and unit_count > best_count
-        )
+        better = eff_type > best_type or (eff_type == best_type and unit_count > best_count)
         if better:
             best_idx = i
             best_type = eff_type
@@ -225,9 +303,7 @@ def _select_mobile_unit(desc_2d, time: float | None) -> list:
                 continue
         if best_ol is not None:
             # Build a synthetic unit proxy with .outline.r/.outline.z
-            proxy = _types.SimpleNamespace(
-                outline=_types.SimpleNamespace(r=best_ol.r, z=best_ol.z)
-            )
+            proxy = _types.SimpleNamespace(outline=_types.SimpleNamespace(r=best_ol.r, z=best_ol.z))
             selected.append(proxy)
 
     # If no valid mobile outlines found (all sentinels), fall back to limiter units
@@ -236,7 +312,9 @@ def _select_mobile_unit(desc_2d, time: float | None) -> list:
     return selected
 
 
-def extract_geometry(wall_ids, pf_ids, magnetics_ids=None, time: float | None = None) -> MachineGeometry:
+def extract_geometry(
+    wall_ids, pf_ids, magnetics_ids=None, time: float | None = None
+) -> MachineGeometry:
     """Extract static machine geometry from wall, pf_active, and optionally magnetics IDSs.
 
     Parameters

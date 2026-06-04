@@ -57,6 +57,8 @@ from .components import (
     MagneticProbes,
     OPointMarker,
     RadialProfile,
+    ReferenceContours,
+    ReferenceLcfs,
     ScatterPoints,
     Separatrix,
     SolContours,
@@ -77,6 +79,15 @@ from .extract import (
     extract_time_traces,
 )
 
+# -- figure builders ---------------------------------------------------------
+from .figures import (
+    equilibrium_chart_alt,
+    equilibrium_figure_mpl,
+    geometry_figure_mpl,
+    radial_profile_figure_mpl,
+    time_trace_figure_mpl,
+)
+
 # -- geometry ----------------------------------------------------------------
 from .geometry import (
     classify_flux_segments,
@@ -95,15 +106,6 @@ from .io import render_to_bytes, save_html, save_png
 
 # -- matplotlib backend ------------------------------------------------------
 from .mpl import render_mpl
-
-# -- figure builders ---------------------------------------------------------
-from .figures import (
-    equilibrium_chart_alt,
-    equilibrium_figure_mpl,
-    geometry_figure_mpl,
-    radial_profile_figure_mpl,
-    time_trace_figure_mpl,
-)
 
 # -- style -------------------------------------------------------------------
 from .style import DEFAULT_STYLE, InkStyle
@@ -207,6 +209,8 @@ __all__ = [
     "OPointMarker",
     "RadialProfile",
     "RadialProfiles",
+    "ReferenceLcfs",
+    "ReferenceContours",
     "ScatterPoints",
     "Separatrix",
     "TimeLabel",

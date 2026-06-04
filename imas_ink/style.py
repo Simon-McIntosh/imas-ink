@@ -111,6 +111,20 @@ class InkStyle:
     vacuum_linestyle: str = "solid"
     vacuum_n_levels: int = 10
 
+    # Reference (validation) underlay — faint sienna contours behind everything.
+    # Drawn at the same absolute psi levels as the primary confined surfaces so
+    # level-to-level comparison is direct.  The LCFS is drawn as a faint dashed
+    # line from boundary.outline (IDS-verbatim, no recomputation).
+    ref_color: str = "#b85c38"  # sienna — distinct from primary blue/grey/red
+    ref_alpha: float = 0.30  # faint — subordinate to primary
+    ref_linewidth: float = 0.5  # thin
+    ref_linestyle: str = "solid"
+    ref_lcfs_color: str = "#b85c38"  # same family as ref_color
+    ref_lcfs_alpha: float = 0.45  # slightly stronger than field lines
+    ref_lcfs_linewidth: float = 1.2
+    ref_lcfs_linestyle: str = "dashed"
+    zorder_ref: int = 1  # below primary (zorder_flux=2)
+
     # 1D plots
     trace_linewidth: float = 1.2
     trace_markersize: float = 3.0

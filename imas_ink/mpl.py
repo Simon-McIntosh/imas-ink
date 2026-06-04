@@ -22,6 +22,8 @@ from .components import (
     MagneticProbes,
     OPointMarker,
     RadialProfile,
+    ReferenceContours,
+    ReferenceLcfs,
     ScatterPoints,
     Separatrix,
     SolContours,
@@ -61,7 +63,11 @@ def render_mpl(
         and separatrix line collections so contours do not extend
         outside the vessel.
     """
-    if isinstance(component, FluxContours):
+    if isinstance(component, ReferenceContours):
+        _render_ref_contours_mpl(ax, component)
+    elif isinstance(component, ReferenceLcfs):
+        _render_ref_lcfs_mpl(ax, component)
+    elif isinstance(component, FluxContours):
         _render_flux_mpl(ax, component, clip_path)
     elif isinstance(component, SolContours):
         _render_sol_mpl(ax, component)
@@ -164,6 +170,76 @@ def _render_sol_mpl(ax: Axes, sol: SolContours) -> None:
             zorder=s.zorder_flux,
         )
         ax.add_collection(lc)
+
+
+def _render_ref_contours_mpl(ax: Axes, ref: ReferenceContours) -> None:
+    """Render validation-reference flux contours as a faint underlay.
+
+    Draws at ``zorder_ref`` (below everything else) so the reference topology
+    is visible without obscuring the primary reconstruction.  Each level group
+    is rendered as a single ``LineCollection`` for efficiency.
+
+    A legend entry is added using ``ax.plot([], [], ...)`` with the label
+    ``"reference (NAME)"`` so the caller's legend picks it up.
+    """
+    s = ref.style
+    has_segs = False
+    for level_segs in ref.segments:
+        if not level_segs:
+            continue
+        lc = LineCollection(
+            level_segs,
+            colors=s.ref_color,
+            linewidths=s.ref_linewidth,
+            linestyles=s.ref_linestyle,
+            alpha=s.ref_alpha,
+            zorder=s.zorder_ref,
+        )
+        ax.add_collection(lc)
+        has_segs = True
+    # Proxy artist for legend
+    if has_segs:
+        label = f"reference ({ref.ref_name})"
+        match_note = "" if ref.psi_matched else " [ψ_norm]"
+        ax.plot(
+            [],
+            [],
+            color=s.ref_color,
+            linewidth=s.ref_linewidth,
+            linestyle=s.ref_linestyle,
+            alpha=max(s.ref_alpha + 0.2, 0.6),
+            label=label + match_note,
+            zorder=s.zorder_ref,
+        )
+
+
+def _render_ref_lcfs_mpl(ax: Axes, ref_lcfs: ReferenceLcfs) -> None:
+    """Render the validation-reference LCFS as a faint dashed outline.
+
+    Drawn verbatim from ``boundary.outline.r/z``.  When the arrays are empty
+    (reference IDS has no boundary data), nothing is rendered.  A legend entry
+    is added automatically.
+    """
+    r = np.asarray(ref_lcfs.r)
+    z = np.asarray(ref_lcfs.z)
+    if r.size < 2 or z.size < 2:
+        return
+    s = ref_lcfs.style
+    # Ensure closure for rendering
+    if not (np.isclose(r[0], r[-1]) and np.isclose(z[0], z[-1])):
+        r = np.append(r, r[0])
+        z = np.append(z, z[0])
+    label = f"ref LCFS ({ref_lcfs.ref_name})"
+    ax.plot(
+        r,
+        z,
+        color=s.ref_lcfs_color,
+        linewidth=s.ref_lcfs_linewidth,
+        linestyle=s.ref_lcfs_linestyle,
+        alpha=s.ref_lcfs_alpha,
+        label=label,
+        zorder=s.zorder_ref,
+    )
 
 
 def _render_lcfs_mpl(ax: Axes, lcfs: LcfsOutline) -> None:

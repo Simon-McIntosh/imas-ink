@@ -202,6 +202,46 @@ class ScatterPoints:
 
 
 @dataclass
+class ReferenceContours:
+    """Validation-reference flux surface contours — rendered as a faint underlay.
+
+    Holds contours extracted from a second (reference/validation) equilibrium IDS
+    at the **same absolute psi levels** as the primary confined surfaces.  This
+    makes topology differences (e.g. limited vs diverted) immediately visible.
+
+    The ``ref_name`` string is used as a legend label on the axes.
+
+    Examples
+    --------
+    >>> ref = ReferenceContours(segs_by_level, ref_name="DINA")
+    """
+
+    segments: list[list[np.ndarray]]  # [level][segment] of (N, 2) arrays
+    ref_name: str = "reference"
+    psi_matched: bool = True  # True = absolute psi levels; False = normalised
+    style: InkStyle = field(default_factory=lambda: DEFAULT_STYLE)
+
+
+@dataclass
+class ReferenceLcfs:
+    """LCFS of the validation reference — IDS-verbatim boundary.outline.
+
+    Rendered as a faint dashed outline beneath the primary reconstruction so
+    the reference plasma boundary is always visible.  When ``r`` / ``z`` are
+    empty (reference IDS has no boundary data), nothing is rendered.
+
+    Examples
+    --------
+    >>> ref_lcfs = ReferenceLcfs(boundary_r, boundary_z, ref_name="DINA")
+    """
+
+    r: np.ndarray
+    z: np.ndarray
+    ref_name: str = "reference"
+    style: InkStyle = field(default_factory=lambda: DEFAULT_STYLE)
+
+
+@dataclass
 class MagneticProbes:
     """B-pol magnetic probe positions with optional orientation angles.
 
