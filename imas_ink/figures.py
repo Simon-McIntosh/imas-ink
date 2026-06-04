@@ -335,11 +335,11 @@ def equilibrium_figure_mpl(
         show_probes=show_probes, show_flux_loops=show_flux_loops,
     )
 
-    # --- psi field (optionally mask PFR) ---
-    psi = sl.psi_2d
+    # --- psi field (optionally mask PFR) for confined-surface extraction ---
+    psi_confined = sl.psi_2d
     if mask_pfr_flag:
-        psi = mask_pfr(
-            psi,
+        psi_confined = mask_pfr(
+            sl.psi_2d,
             sl.R_2d,
             sl.Z_2d,
             sl.psi_axis,
@@ -348,22 +348,29 @@ def equilibrium_figure_mpl(
             sl.z_axis,
         )
 
-    # --- flux contour extraction across the FULL psi domain ---
-    # Confined vs SOL classification is by enclosure of the magnetic
-    # axis — a pure geometric test on the plotted grid (no physics
-    # recomputation).  Wall clipping is intentionally omitted: contours
-    # that extend outside the vessel are drawn in thin grey so they
-    # remain visible rather than being silently erased.
-    cx = ContourExtractor(sl.R_2d, sl.Z_2d, psi)
+    # --- Interior (confined) flux surface extraction ---
+    # Uses masked psi so that private-flux lobes are excluded from the
+    # confined-surface set (they are classified as SOL by enclosure test).
+    cx_confined = ContourExtractor(sl.R_2d, sl.Z_2d, psi_confined)
     n_levels = style.flux_n_levels
-    all_level_segs = cx.flux_surfaces(sl.psi_axis, sl.psi_boundary, n=n_levels)
+    interior_level_segs = cx_confined.flux_surfaces(sl.psi_axis, sl.psi_boundary, n=n_levels)
 
     confined_by_level: list[list] = []
-    sol_by_level: list[list] = []
-    for level_segs in all_level_segs:
+    sol_from_interior: list[list] = []
+    for level_segs in interior_level_segs:
         confined, sol = classify_flux_segments(level_segs, sl.r_axis, sl.z_axis)
         confined_by_level.append(confined)
-        sol_by_level.append(sol)
+        sol_from_interior.append(sol)
+
+    # --- Exterior (SOL / vacuum) flux surface extraction ---
+    # Uses the FULL (unmasked) psi grid to capture open-field contours,
+    # private-flux lobes, and grid-edge artefacts — all surfaces that do
+    # NOT enclose the magnetic axis.  Rendered in thin grey.
+    cx_full = ContourExtractor(sl.R_2d, sl.Z_2d, sl.psi_2d)
+    vac_segs_by_level = cx_full.vacuum_surfaces(
+        sl.psi_axis, sl.psi_boundary, n=style.vacuum_n_levels
+    )
+    sol_by_level = sol_from_interior + vac_segs_by_level
 
     flux_confined = FluxContours(confined_by_level, style=style)
     flux_sol = SolContours(sol_by_level, style=style)
@@ -404,21 +411,11 @@ def equilibrium_figure_mpl(
     if containment_result is not None:
         _render_containment_annotation(ax, containment_result)
 
-    # --- vacuum surfaces (unclipped, full grid) ---
-    if show_vacuum_surfaces:
-        import dataclasses
-
-        vac_style = dataclasses.replace(
-            style,
-            sol_color=style.vacuum_color,
-            sol_linewidth=style.vacuum_linewidth,
-            sol_linestyle=style.vacuum_linestyle,
-        )
-        cx_vac = ContourExtractor(sl.R_2d, sl.Z_2d, sl.psi_2d)
-        vac_segs = cx_vac.vacuum_surfaces(
-            sl.psi_axis, sl.psi_boundary, n=style.vacuum_n_levels
-        )
-        render_mpl(ax, SolContours(vac_segs, style=vac_style))
+    # Note: show_vacuum_surfaces is deprecated and has no effect —
+    # vacuum / SOL surfaces are now always rendered via the grey-thin
+    # SolContours path above (enclosure classification + vacuum_surfaces
+    # on the full psi grid).  The parameter is retained for API
+    # compatibility but ignored.
 
     return fig, ax
 
