@@ -123,6 +123,29 @@ class TestClassifyFluxSegments:
         assert len(sol) == 1
 
 
+class TestSolOnlySegments:
+    """Full-field vacuum layers must not render axis-enclosing closed contours."""
+
+    def test_axis_enclosing_closed_segment_is_dropped(self):
+        from imas_ink.figures import _sol_only_segments
+
+        closed = _diamond_poly(5.0, 0.0, 0.5)
+        open_ = _open_line()
+        sol_levels = _sol_only_segments([[closed, open_]], r_axis=5.0, z_axis=0.0)
+        assert len(sol_levels) == 1
+        assert len(sol_levels[0]) == 1
+        np.testing.assert_array_equal(sol_levels[0][0], open_)
+
+    def test_non_axis_closed_segment_is_kept_as_sol(self):
+        from imas_ink.figures import _sol_only_segments
+
+        closed_far = _diamond_poly(9.0, 0.0, 0.3)
+        sol_levels = _sol_only_segments([[closed_far]], r_axis=5.0, z_axis=0.0)
+        assert len(sol_levels) == 1
+        assert len(sol_levels[0]) == 1
+        np.testing.assert_array_equal(sol_levels[0][0], closed_far)
+
+
 # ---------------------------------------------------------------------------
 # 2. LCFS-from-IDS tests
 # ---------------------------------------------------------------------------
