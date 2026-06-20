@@ -51,6 +51,7 @@ from .animate import animate_pulse
 # -- components --------------------------------------------------------------
 from .components import (
     CoilRects,
+    DivertorLegs,
     FluxContours,
     FluxLoops,
     LcfsOutline,
@@ -63,6 +64,7 @@ from .components import (
     ScatterPoints,
     Separatrix,
     SolContours,
+    StrikePoints,
     TimeLabel,
     TimeSeries,
     WallOutline,
@@ -95,7 +97,6 @@ from .geometry import (
     close_polygon,
     coil_bboxes,
     encloses_point,
-    find_xpoints,
     is_closed_contour,
     mask_pfr,
     split_path_segs,
@@ -184,6 +185,8 @@ __all__ = [
     "EMPTY_THRESHOLD",
     "CoilRect",
     "CoilRects",
+    "DivertorLegs",
+    "StrikePoints",
     # contours
     "ContourExtractor",
     # types
@@ -253,7 +256,6 @@ __all__ = [
     "extract_vessel_shells",
     "classify_flux_segments",
     "encloses_point",
-    "find_xpoints",
     "is_closed_contour",
     # sentinel
     "is_empty",

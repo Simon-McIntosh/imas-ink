@@ -7,7 +7,6 @@ from numpy.testing import assert_allclose
 
 from imas_ink.geometry import (
     close_polygon,
-    find_xpoints,
     is_closed_contour,
     mask_pfr,
     split_path_segs,
@@ -35,28 +34,6 @@ def _circular_psi(n: int = 65, r0: float = 6.0, z0: float = 0.0):
     # boundary at some radius
     psi_bnd = psi_max - 1.0  # circle of radius 1
     return psi_2d, r_2d, z_2d, r_1d, z_1d, psi_axis, psi_bnd, r0, z0
-
-
-def _diverted_psi(n: int = 129):
-    """Create a synthetic diverted psi field with an X-point below the axis.
-
-    Uses a simple dipole-like model: circular + vertical gradient to create
-    a saddle point below the magnetic axis.
-    """
-    r_1d = np.linspace(4.0, 8.0, n)
-    z_1d = np.linspace(-3.0, 3.0, n)
-    r_2d, z_2d = np.meshgrid(r_1d, z_1d, indexing="ij")
-    r0, z0 = 6.0, 0.0
-    # Base circular flux
-    dist_sq = (r_2d - r0) ** 2 + (z_2d - z0) ** 2
-    psi_2d = 10.0 - dist_sq
-    # Add a quadrupole perturbation to create X-points
-    psi_2d -= 0.5 * (z_2d - z0) ** 2
-    psi_2d += 0.3 * (r_2d - r0) ** 2
-    psi_axis = float(psi_2d.max())
-    # Pick boundary near the saddle
-    psi_bnd = psi_axis - 3.0
-    return psi_2d, r_2d, z_2d, psi_axis, psi_bnd, r0, z0
 
 
 # ---------------------------------------------------------------------------
@@ -92,39 +69,6 @@ class TestMaskPfr:
         psi_2d, r_2d, z_2d, _, _, psi_axis, psi_bnd, r0, z0 = _circular_psi()
         masked = mask_pfr(psi_2d, r_2d, z_2d, psi_axis, psi_bnd, r0, z0)
         assert masked.shape == psi_2d.shape
-
-
-# ---------------------------------------------------------------------------
-# find_xpoints
-# ---------------------------------------------------------------------------
-class TestFindXpoints:
-    """find_xpoints() — numerical X-point detection."""
-
-    def test_circular_no_xpoints(self):
-        """A circular psi field (no saddle) should return empty list or
-        possibly spurious detections near the edge.  The key is that the
-        function runs without error.
-        """
-        psi_2d, r_2d, z_2d, _, _, psi_axis, psi_bnd, _r0, z0 = _circular_psi()
-        xpts = find_xpoints(psi_2d, r_2d, z_2d, psi_bnd, psi_axis, z0)
-        assert isinstance(xpts, list)
-
-    def test_diverted_finds_xpoints(self):
-        """A diverted field should detect at least one X-point."""
-        psi_2d, r_2d, z_2d, psi_axis, psi_bnd, _r0, z0 = _diverted_psi()
-        xpts = find_xpoints(psi_2d, r_2d, z_2d, psi_bnd, psi_axis, z0)
-        assert len(xpts) >= 1, "Should find at least one X-point"
-        for r_x, _z_x in xpts:
-            assert r_x > 0.05, "X-point R should be positive"
-
-    def test_xpoint_tuple_structure(self):
-        """X-points are returned as (R, Z) tuples of floats."""
-        psi_2d, r_2d, z_2d, psi_axis, psi_bnd, _r0, z0 = _diverted_psi()
-        xpts = find_xpoints(psi_2d, r_2d, z_2d, psi_bnd, psi_axis, z0)
-        for pt in xpts:
-            assert len(pt) == 2
-            assert isinstance(pt[0], float)
-            assert isinstance(pt[1], float)
 
 
 # ---------------------------------------------------------------------------

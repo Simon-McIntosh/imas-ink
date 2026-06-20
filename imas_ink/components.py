@@ -98,6 +98,43 @@ class LcfsOutline:
 
 
 @dataclass
+class DivertorLegs:
+    """Divertor legs read VERBATIM from the IDS magnetic-topology levelset.
+
+    Each leg is an ``(N, 2)`` ``[R, Z]`` polyline running from the X-point to
+    a strike point (DD PR #243 ``contour_tree/node[]/levelset`` segments
+    1..N), already vessel-clipped by the solver.  imas-ink draws them as
+    single continuous lines — no re-contouring.
+
+    Empty ``legs`` renders nothing (limited / vacuum slices, or stock-4.1.0
+    pulses where the multi-segment levelset is not yet in the released DD).
+
+    Examples
+    --------
+    >>> dl = DivertorLegs(sl.legs)
+    """
+
+    legs: list[np.ndarray]  # list of (N, 2) [R, Z] arrays
+    style: InkStyle = field(default_factory=lambda: DEFAULT_STYLE)
+
+
+@dataclass
+class StrikePoints:
+    """Strike-point markers — IDS-verbatim ``constraints.strike_point``.
+
+    Holds ``(R, Z)`` positions where the divertor legs meet the target.
+    Empty ``points`` renders nothing (honest absence).
+
+    Examples
+    --------
+    >>> sp = StrikePoints(sl.strike_points)
+    """
+
+    points: list[tuple[float, float]]
+    style: InkStyle = field(default_factory=lambda: DEFAULT_STYLE)
+
+
+@dataclass
 class WallOutline:
     """First wall outline polygon (one or more units).
 

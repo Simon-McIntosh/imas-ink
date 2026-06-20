@@ -42,6 +42,17 @@ class EquilibriumSlice:
     x_points: list[tuple[float, float]] = field(default_factory=list)
     boundary_r: np.ndarray | None = None
     boundary_z: np.ndarray | None = None
+    # Divertor legs — read VERBATIM from the IDS magnetic-topology levelset
+    # (contour_tree node, DD PR #243).  Each entry is an ``(N, 2)`` array of
+    # ``[R, Z]`` points: a single continuous polyline from the X-point to a
+    # strike point, vessel-clipped, as written by the solver.  Empty list when
+    # the released DD does not yet expose the multi-segment levelset (stock
+    # 4.1.0) or for limited / vacuum slices — never re-contoured here.
+    legs: list[np.ndarray] = field(default_factory=list)
+    # Strike points — read verbatim from
+    # ``constraints.strike_point[].position_reconstructed`` (stock 4.1.0).
+    # Empty list when absent (limited / vacuum slices).
+    strike_points: list[tuple[float, float]] = field(default_factory=list)
     beta_pol: float | None = None
     li_3: float | None = None
     q95: float | None = None

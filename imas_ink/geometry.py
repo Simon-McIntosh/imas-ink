@@ -66,64 +66,6 @@ def mask_pfr(
     return masked
 
 
-def find_xpoints(
-    psi_2d: np.ndarray,
-    r_2d: np.ndarray,
-    z_2d: np.ndarray,
-    psi_bnd: float,
-    psi_axis: float,
-    z_axis: float,
-) -> list[tuple[float, float]]:
-    r"""Numerically detect X-points as :math:`|\nabla\psi|` minima near psi_boundary.
-
-    Searches above and below *z_axis* independently, returning at most one
-    X-point per half-plane. Returns an empty list for limiter plasmas.
-
-    Parameters
-    ----------
-    psi_2d : np.ndarray
-        2D poloidal flux, shape ``(nR, nZ)``.
-    r_2d, z_2d : np.ndarray
-        2D meshgrid coordinates.
-    psi_bnd : float
-        Poloidal flux at the LCFS.
-    psi_axis : float
-        Poloidal flux at the magnetic axis.
-    z_axis : float
-        Vertical position of the magnetic axis.
-
-    Returns
-    -------
-    list[tuple[float, float]]
-        List of ``(R, Z)`` pairs for detected X-points.
-
-    Examples
-    --------
-    >>> xpts = find_xpoints(psi_2d, R_2d, Z_2d, psi_bnd, psi_ax, z_ax)
-    >>> len(xpts)  # 1 for SN, 2 for DN, 0 for limiter
-    1
-    """
-    r_1d = r_2d[:, 0]
-    z_1d = z_2d[0, :]
-    dpsi_dr = np.gradient(psi_2d, r_1d, axis=0)
-    dpsi_dz = np.gradient(psi_2d, z_1d, axis=1)
-    grad_sq = dpsi_dr**2 + dpsi_dz**2
-    band = 0.04 * abs(psi_axis - psi_bnd)
-    near_bnd = np.abs(psi_2d - psi_bnd) < band
-    xpts: list[tuple[float, float]] = []
-    for below in (True, False):
-        offset = 0.1
-        half = near_bnd & (z_2d < z_axis - offset if below else z_2d > z_axis + offset)
-        if not np.any(half):
-            continue
-        g = np.where(half, grad_sq, np.inf)
-        idx = np.unravel_index(np.argmin(g), g.shape)
-        r_x, z_x = float(r_2d[idx]), float(z_2d[idx])
-        if r_x > 0.05:
-            xpts.append((r_x, z_x))
-    return xpts
-
-
 def wall_clip_vertices(wall_r: np.ndarray, wall_z: np.ndarray) -> np.ndarray:
     """Return closed polygon vertices ``(N, 2)`` for wall clipping.
 

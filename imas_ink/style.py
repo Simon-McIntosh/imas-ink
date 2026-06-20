@@ -63,6 +63,21 @@ class InkStyle:
     xpt_markeredgewidth: float = 0.8
     xpt_color: str = "#cc0000"
 
+    # Divertor legs — IDS-verbatim levelset polylines (X-point → strike).
+    # Drawn in the same red family as the separatrix (they are the open
+    # branches of the boundary flux surface) but slightly thinner so the
+    # closed LCFS stays the dominant line.
+    leg_color: str = "#cc0000"
+    leg_linewidth: float = 1.2
+    leg_linestyle: str = "solid"
+
+    # Strike-point markers — where the legs meet the divertor target.
+    strike_marker: str = "o"
+    strike_markersize: float = 4.0
+    strike_markeredgewidth: float = 0.8
+    strike_color: str = "#cc0000"
+    strike_markeredgecolor: str = "white"
+
     # Magnetic probes (B-pol)
     probe_color: str = "#888888"
     # Second colour for the secondary orientation component of co-located
@@ -103,6 +118,8 @@ class InkStyle:
     zorder_markers: int = 6
     zorder_probes: int = 6
     zorder_flux_loops: int = 6
+    zorder_legs: int = 5  # with the separatrix — the legs ARE the open boundary
+    zorder_strikes: int = 6  # markers, on top of the legs
     zorder_label: int = 7
 
     # Vacuum / SOL contours (outside LCFS, full grid, no wall clip)

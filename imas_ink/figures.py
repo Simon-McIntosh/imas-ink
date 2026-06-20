@@ -20,6 +20,7 @@ from typing import TYPE_CHECKING
 from ._types import EquilibriumSlice, MachineGeometry
 from .components import (
     CoilRects,
+    DivertorLegs,
     FluxContours,
     FluxLoops,
     LcfsOutline,
@@ -30,6 +31,7 @@ from .components import (
     ReferenceXPoints,
     Separatrix,
     SolContours,
+    StrikePoints,
     TimeLabel,
     WallOutline,
     XPointMarkers,
@@ -422,6 +424,13 @@ def equilibrium_figure_mpl(
     # X markers.  Honest absence is correct.
     xpoints = XPointMarkers(sl.x_points, style=style)
 
+    # --- Divertor legs + strike points: IDS-verbatim, never re-contoured ---
+    # Legs come from the contour_tree levelset (DD PR #243); strikes from
+    # constraints.strike_point.  Both are empty on stock-4.1.0 (single-segment
+    # levelset → no legs) and on limited / vacuum slices — drawn as nothing.
+    legs = DivertorLegs(getattr(sl, "legs", []) or [], style=style)
+    strikes = StrikePoints(getattr(sl, "strike_points", []) or [], style=style)
+
     # --- Other markers ---
     opoint = OPointMarker(sl.r_axis, sl.z_axis, style=style)
     timelabel = TimeLabel(sl.time, converged=sl.converged, style=style)
@@ -570,6 +579,10 @@ def equilibrium_figure_mpl(
     render_mpl(ax, flux_confined)
     if lcfs is not None:
         render_mpl(ax, lcfs)
+    # Divertor legs (IDS levelset) + strikes — drawn with the LCFS family.
+    # Both no-op gracefully when the IDS carries no legs/strikes.
+    render_mpl(ax, legs)
+    render_mpl(ax, strikes)
     render_mpl(ax, opoint)
     render_mpl(ax, xpoints)
     if ref_xpoints_comp is not None:

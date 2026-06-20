@@ -16,6 +16,7 @@ from matplotlib.patches import Rectangle
 
 from .components import (
     CoilRects,
+    DivertorLegs,
     FluxContours,
     FluxLoops,
     LcfsOutline,
@@ -28,6 +29,7 @@ from .components import (
     ScatterPoints,
     Separatrix,
     SolContours,
+    StrikePoints,
     TimeLabel,
     TimeSeries,
     WallOutline,
@@ -76,6 +78,10 @@ def render_mpl(
         _render_sol_mpl(ax, component)
     elif isinstance(component, LcfsOutline):
         _render_lcfs_mpl(ax, component)
+    elif isinstance(component, DivertorLegs):
+        _render_legs_mpl(ax, component)
+    elif isinstance(component, StrikePoints):
+        _render_strikes_mpl(ax, component)
     elif isinstance(component, Separatrix):
         _render_sep_mpl(ax, component, clip_path)
     elif isinstance(component, WallOutline):
@@ -297,6 +303,57 @@ def _render_lcfs_mpl(ax: Axes, lcfs: LcfsOutline) -> None:
         linewidth=s.sep_linewidth,
         linestyle=s.sep_linestyle,
         zorder=s.zorder_sep,
+    )
+
+
+def _render_legs_mpl(ax: Axes, legs: DivertorLegs) -> None:
+    """Render divertor legs as single continuous lines, IDS-verbatim.
+
+    Each leg is an ``(N, 2)`` ``[R, Z]`` polyline read straight from the
+    magnetic-topology levelset (DD PR #243).  Nothing is recomputed.  An
+    empty ``legs`` list (limited / vacuum slice, or stock-4.1.0 pulse without
+    the multi-segment levelset) renders nothing — graceful degradation.
+    """
+    s = legs.style
+    segs: list[np.ndarray] = []
+    for leg in legs.legs:
+        arr = np.asarray(leg, dtype=float)
+        if arr.ndim == 2 and arr.shape[0] >= 2 and arr.shape[1] == 2:
+            segs.append(arr)
+    if not segs:
+        return
+    lc = LineCollection(
+        segs,
+        colors=s.leg_color,
+        linewidths=s.leg_linewidth,
+        linestyles=s.leg_linestyle,
+        zorder=s.zorder_legs,
+    )
+    ax.add_collection(lc)
+
+
+def _render_strikes_mpl(ax: Axes, strikes: StrikePoints) -> None:
+    """Plot strike-point markers — IDS-verbatim, nothing computed.
+
+    Empty ``points`` renders nothing (honest absence on limited / vacuum
+    slices).
+    """
+    pts = strikes.points
+    if not pts:
+        return
+    s = strikes.style
+    r_vals = [p[0] for p in pts]
+    z_vals = [p[1] for p in pts]
+    ax.plot(
+        r_vals,
+        z_vals,
+        marker=s.strike_marker,
+        markersize=s.strike_markersize,
+        markeredgewidth=s.strike_markeredgewidth,
+        markeredgecolor=s.strike_markeredgecolor,
+        color=s.strike_color,
+        linestyle="none",
+        zorder=s.zorder_strikes,
     )
 
 

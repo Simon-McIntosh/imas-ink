@@ -24,6 +24,124 @@ from .geometry import coil_bboxes, wall_clip_vertices
 _CRITICAL_TYPE_XPOINT = 1
 
 
+def _levelset_segments(node) -> list:
+    """Return the ``levelset`` of a contour_tree node as a list of segments.
+
+    DD PR #243 makes ``contour_tree/node[]/levelset`` an **array of structures**
+    (each a ``rz1d`` segment): segment 0 is the LCFS branch through the node,
+    segments 1..N are the divertor legs (X-point → strike, vessel-clipped).
+
+    On **stock released DD 4.1.0** the same path is a *single* ``IDSStructure``
+    (the AoS is not yet in the released schema): ``len()`` raises ``TypeError``.
+    We treat that as a zero-or-one-segment levelset — i.e. NO legs — and
+    degrade gracefully.  imas-ink never re-contours to fabricate the missing
+    segments; the legs simply appear automatically once #243 releases.
+
+    Returns
+    -------
+    list
+        The levelset segments as a Python list.  Length 0 or 1 means "no
+        legs"; length >= 2 means segment[0] is the LCFS and segments[1:] are
+        the legs.
+    """
+    ls = getattr(node, "levelset", None)
+    if ls is None:
+        return []
+    try:
+        # AoS path (#243): len() succeeds and yields the segment count.
+        return list(ls)
+    except TypeError:
+        # Stock 4.1.0: levelset is a single IDSStructure (no len()).  Treat as
+        # a single segment — never enough to draw a leg, so no legs are drawn.
+        return [ls]
+
+
+def _seg_rz(seg) -> tuple[np.ndarray, np.ndarray] | None:
+    """Extract ``(r, z)`` arrays from a levelset segment, or ``None`` if empty.
+
+    Defensive: a segment with no ``r``/``z``, mismatched lengths, or fewer
+    than two points yields ``None`` (skipped — never drawn).
+    """
+    try:
+        r = np.asarray(seg.r, dtype=float)
+        z = np.asarray(seg.z, dtype=float)
+    except (AttributeError, TypeError, ValueError):
+        return None
+    if r.size < 2 or r.size != z.size:
+        return None
+    return r, z
+
+
+def _extract_legs(ts) -> list[np.ndarray]:
+    """Read divertor legs from the contour_tree levelset — verbatim, no compute.
+
+    DD PR #243 contract: the X-point ``contour_tree`` node carries its
+    ``levelset`` as an array of ``rz1d`` segments — segment 0 is the LCFS
+    branch and segments 1..N are the divertor legs (each a single continuous
+    polyline X-point→strike, vessel-clipped, ordered CCW from the outboard
+    midplane).  Each leg is returned as an ``(N, 2)`` ``[R, Z]`` array.
+
+    The legs are taken from the node whose levelset exposes the most segments
+    (the primary X-point on a single-null, both on a double-null).  imas-ink
+    **never** re-contours ψ to build legs: on stock released 4.1.0 the
+    levelset is a single struct (the AoS is not yet in the schema), so this
+    returns an empty list and the figure degrades gracefully to no legs.
+
+    Returns
+    -------
+    list[np.ndarray]
+        One ``(N, 2)`` array per divertor leg.  Empty for limited / vacuum
+        slices and for stock-4.1.0 pulses without the #243 multi-segment AoS.
+    """
+    ct = getattr(ts, "contour_tree", None)
+    if ct is None:
+        return []
+    legs: list[np.ndarray] = []
+    try:
+        nodes = list(ct.node)
+    except (AttributeError, TypeError):
+        return []
+    for nd in nodes:
+        segs = _levelset_segments(nd)
+        if len(segs) < 2:
+            # Single-segment (or empty) levelset → no legs from this node.
+            continue
+        # Segment 0 is the LCFS branch; segments 1..N are the legs.
+        node_legs: list[np.ndarray] = []
+        for seg in segs[1:]:
+            rz = _seg_rz(seg)
+            if rz is None:
+                continue
+            r, z = rz
+            node_legs.append(np.column_stack([r, z]))
+        legs.extend(node_legs)
+    return legs
+
+
+def _extract_strike_points(ts) -> list[tuple[float, float]]:
+    """Read strike-point (R, Z) positions from the IDS — verbatim, no compute.
+
+    Reads ``constraints.strike_point[].position_reconstructed.r/.z`` (present
+    in stock released DD 4.1.0).  Returns an empty list for honest absence
+    (limited / vacuum slices, or references that do not record strikes).
+    """
+
+    def _valid(r: float, z: float) -> bool:
+        return not (np.isnan(r) or np.isnan(z)) and abs(r) < 1e10 and abs(z) < 1e10
+
+    pts: list[tuple[float, float]] = []
+    try:
+        for sp in ts.constraints.strike_point:
+            pos = sp.position_reconstructed
+            r_s = safe_float(pos.r)
+            z_s = safe_float(pos.z)
+            if _valid(r_s, z_s):
+                pts.append((r_s, z_s))
+    except (AttributeError, IndexError, TypeError):
+        pass
+    return _dedup_points(pts)
+
+
 def _dedup_points(
     points: list[tuple[float, float]], tol: float = 1e-3
 ) -> list[tuple[float, float]]:
@@ -105,7 +223,11 @@ def extract_slice(eq_ids, time_index: int) -> EquilibriumSlice:
     """Extract a single time-slice from an equilibrium IDS.
 
     Reads ``profiles_2d[0]`` grid, ``global_quantities``, and boundary
-    data. Numerically detects X-points if ``boundary.x_point`` is empty.
+    data.  Topology geometry — X-points, divertor legs, and strike points —
+    is read VERBATIM from the IDS.  Nothing is recomputed: imas-ink never
+    numerically detects X-points and never re-contours ψ to fabricate legs.
+    Absent fields (limited / vacuum slices, stock-4.1.0 pulses without the
+    DD PR #243 multi-segment levelset) yield empty lists — honest absence.
 
     Parameters
     ----------
@@ -153,6 +275,13 @@ def extract_slice(eq_ids, time_index: int) -> EquilibriumSlice:
     # An empty result means honest absence (e.g. a limiter slice) — no markers.
     x_points = _extract_x_points(ts)
 
+    # Divertor legs and strike points: read from the IDS only (DD PR #243
+    # levelset for legs; constraints.strike_point for strikes).  Empty on
+    # stock-4.1.0 (single-segment levelset → no legs) and on limited/vacuum
+    # slices.  Never re-contoured.
+    legs = _extract_legs(ts)
+    strike_points = _extract_strike_points(ts)
+
     # Boundary shape
     boundary_r = boundary_z = None
     try:
@@ -182,6 +311,8 @@ def extract_slice(eq_ids, time_index: int) -> EquilibriumSlice:
         x_points=x_points,
         boundary_r=boundary_r,
         boundary_z=boundary_z,
+        legs=legs,
+        strike_points=strike_points,
         beta_pol=beta_pol if not np.isnan(beta_pol) else None,
         li_3=li_3 if not np.isnan(li_3) else None,
         q95=q95 if not np.isnan(q95) else None,
