@@ -274,6 +274,26 @@ def _render_containment_annotation(ax: Axes, containment: dict) -> None:
     )
 
 
+def _sol_only_segments(
+    levels: list[list],
+    r_axis: float,
+    z_axis: float,
+) -> list[list]:
+    """Return only non-axis-enclosing segments from contour *levels*.
+
+    Full-field contour extraction can produce closed segments that still
+    enclose the magnetic axis even when the requested level nominally belongs
+    outside the LCFS.  Those segments must not be rendered as grey SOL/vacuum
+    lines: they visually masquerade as a second confined family / spurious
+    plasma rejoin.  Keep only the segments that classify as SOL/open.
+    """
+    sol_by_level: list[list] = []
+    for level_segs in levels:
+        _confined, sol = classify_flux_segments(level_segs, r_axis, z_axis)
+        sol_by_level.append(sol)
+    return sol_by_level
+
+
 def equilibrium_figure_mpl(
     sl: EquilibriumSlice,
     geom: MachineGeometry,
@@ -403,7 +423,8 @@ def equilibrium_figure_mpl(
     vac_segs_by_level = cx_full.vacuum_surfaces(
         sl.psi_axis, sl.psi_boundary, n=style.vacuum_n_levels
     )
-    sol_by_level = sol_from_interior + vac_segs_by_level
+    sol_from_vacuum = _sol_only_segments(vac_segs_by_level, sl.r_axis, sl.z_axis)
+    sol_by_level = sol_from_interior + sol_from_vacuum
 
     flux_confined = FluxContours(confined_by_level, style=style)
     flux_sol = SolContours(sol_by_level, style=style)
