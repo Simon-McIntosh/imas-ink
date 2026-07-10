@@ -168,3 +168,62 @@ class TestNonPlasmaFlux:
         # reaching toward the grid edge (R spans 4..8, Z spans -4..4).
         assert allpts[:, 0].max() > 7.0
         assert allpts[:, 0].min() < 5.0
+
+
+class TestMembershipDecidesStyle:
+    """Styling is decided by LCFS-polygon membership, not by level value.
+
+    A contour level whose value lies inside ``[psi_axis, psi_boundary]``
+    still exists SPATIALLY both inside and outside the LCFS (the psi
+    contour and the LCFS outline have different shapes).  The whole-grid
+    contour is split at the boundary: the interior portion is plasma-blue,
+    the exterior portion is SOL-grey.  There must be no level value that
+    forces a single style on a segment that straddles the LCFS.
+    """
+
+    def test_split_helper_yields_both_sides(self):
+        """A polyline straddling the polygon splits into inside + outside runs."""
+        from imas_ink.geometry import split_by_polygon_membership
+
+        # Unit square LCFS centred at origin.
+        poly = np.array([[-1.0, -1.0], [1.0, -1.0], [1.0, 1.0], [-1.0, 1.0], [-1.0, -1.0]])
+        # Horizontal line crossing from outside (left) to inside to outside (right).
+        line = np.column_stack([np.linspace(-2.0, 2.0, 21), np.zeros(21)])
+        inside, outside = split_by_polygon_membership(line, poly)
+        assert inside, "expected an interior run"
+        assert len(outside) >= 2, "expected two exterior runs (both ends)"
+        # Interior run is the MIDDLE portion — it does not reach the line ends
+        # (cut at the boundary, within one vertex step of the polygon edge).
+        ins = np.vstack(inside)
+        assert ins[:, 0].min() > -1.5
+        assert ins[:, 0].max() < 1.5
+        # Exterior runs cover the ends of the line.
+        outs = np.vstack(outside)
+        assert outs[:, 0].min() < -1.5
+        assert outs[:, 0].max() > 1.5
+
+    def test_single_level_spans_membership(self):
+        """At least one contour level produces BOTH a blue interior segment and
+        grey exterior segments — membership, not level value, decides style."""
+        from imas_ink.contours import ContourExtractor
+        from imas_ink.geometry import split_by_polygon_membership
+
+        R, Z, psi_2d, pa, pb, ra, za = _synthetic_eq_slice(psi_axis=-50.0, psi_bnd=2.0)
+        # LCFS whose aspect ratio differs from the psi contours so some psi
+        # levels straddle it (part inside, part outside).
+        theta = np.linspace(0, 2 * np.pi, 120)
+        poly = np.column_stack([ra + 1.4 * np.cos(theta), za + 1.2 * np.sin(theta)])
+        cx = ContourExtractor(R, Z, psi_2d)
+        interior, exterior = cx.uniform_step_levels(pa, pb, n_interior=8)
+        all_levels = np.sort(np.concatenate([interior, exterior]))
+        found = False
+        for lev in all_levels:
+            has_in = has_out = False
+            for seg in cx.lines_at(float(lev)):
+                ins, outs = split_by_polygon_membership(seg, poly)
+                has_in = has_in or bool(ins)
+                has_out = has_out or bool(outs)
+            if has_in and has_out:
+                found = True
+                break
+        assert found, "expected at least one level split into both interior and exterior"

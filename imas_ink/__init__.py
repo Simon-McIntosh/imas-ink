@@ -99,6 +99,8 @@ from .geometry import (
     encloses_point,
     is_closed_contour,
     mask_pfr,
+    points_in_polygon,
+    split_by_polygon_membership,
     split_path_segs,
     wall_clip_vertices,
 )
@@ -179,6 +181,7 @@ def __getattr__(name: str):
         return getattr(scene, name)
     raise AttributeError(f"module {__name__!r} has no attribute {name!r}")
 
+
 __all__ = [
     "DEFAULT_DD_VERSION",
     "DEFAULT_STYLE",
@@ -256,6 +259,8 @@ __all__ = [
     "extract_vessel_shells",
     "classify_flux_segments",
     "encloses_point",
+    "points_in_polygon",
+    "split_by_polygon_membership",
     "is_closed_contour",
     # sentinel
     "is_empty",

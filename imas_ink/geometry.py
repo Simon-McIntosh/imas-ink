@@ -389,6 +389,99 @@ def encloses_point(vertices: np.ndarray, r: float, z: float) -> bool:
     return inside
 
 
+def points_in_polygon(points: np.ndarray, vertices: np.ndarray) -> np.ndarray:
+    """Vectorised even-odd ray-casting membership test.
+
+    Parameters
+    ----------
+    points : np.ndarray
+        Shape ``(M, 2)`` array of query points with columns ``[R, Z]``.
+    vertices : np.ndarray
+        Shape ``(N, 2)`` closed polygon with columns ``[R, Z]``.
+
+    Returns
+    -------
+    np.ndarray
+        Boolean array of length ``M``; ``True`` where the point lies
+        inside the polygon.
+
+    Examples
+    --------
+    >>> v = np.array([[0, -1], [1, 0], [0, 1], [-1, 0], [0, -1]])
+    >>> points_in_polygon(np.array([[0.0, 0.0], [2.0, 0.0]]), v).tolist()
+    [True, False]
+    """
+    pts = np.atleast_2d(np.asarray(points, dtype=float))
+    if pts.size == 0:
+        return np.zeros(0, dtype=bool)
+    r = pts[:, 0]
+    z = pts[:, 1]
+    vr = vertices[:, 0]
+    vz = vertices[:, 1]
+    inside = np.zeros(len(pts), dtype=bool)
+    n = len(vertices)
+    j = n - 1
+    for i in range(n):
+        cond = (vz[i] > z) != (vz[j] > z)
+        # Horizontal ray to +R; guard the divide against coincident z.
+        r_cross = (vr[j] - vr[i]) * (z - vz[i]) / (vz[j] - vz[i] + 1e-300) + vr[i]
+        inside ^= cond & (r < r_cross)
+        j = i
+    return inside
+
+
+def split_by_polygon_membership(
+    seg: np.ndarray,
+    vertices: np.ndarray,
+) -> tuple[list[np.ndarray], list[np.ndarray]]:
+    """Split a polyline into inside / outside portions by polygon membership.
+
+    The polyline is walked vertex by vertex; wherever consecutive
+    vertices differ in polygon membership the polyline is cut.  The cut
+    point (midpoint of the straddling pair) is appended to BOTH the
+    closing run and the opening run so the inside (plasma) and outside
+    (SOL) portions meet at the polygon boundary with no visual gap.
+
+    This is a **styling** split: it decides which portions of a
+    whole-grid contour render in the confined-plasma colour vs the SOL
+    grey.  It invents no physics values.
+
+    Parameters
+    ----------
+    seg : np.ndarray
+        Shape ``(N, 2)`` polyline with columns ``[R, Z]``.
+    vertices : np.ndarray
+        Closed polygon (LCFS) ``(M, 2)`` with columns ``[R, Z]``.
+
+    Returns
+    -------
+    tuple[list[np.ndarray], list[np.ndarray]]
+        ``(inside_runs, outside_runs)`` — each a list of ``(K, 2)``
+        arrays with ``K >= 2``.
+    """
+    seg = np.asarray(seg, dtype=float)
+    if seg.shape[0] < 2:
+        return [], []
+    flags = points_in_polygon(seg, vertices)
+    inside_runs: list[np.ndarray] = []
+    outside_runs: list[np.ndarray] = []
+    run: list[np.ndarray] = [seg[0]]
+    run_inside = bool(flags[0])
+    for i in range(1, len(seg)):
+        if bool(flags[i]) == run_inside:
+            run.append(seg[i])
+            continue
+        mid = (seg[i - 1] + seg[i]) / 2.0
+        run.append(mid)
+        (inside_runs if run_inside else outside_runs).append(np.asarray(run))
+        run = [mid, seg[i]]
+        run_inside = bool(flags[i])
+    (inside_runs if run_inside else outside_runs).append(np.asarray(run))
+    inside_runs = [r for r in inside_runs if len(r) >= 2]
+    outside_runs = [r for r in outside_runs if len(r) >= 2]
+    return inside_runs, outside_runs
+
+
 def classify_flux_segments(
     level_segs: list[np.ndarray],
     r_axis: float,

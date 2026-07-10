@@ -17,6 +17,8 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
+import numpy as np
+
 from ._types import EquilibriumSlice, MachineGeometry
 from .components import (
     CoilRects,
@@ -37,7 +39,7 @@ from .components import (
     XPointMarkers,
 )
 from .contours import ContourExtractor
-from .geometry import classify_flux_segments, mask_pfr
+from .geometry import classify_flux_segments, mask_pfr, split_by_polygon_membership
 from .mpl import render_mpl
 from .style import DEFAULT_STYLE, InkStyle
 
@@ -388,49 +390,57 @@ def equilibrium_figure_mpl(
         show_flux_loops=show_flux_loops,
     )
 
-    # --- psi field (optionally mask PFR) for confined-surface extraction ---
-    psi_confined = sl.psi_2d
-    if mask_pfr_flag:
-        psi_confined = mask_pfr(
-            sl.psi_2d,
-            sl.R_2d,
-            sl.Z_2d,
-            sl.psi_axis,
-            sl.psi_boundary,
-            sl.r_axis,
-            sl.z_axis,
-        )
-
     # --- Unified contour levels: ONE uniform step, corner to corner ---
     # The step is set by the confined region and the SAME step is applied
-    # across the ENTIRE psi grid (no clipping to the wall or LCFS bbox).
-    # Levels inside the LCFS are candidate confined surfaces; levels outside
-    # it are the non-plasma (vacuum / SOL) family, rendered light grey + thin.
-    # On a vacuum slice (sentinel psi_axis/psi_boundary) there is no interior
-    # set — the whole map contours in the non-plasma style.
-    cx_confined = ContourExtractor(sl.R_2d, sl.Z_2d, psi_confined)
+    # across the ENTIRE psi grid (no clipping to the wall or LCFS bbox).  Every
+    # level is contoured over the WHOLE grid on the unmasked psi field; the
+    # styling decision (confined-blue vs SOL-grey) is then made per SEGMENT by
+    # LCFS-polygon membership, NOT by which side of psi_boundary the level sits.
+    # A single contour that crosses the LCFS is split at the boundary so the
+    # confined interior and the SOL exterior meet with no gap — there is no
+    # annulus of blank space between the plasma and the surrounding vacuum
+    # contours.  On a vacuum slice (no LCFS outline) every segment is SOL-grey.
     cx_full = ContourExtractor(sl.R_2d, sl.Z_2d, sl.psi_2d)
     n_levels = style.flux_n_levels
     interior_levels, exterior_levels = cx_full.uniform_step_levels(
         sl.psi_axis, sl.psi_boundary, n_interior=n_levels
     )
+    all_levels = np.sort(
+        np.concatenate(
+            [
+                np.asarray(interior_levels, dtype=float),
+                np.asarray(exterior_levels, dtype=float),
+            ]
+        )
+    )
 
-    # Interior levels: contour on the PFR-masked psi so private-flux lobes are
-    # split out, then classify closed-axis-enclosing (confined) vs open (SOL).
+    # LCFS polygon drives the membership styling.  Present → interior is blue;
+    # absent (vacuum / non-converged, no boundary.outline) → everything grey.
+    lcfs_poly: np.ndarray | None = None
+    if sl.boundary_r is not None and sl.boundary_z is not None:
+        _br = np.asarray(sl.boundary_r, dtype=float)
+        _bz = np.asarray(sl.boundary_z, dtype=float)
+        if _br.size >= 3:
+            _poly = np.column_stack([_br, _bz])
+            if not np.allclose(_poly[0], _poly[-1]):
+                _poly = np.vstack([_poly, _poly[0]])
+            lcfs_poly = _poly
+
     confined_by_level: list[list] = []
-    sol_from_interior: list[list] = []
-    for lev in interior_levels:
-        level_segs = cx_confined.lines_at(float(lev))
-        confined, sol = classify_flux_segments(level_segs, sl.r_axis, sl.z_axis)
-        confined_by_level.append(confined)
-        sol_from_interior.append(sol)
-
-    # Exterior levels: contour on the FULL (unmasked) grid so open-field
-    # contours, private-flux lobes and grid-edge surfaces are all captured
-    # corner-to-corner.  All are non-plasma → grey/thin.
-    vac_segs_by_level = [cx_full.lines_at(float(lev)) for lev in exterior_levels]
-    sol_from_vacuum = _sol_only_segments(vac_segs_by_level, sl.r_axis, sl.z_axis)
-    sol_by_level = sol_from_interior + sol_from_vacuum
+    sol_by_level: list[list] = []
+    for lev in all_levels:
+        level_segs = cx_full.lines_at(float(lev))
+        if lcfs_poly is None:
+            sol_by_level.append(level_segs)
+            continue
+        inside_all: list = []
+        outside_all: list = []
+        for seg in level_segs:
+            ins, outs = split_by_polygon_membership(seg, lcfs_poly)
+            inside_all.extend(ins)
+            outside_all.extend(outs)
+        confined_by_level.append(inside_all)
+        sol_by_level.append(outside_all)
 
     flux_confined = FluxContours(confined_by_level, style=style)
     flux_sol = SolContours(sol_by_level, style=style)
