@@ -105,6 +105,72 @@ class TestFluxSurfaces:
 
 
 # ---------------------------------------------------------------------------
+# uniform_step_levels
+# ---------------------------------------------------------------------------
+class TestUniformStepLevels:
+    """ContourExtractor.uniform_step_levels() — one step, corner to corner."""
+
+    def test_single_uniform_step_inside_and_outside(self, cx, field_params):
+        """Interior and exterior levels share the SAME step, set by the
+        confined region ``dpsi = (psi_axis - psi_bnd) / (n+1)``."""
+        psi_axis, psi_bnd = field_params
+        n = 6
+        interior, exterior = cx.uniform_step_levels(psi_axis, psi_bnd, n_interior=n)
+        expected_step = abs(psi_axis - psi_bnd) / (n + 1)
+        combined = np.sort(np.concatenate([interior, exterior]))
+        assert combined.size >= n
+        diffs = np.diff(combined)
+        # Every neighbouring level is one uniform step apart.
+        assert np.allclose(diffs, expected_step, rtol=1e-6)
+
+    def test_interior_count_matches_n(self, cx, field_params):
+        """The confined band [psi_bnd, psi_axis] carries n interior levels."""
+        psi_axis, psi_bnd = field_params
+        interior, _ = cx.uniform_step_levels(psi_axis, psi_bnd, n_interior=6)
+        assert interior.size == 6
+
+    def test_levels_span_full_grid_range(self, cx, field_params):
+        """Levels reach from near psi_min to near psi_max (corner-to-corner),
+        i.e. the exterior set extends beyond the LCFS out to the grid edge."""
+        psi_axis, psi_bnd = field_params
+        interior, exterior = cx.uniform_step_levels(psi_axis, psi_bnd, n_interior=6)
+        combined = np.concatenate([interior, exterior])
+        psi_min = float(cx.psi_2d.min())
+        psi_max = float(cx.psi_2d.max())
+        step = abs(psi_axis - psi_bnd) / 7
+        assert exterior.size > 0, "must contour outside the LCFS"
+        # Coverage extends to within one step of both grid extrema
+        # (1.5*step tolerance absorbs floating-point anchor rounding).
+        assert combined.min() <= psi_min + 1.5 * step
+        assert combined.max() >= psi_max - 1.5 * step
+
+    def test_interior_strictly_inside_lcfs(self, cx, field_params):
+        """Interior levels lie strictly between axis and boundary; exterior
+        levels lie strictly outside that band."""
+        psi_axis, psi_bnd = field_params
+        interior, exterior = cx.uniform_step_levels(psi_axis, psi_bnd, n_interior=6)
+        lo, hi = sorted((psi_axis, psi_bnd))
+        assert np.all((interior > lo) & (interior < hi))
+        assert np.all((exterior <= lo) | (exterior >= hi))
+
+    def test_vacuum_slice_sentinel_axis(self, cx):
+        """A vacuum slice (NaN psi_axis/boundary) yields NO interior levels but
+        still contours the whole grid in the exterior (non-plasma) set."""
+        interior, exterior = cx.uniform_step_levels(float("nan"), float("nan"), n_interior=6)
+        assert interior.size == 0
+        assert exterior.size > 0
+        # Uniform spacing across the full grid range.
+        diffs = np.diff(np.sort(exterior))
+        assert np.allclose(diffs, diffs[0], rtol=1e-6)
+
+    def test_vacuum_slice_large_sentinel(self, cx):
+        """IMAS EMPTY sentinels (|v| > 1e10, not NaN) are treated as vacuum."""
+        interior, exterior = cx.uniform_step_levels(-9.0e40, -9.0e40, n_interior=6)
+        assert interior.size == 0
+        assert exterior.size > 0
+
+
+# ---------------------------------------------------------------------------
 # separatrix
 # ---------------------------------------------------------------------------
 class TestSeparatrix:

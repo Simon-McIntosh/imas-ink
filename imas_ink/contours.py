@@ -166,6 +166,90 @@ class ContourExtractor:
         levels = np.linspace(psi_bnd, psi_grid_edge, n + 2)[1:-1]
         return [self.lines_at(lev) for lev in levels]
 
+    def uniform_step_levels(
+        self,
+        psi_axis: float,
+        psi_bnd: float,
+        n_interior: int = 6,
+    ) -> tuple[np.ndarray, np.ndarray]:
+        """Contour levels at a SINGLE uniform step across the whole grid.
+
+        The step is set once by the confined region —
+        ``dpsi = |psi_axis - psi_bnd| / (n_interior + 1)`` — and the
+        **same** step is used for every level from one corner of the psi
+        grid to the other.  Levels are generated across the entire grid
+        psi range ``[psi_2d.min(), psi_2d.max()]`` (corner-to-corner, no
+        clipping to the wall or LCFS) and partitioned into those strictly
+        inside the LCFS and those outside it.
+
+        Vacuum / non-plasma slices — where ``psi_axis`` and/or ``psi_bnd``
+        are IMAS EMPTY sentinels (extracted as NaN or ``|v| > 1e10``) or
+        the two coincide — have no confined region.  The step then falls
+        back to a grid-range spacing (``(psi_max - psi_min) / (n+1)``) and
+        **all** levels are returned as exterior, so the full flux map is
+        still contoured in the non-plasma style.
+
+        Parameters
+        ----------
+        psi_axis : float
+            Poloidal flux at the magnetic axis (may be a sentinel/NaN).
+        psi_bnd : float
+            Poloidal flux at the LCFS (may be a sentinel/NaN).
+        n_interior : int
+            Number of contour intervals used to size the uniform step.
+
+        Returns
+        -------
+        tuple[np.ndarray, np.ndarray]
+            ``(interior_levels, exterior_levels)`` — sorted level arrays
+            strictly inside and strictly outside the LCFS respectively.
+            For a vacuum slice ``interior_levels`` is empty.
+        """
+        finite = np.isfinite(self.psi_2d)
+        if not finite.any():
+            return np.array([]), np.array([])
+        psi_min = float(np.nanmin(self.psi_2d))
+        psi_max = float(np.nanmax(self.psi_2d))
+        if not np.isfinite(psi_min) or not np.isfinite(psi_max) or psi_max <= psi_min:
+            return np.array([]), np.array([])
+
+        sentinel = 1e10
+
+        def _usable(v: float) -> bool:
+            return v is not None and np.isfinite(float(v)) and abs(float(v)) < sentinel
+
+        have_lcfs = (
+            _usable(psi_axis) and _usable(psi_bnd) and abs(float(psi_axis) - float(psi_bnd)) > 0.0
+        )
+
+        if have_lcfs:
+            dpsi = abs(float(psi_axis) - float(psi_bnd)) / (n_interior + 1)
+            anchor = float(psi_bnd)
+        else:
+            # Vacuum slice: no confined region — size the step from the grid.
+            dpsi = (psi_max - psi_min) / (n_interior + 1)
+            anchor = psi_min
+
+        if dpsi <= 0:
+            return np.array([]), np.array([])
+
+        # Generate a uniform ladder of levels anchored at the LCFS (or the
+        # grid floor for a vacuum slice) spanning the full grid range.
+        k_lo = int(np.floor((psi_min - anchor) / dpsi))
+        k_hi = int(np.ceil((psi_max - anchor) / dpsi))
+        levels = anchor + np.arange(k_lo, k_hi + 1) * dpsi
+        # Keep strictly inside the grid range (endpoints carry no contour).
+        levels = levels[(levels > psi_min) & (levels < psi_max)]
+
+        if not have_lcfs:
+            return np.array([]), np.sort(levels)
+
+        lo, hi = sorted((float(psi_axis), float(psi_bnd)))
+        interior_mask = (levels > lo) & (levels < hi)
+        interior = np.sort(levels[interior_mask])
+        exterior = np.sort(levels[~interior_mask])
+        return interior, exterior
+
     def separatrix(self, psi_bnd: float) -> list[np.ndarray]:
         """Extract the separatrix (LCFS) contour segments.
 

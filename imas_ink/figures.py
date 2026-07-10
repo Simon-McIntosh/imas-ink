@@ -401,28 +401,34 @@ def equilibrium_figure_mpl(
             sl.z_axis,
         )
 
-    # --- Interior (confined) flux surface extraction ---
-    # Uses masked psi so that private-flux lobes are excluded from the
-    # confined-surface set (they are classified as SOL by enclosure test).
+    # --- Unified contour levels: ONE uniform step, corner to corner ---
+    # The step is set by the confined region and the SAME step is applied
+    # across the ENTIRE psi grid (no clipping to the wall or LCFS bbox).
+    # Levels inside the LCFS are candidate confined surfaces; levels outside
+    # it are the non-plasma (vacuum / SOL) family, rendered light grey + thin.
+    # On a vacuum slice (sentinel psi_axis/psi_boundary) there is no interior
+    # set — the whole map contours in the non-plasma style.
     cx_confined = ContourExtractor(sl.R_2d, sl.Z_2d, psi_confined)
+    cx_full = ContourExtractor(sl.R_2d, sl.Z_2d, sl.psi_2d)
     n_levels = style.flux_n_levels
-    interior_level_segs = cx_confined.flux_surfaces(sl.psi_axis, sl.psi_boundary, n=n_levels)
+    interior_levels, exterior_levels = cx_full.uniform_step_levels(
+        sl.psi_axis, sl.psi_boundary, n_interior=n_levels
+    )
 
+    # Interior levels: contour on the PFR-masked psi so private-flux lobes are
+    # split out, then classify closed-axis-enclosing (confined) vs open (SOL).
     confined_by_level: list[list] = []
     sol_from_interior: list[list] = []
-    for level_segs in interior_level_segs:
+    for lev in interior_levels:
+        level_segs = cx_confined.lines_at(float(lev))
         confined, sol = classify_flux_segments(level_segs, sl.r_axis, sl.z_axis)
         confined_by_level.append(confined)
         sol_from_interior.append(sol)
 
-    # --- Exterior (SOL / vacuum) flux surface extraction ---
-    # Uses the FULL (unmasked) psi grid to capture open-field contours,
-    # private-flux lobes, and grid-edge artefacts — all surfaces that do
-    # NOT enclose the magnetic axis.  Rendered in thin grey.
-    cx_full = ContourExtractor(sl.R_2d, sl.Z_2d, sl.psi_2d)
-    vac_segs_by_level = cx_full.vacuum_surfaces(
-        sl.psi_axis, sl.psi_boundary, n=style.vacuum_n_levels
-    )
+    # Exterior levels: contour on the FULL (unmasked) grid so open-field
+    # contours, private-flux lobes and grid-edge surfaces are all captured
+    # corner-to-corner.  All are non-plasma → grey/thin.
+    vac_segs_by_level = [cx_full.lines_at(float(lev)) for lev in exterior_levels]
     sol_from_vacuum = _sol_only_segments(vac_segs_by_level, sl.r_axis, sl.z_axis)
     sol_by_level = sol_from_interior + sol_from_vacuum
 
