@@ -243,7 +243,7 @@ def render_coilset(
 # ---------------------------------------------------------------------------
 
 
-def _build_cutaway_static(
+def _build_cutaway_geometry(
     *,
     wall_ids,
     pf_active,
@@ -261,11 +261,12 @@ def _build_cutaway_static(
     is a ``dict[str, CappedMesh]`` and *first_wall_outline* is a
     :class:`~imas_ink.three_d.walls.FirstWall` or ``None``.
 
-    Separated from the plotter setup so that future animation code can
-    cache the static geometry and only update the flux overlay per frame.
+    This helper is time-independent: it depends only on the machine
+    description (wall, PF, TF), not on any equilibrium data.  The
+    animator calls it once and reuses the result across all frames.
     """
     from .coilset import extract_pf_coils, extract_tf_coils
-    from .cutaway import ClipPlane, capped_clip_multiblock
+    from .cutaway import capped_clip_multiblock
     from .walls import (
         extract_first_wall,
         extract_vessel_shells,
@@ -318,6 +319,40 @@ def _build_cutaway_static(
     # Clip all blocks
     clipped = capped_clip_multiblock(blocks, clip_plane)
     return clipped, first_wall
+
+
+def _build_cutaway_overlay(
+    *,
+    clipped_blocks,
+    first_wall,
+    slice_2d,
+    clip_plane,
+    flux_mode: str,
+    n_levels: int,
+):
+    """Build the flux overlay for a single equilibrium time-slice.
+
+    Returns the :class:`FluxOverlay` (or ``None`` if no first-wall cap
+    is available).  This is the per-frame work for the animator.
+    """
+    from .flux_projection import build_flux_overlay
+
+    fw_capped = clipped_blocks.get("first_wall")
+    if fw_capped is None or fw_capped.cap.n_cells == 0:
+        return None
+
+    cap_poly_2d = None
+    if first_wall is not None:
+        cap_poly_2d = (first_wall.r, first_wall.z)
+
+    return build_flux_overlay(
+        fw_capped.cap,
+        slice_2d,
+        mode=flux_mode,
+        n_levels=n_levels,
+        plane_normal=clip_plane.normal,
+        cap_polygon_2d=cap_poly_2d,
+    )
 
 
 def render_cutaway_with_flux(
@@ -394,7 +429,7 @@ def render_cutaway_with_flux(
     from .._dd import resolve_dd_version
     from .cutaway import ClipPlane, auto_camera
     from .equilibrium import extract_slice_2d
-    from .flux_projection import build_flux_overlay, offset_along_normal
+    from .flux_projection import offset_along_normal
 
     # -- Resolve DD version and open IDS bundle -------------------------
     dd = resolve_dd_version(dd_version)
@@ -418,7 +453,7 @@ def render_cutaway_with_flux(
         clip_plane = ClipPlane(origin=(0.0, 0.0, 0.0), normal=(0.0, 1.0, 0.0))
 
     # -- Build static clipped geometry ----------------------------------
-    clipped_blocks, first_wall = _build_cutaway_static(
+    clipped_blocks, first_wall = _build_cutaway_geometry(
         wall_ids=wall_ids,
         pf_active=pf_active,
         tf_ids=tf_ids,
@@ -431,21 +466,14 @@ def render_cutaway_with_flux(
     )
 
     # -- Build flux overlay on first-wall cap ---------------------------
-    fw_capped = clipped_blocks.get("first_wall")
-    overlay = None
-    if fw_capped is not None and fw_capped.cap.n_cells > 0:
-        cap_poly_2d = None
-        if first_wall is not None:
-            cap_poly_2d = (first_wall.r, first_wall.z)
-
-        overlay = build_flux_overlay(
-            fw_capped.cap,
-            slice_2d,
-            mode=flux_mode,
-            n_levels=n_levels,
-            plane_normal=clip_plane.normal,
-            cap_polygon_2d=cap_poly_2d,
-        )
+    overlay = _build_cutaway_overlay(
+        clipped_blocks=clipped_blocks,
+        first_wall=first_wall,
+        slice_2d=slice_2d,
+        clip_plane=clip_plane,
+        flux_mode=flux_mode,
+        n_levels=n_levels,
+    )
 
     # -- Plotter setup --------------------------------------------------
     pv.OFF_SCREEN = True
