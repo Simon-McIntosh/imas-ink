@@ -244,12 +244,15 @@ meaningless. Instead, name files after what they test or implement:
 
 ## Testing
 
+Follow `~/.agents/AGENTS.md` "Development Environment". Use the existing root
+`.venv`; missing test or 3D extras are blockers. In a detached worktree, set
+`UV_PROJECT_ENVIRONMENT=/home/ITER/mcintos/Code/imas-ink/.venv` and
+`PYTHONPATH="$PWD"` before running:
+
 ```bash
-uv sync --extra test              # base install + pytest
-uv sync --extra 3d --extra test   # plus VTK/pyvista for 3D tests
-uv run pytest                     # default: non-render tests
-uv run pytest -m render           # render-marked tests (VTK off-screen)
-uv run pytest --cov=imas_ink      # with coverage
+uv run --no-sync pytest                     # default: non-render tests
+uv run --no-sync pytest -m render           # render-marked tests (VTK off-screen)
+uv run --no-sync pytest --cov=imas_ink      # with coverage
 ```
 
 The `render` marker gates tests that construct a `pyvista.Plotter`. These
