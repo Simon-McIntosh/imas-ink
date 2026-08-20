@@ -244,15 +244,23 @@ meaningless. Instead, name files after what they test or implement:
 
 ## Testing
 
-Follow `~/.agents/AGENTS.md` "Development Environment". Use the existing root
-`.venv`; missing test or 3D extras are blockers. In a detached worktree, set
-`UV_PROJECT_ENVIRONMENT=/home/ITER/mcintos/Code/imas-ink/.venv` and
-`PYTHONPATH="$PWD"` before running:
+Follow `~/.agents/AGENTS.md` "Development Environment". Run against the repo's
+root `.venv` and keep it current — if the test or 3D extras are missing, sync
+them in (`uv sync --extra test --extra 3d`) rather than reporting a blocker.
 
 ```bash
-uv run --no-sync pytest                     # default: non-render tests
-uv run --no-sync pytest -m render           # render-marked tests (VTK off-screen)
-uv run --no-sync pytest --cov=imas_ink      # with coverage
+uv run pytest                     # default: non-render tests
+uv run pytest -m render           # render-marked tests (VTK off-screen)
+uv run pytest --cov=imas_ink      # with coverage
+```
+
+In a **detached worktree**, reuse the main checkout's environment instead of
+building a second one — `--no-sync` here because that environment is shared with
+the main checkout and concurrent workers:
+
+```bash
+UV_PROJECT_ENVIRONMENT=/home/ITER/mcintos/Code/imas-ink/.venv \
+  PYTHONPATH="$PWD" uv run --no-sync pytest
 ```
 
 The `render` marker gates tests that construct a `pyvista.Plotter`. These
@@ -283,7 +291,7 @@ have to pin a version themselves.
 
 ```bash
 # Stdio transport (for Copilot CLI, Claude Desktop, etc.)
-uv run --no-sync imas-ink serve
+uv run imas-ink serve
 ```
 
 Register in `~/.copilot/mcp-config.json`:
@@ -298,6 +306,12 @@ Register in `~/.copilot/mcp-config.json`:
   }
 }
 ```
+
+`--no-sync` is kept in the client config because the client autostarts the
+server at unpredictable moments — a sync fired then would mutate the shared root
+environment while someone else is working in it, and a transient sync failure
+would stop the server from starting at all. Keep the environment current from
+the checkout with `uv sync`, not from the MCP client.
 
 Tools exposed:
 
