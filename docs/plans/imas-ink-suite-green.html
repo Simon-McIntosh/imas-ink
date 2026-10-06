@@ -23,7 +23,7 @@
   <title>imas-ink Suite Green | imas-ink</title>
   <link rel="stylesheet" href="/_shared/foundation.css">
   <link rel="stylesheet" href="/_shared/dashboard.css">
-<meta name="plan-version" content="12">
+<meta name="plan-version" content="13">
 <meta name="plan-modified" content="2026-10-06">
 </head>
 <body>
@@ -88,6 +88,9 @@
 </div>
 <div class="r-comment" data-section="s3" data-id="c-run-r-20261006T172709090844-ink-ruff-config-format" data-who="reckon-build" data-when="2026-10-06T17:33:56.856Z">
     <div class="r-comment-body"><p>.ruff.toml is deleted in its own commit (a5196af) leaving pyproject.toml the single ruff config — ruff check --show-settings imas_ink/__init__.py now names pyproject.toml and lists the tests/** B011/SIM117 and examples/** E402 ignores; a style(format): commit (8034d2a) reformats the 19 files ruff format --no-sync named; measure: uv run --no-sync ruff check . and ruff format --check . both exit 0 and the suite is unchanged at 418 passed / 6 skipped / 0 failed.</p></div>
+</div>
+<div class="r-comment" data-section="s3" data-id="c-run-r-20261006T173500979304-review-of-ink-ruff-config-format" data-who="reckon-build" data-when="2026-10-06T17:45:09.152Z">
+    <div class="r-comment-body"><p>Reviewed run r-20261006T172709090844-ink-ruff-config-format scores 119/120 (goal_fidelity 20, evidence 20, scope_discipline 20, durability 20, fit 19, reuse 20); the parsed record stores reviewed_base_sha f9a159b, reviewed_head_sha 98fb893 and added_failure_count 0 with reviewed-run gate logs reconciling to every §3 done-when clause, all independently reproduced in a $TMPDIR scratch extraction (head ruff check . and ruff format --check . exit 0; settings path pyproject.toml listing tests/** B011+SIM117 and examples/** E402; base format --check exits 1 naming the same 19 files; suite 418 passed / 6 skipped / 0 failed at both arms).</p></div>
 </div>
 </section>
 </main>
