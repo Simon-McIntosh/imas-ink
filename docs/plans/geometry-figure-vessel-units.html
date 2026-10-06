@@ -22,7 +22,7 @@
   <title>Geometry Figure Vessel Units | imas-ink</title>
   <link rel="stylesheet" href="/_shared/foundation.css">
   <link rel="stylesheet" href="/_shared/dashboard.css">
-<meta name="plan-version" content="6">
+<meta name="plan-version" content="7">
 <meta name="plan-modified" content="2026-10-06">
 <meta name="plan-section-declarations" content="{&quot;s1&quot;:&quot;implementable&quot;,&quot;s2&quot;:&quot;implementable&quot;,&quot;s3&quot;:&quot;implementable&quot;}">
 </head>
@@ -65,15 +65,20 @@
       The 2D figure must not load the 3D stack, and importing anything under <code>imas_ink.three_d</code>
       loads that subpackage, which <code>imas_ink/__init__.py</code> keeps out of the eager import graph.
       So the vessel types and extractor move into core modules by role: <code>WallOutline2D</code> and
-      <code>VesselShell</code> into <code>imas_ink/_types.py</code> beside <code>MachineGeometry</code>, and
-      <code>extract_vessel_shells</code> with the <code>_offset_polygon</code> it needs into
-      <code>imas_ink/extract.py</code>, which already reads IDSs (<code>imas_ink/geometry.py</code> keeps no
-      IMAS objects, as its docstring states). The moved extractor reads <code>thickness</code> through
-      the shared sentinel guard <code>safe_float</code> (<code>imas_ink/_sentinel.py</code>) rather than
-      <code>walls.py</code>'s private copy, which stays for its 3D callers. <code>three_d/walls.py</code>
-      imports the types, the extractor and <code>_offset_polygon</code> (still used by
-      <code>synthesize_vessel_shell</code>) from their new homes, so the 3D path and its public names are
-      unchanged and each piece keeps one owner.
+      <code>VesselShell</code> into <code>imas_ink/_types.py</code> beside <code>MachineGeometry</code>;
+      <code>extract_vessel_shells</code>, which reads IDSs, into <code>imas_ink/extract.py</code>; and the
+      pure-numpy <code>_offset_polygon</code> it uses into <code>imas_ink/geometry.py</code> beside
+      <code>close_polygon</code> and <code>points_in_polygon</code>. The moved extractor reads
+      <code>thickness</code> through the shared sentinel guard <code>safe_float</code>
+      (<code>imas_ink/_sentinel.py</code>), and <code>walls.py</code>'s private <code>_safe_float</code>,
+      whose only caller was that extractor, is deleted (a separate copy in
+      <code>three_d/coilset.py</code> is outside this plan). <code>three_d/walls.py</code> imports the
+      types, the extractor and <code>_offset_polygon</code> (still used by
+      <code>synthesize_vessel_shell</code>) from their new homes, and the lazy name map in
+      <code>imas_ink/__init__.py</code> points <code>VesselShell</code>, <code>WallOutline2D</code> and
+      <code>extract_vessel_shells</code> at <code>_types.py</code> and <code>extract.py</code>, so top-level
+      access no longer loads <code>three_d</code>, the 3D path and its public names are unchanged, and
+      each piece keeps one owner.
     </p>
     <p>
       The 2D pipeline then carries those shells. <code>extract_geometry</code>
@@ -157,7 +162,9 @@
       label; each later series is drawn with <code>color</code> set to the first line's colour and
       <code>label_axes=False</code>, so it adds a line in its own style's <code>trace_linestyle</code> and
       sets no label and no legend, and the panel's labelling never changes with the number of series.
-      <code>render_mpl</code> passes the keywords through for a <code>TimeSeries</code>. A caller marks the second series
+      The two keywords stay on the private renderer: the panel loop calls
+      <code>_render_timeseries_mpl</code> directly for the later series, so the public
+      <code>render_mpl</code> signature does not change. A caller marks the second series
       with <code>replace(DEFAULT_STYLE, trace_linestyle=DEFAULT_STYLE.ref_lcfs_linestyle)</code>. A panel
       given as a single <code>TimeSeries</code> is drawn exactly as today.
     </p>
