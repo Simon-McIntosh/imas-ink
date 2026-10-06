@@ -22,7 +22,7 @@
   <title>Geometry Figure Vessel Units | imas-ink</title>
   <link rel="stylesheet" href="/_shared/foundation.css">
   <link rel="stylesheet" href="/_shared/dashboard.css">
-<meta name="plan-version" content="19">
+<meta name="plan-version" content="20">
 <meta name="plan-modified" content="2026-10-06">
 <meta name="plan-section-declarations" content="{&quot;s1&quot;:&quot;done&quot;,&quot;s2&quot;:&quot;done&quot;,&quot;s3&quot;:&quot;done&quot;,&quot;s4&quot;:&quot;implementable&quot;}">
 <meta name="plan-commits" content="03d9593,94bd8f3,3dc98af,aca351d,f1eadd8,db2ee9f">
@@ -113,6 +113,9 @@
 </div>
 <div class="r-comment" data-section="s4" data-id="c-20261006T1218-waiver" data-who="reckon-build" data-when="2026-10-06T12:18:00Z">
     <div class="r-comment-body">node ink-one-skin dispatched with --allow-unreviewed-plan: the only changes since the answered v11 design review were the landing collapses of the finished §2 and §3 (record-keeping); §4's text is exactly as reviewed.</div>
+</div>
+<div class="r-comment" data-section="s4" data-id="c-run-r-20261006T121701896251-ink-one-skin" data-who="reckon-build" data-when="2026-10-06T12:22:44.870Z">
+    <div class="r-comment-body"><p>extract_vessel_shells now returns one VesselShell per filled annular outline (inner then outer), so a unit with only outline_outer or only outline_inner filled yields that one closed shell; a both-filled unit is unchanged; measure tests/unit/test_vessel_units.py 15 passed, pytest tests/unit adds no failure against base (base 400 passed/1 failed/4 errors, head 402 passed/1 failed/4 errors).</p></div>
 </div>
 </section>
 </main>
