@@ -22,7 +22,7 @@
   <title>Geometry Figure Vessel Units | imas-ink</title>
   <link rel="stylesheet" href="/_shared/foundation.css">
   <link rel="stylesheet" href="/_shared/dashboard.css">
-<meta name="plan-version" content="4">
+<meta name="plan-version" content="5">
 <meta name="plan-modified" content="2026-10-06">
 <meta name="plan-section-declarations" content="{&quot;s1&quot;:&quot;implementable&quot;,&quot;s2&quot;:&quot;implementable&quot;,&quot;s3&quot;:&quot;implementable&quot;}">
 </head>
@@ -62,6 +62,14 @@
       this plan, which neither relies on nor changes that branch.
     </p>
     <p>
+      The 2D figure must not load the 3D stack, and importing anything under <code>imas_ink.three_d</code>
+      loads that subpackage, which <code>imas_ink/__init__.py</code> keeps out of the eager import graph.
+      So <code>WallOutline2D</code>, <code>VesselShell</code> and <code>extract_vessel_shells</code> move
+      from <code>imas_ink/three_d/walls.py</code> into the core <code>imas_ink/geometry.py</code>, which
+      already holds the 2D geometry helpers, and <code>three_d/walls.py</code> imports them from there, so
+      the 3D path and its public names are unchanged and the extractor keeps one owner.
+    </p>
+    <p>
       The 2D pipeline then carries those shells. <code>extract_geometry</code>
       (<code>imas_ink/extract.py</code>) fills one new field on <code>MachineGeometry</code>
       (<code>imas_ink/_types.py</code>), typed with the existing <code>VesselShell</code>, from
@@ -75,8 +83,8 @@
       already has, and the vessel shells join that loop in both, so
       <code>geometry_figure_mpl</code> and <code>equilibrium_chart_alt</code> both show the vessel by
       passing the shells to the <code>WallOutline</code> they already build, and the viewport covers the
-      shells. A new <code>InkStyle</code> constant is
-      added only if the vessel needs a weight distinct from the wall. The 2D geometry has no vessel
+      shells. The vessel is drawn with the wall's existing <code>wall_color</code> and
+      <code>wall_linewidth</code>; no style constant is added. The 2D geometry has no vessel
       representation today, so the field retires nothing; it is the one public addition and reuses the
       type the 3D path already exports.
     </p>
@@ -86,7 +94,9 @@
       <code>outline_outer</code> are filled, and asserts that <code>extract_vessel_shells</code> returns two
       closed shells, that a geometry whose richest <code>description_2d</code> entry is not index 0 takes its
       vessel from that entry, and that <code>geometry_figure_mpl</code> adds both shells' lines to the axes
-      through <code>render_mpl</code>, with <code>_render_wall_alt</code> emitting a mark for every limiter unit and both shells; it fails
+      through <code>render_mpl</code>, with <code>_render_wall_alt</code> emitting a mark for every limiter unit and both shells, and that
+      importing <code>imas_ink.extract</code> and <code>imas_ink.figures</code> leaves
+      <code>imas_ink.three_d</code> out of <code>sys.modules</code>; it fails
       when <code>extract_vessel_shells</code> ignores those outlines. <code>uv run --no-sync pytest -p
       no:cacheprovider tests/unit</code> adds no failure against the base revision, and <code>uv run
       --no-sync ruff check imas_ink tests</code> exits 0.
@@ -131,20 +141,21 @@
       JT-60SA signal figures need exactly that: each processed flux-loop channel against the raw
       channel of the same index. This section lets <code>time_trace_figure_mpl</code> take a panel as
       either one <code>TimeSeries</code> or a list of them drawn on the same axes through
-      <code>render_mpl</code>, and adds two <code>InkStyle</code> constants, <code>trace_color</code> (the ink black the wall
-      uses) and <code>trace_linestyle</code> (default solid), which <code>_render_timeseries_mpl</code> and
-      <code>_render_timeseries_alt</code> (<code>imas_ink/alt.py</code>) apply; today neither renderer
-      passes a colour, so traces take matplotlib's cycle and Altair's default, and the two constants
-      retire nothing because no style field sets a trace's colour or line style. A caller marks the
-      second series with <code>replace(DEFAULT_STYLE, trace_linestyle=DEFAULT_STYLE.ref_lcfs_linestyle)</code>.
-      A panel given as a single <code>TimeSeries</code> is drawn exactly as today, apart from taking the
-      style's trace colour rather than the cycle's.
+      <code>render_mpl</code>, and adds one <code>InkStyle</code> constant, <code>trace_linestyle</code>
+      (default solid), which <code>_render_timeseries_mpl</code> and <code>_render_timeseries_alt</code>
+      (<code>imas_ink/alt.py</code>) apply; it retires nothing, because no style field sets a trace's
+      line style today. The panel's first series is drawn exactly as a single series is today, and owns
+      the panel's y-label, units and time label; each later series is drawn as a line only, in the first
+      series' colour and its own style's <code>trace_linestyle</code>, with no label and no legend, so
+      the panel's labelling never changes with the number of series. A caller marks the second series
+      with <code>replace(DEFAULT_STYLE, trace_linestyle=DEFAULT_STYLE.ref_lcfs_linestyle)</code>. A panel
+      given as a single <code>TimeSeries</code> is drawn exactly as today.
     </p>
     <p>
       Done-when: a test in <code>tests/unit/test_vessel_units.py</code> builds a figure whose one panel
       holds two <code>TimeSeries</code>, asserts both lines are on that panel's axes with the second
-      dashed and both in <code>trace_color</code>, and asserts a single-series panel still draws one
-      line; the existing trace-figure tests pass; <code>uv run --no-sync pytest -p no:cacheprovider
+      dashed and in the first line's colour, that the panel's y-label is the first series' and no legend
+      was added, and that a single-series panel still draws one line; the existing trace-figure tests pass; <code>uv run --no-sync pytest -p no:cacheprovider
       tests/unit</code> adds no failure against the base revision, and <code>uv run --no-sync ruff check
       imas_ink tests</code> exits 0.
     </p>
