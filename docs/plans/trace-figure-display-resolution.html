@@ -8,7 +8,7 @@
   <meta name="plan-slug" content="trace-figure-display-resolution">
   <meta name="plan-title" content="Trace Figure Display Resolution">
   <meta name="plan-summary" content="Draw long time traces at display resolution and label a stacked trace figure&#x27;s time axis once, so trace SVGs stay small and uncluttered">
-  <meta name="plan-status" content="draft">
+  <meta name="plan-status" content="shipped">
   <meta name="plan-roi" content="mid">
   <meta name="plan-effort-hours" content="1.5">
   <meta name="plan-capability-version" content="1.0">
@@ -22,9 +22,9 @@
   <title>Trace Figure Display Resolution | imas-ink</title>
   <link rel="stylesheet" href="/_shared/foundation.css">
   <link rel="stylesheet" href="/_shared/dashboard.css">
-<meta name="plan-version" content="6">
+<meta name="plan-version" content="7">
 <meta name="plan-modified" content="2026-10-06">
-<meta name="plan-section-declarations" content="{&quot;s1&quot;:&quot;done&quot;}">
+<meta name="plan-section-declarations" content="{&quot;s1&quot;:&quot;done&quot;,&quot;s2&quot;:&quot;done&quot;}">
 </head>
 <body>
   <main class="plan-doc">
@@ -48,36 +48,20 @@
   <p class="landed-summary">Landed <code>imas_ink/_decimate.py</code>, plus <code>InkStyle.path_simplify_threshold</code> (1.0) and <code>trace_max_points</code> (4000). <code>render_to_bytes</code> now saves under path simplification, and altair draws a long series through a min/max envelope. A 300,000-sample trace saves to a 51.6 KB SVG, against 325 KB at matplotlib's default threshold. The altair envelope holds 4,000 points and keeps the global minimum and maximum. Review scored 119/120. <a href="s1">full record</a></p>
 </section>
 
+    <section class="section-landed">
+  <header><span class="badge badge-shipped">&#10003; landed 2026-10-06</span>
     <h2 id="s2">§2 — Label a stacked matplotlib figure's shared x-axis once</h2>
-    <section data-reckon="section" data-id="s2" data-effort-hours="0.5" data-capability-version="1.0" data-capability-class="general" data-capability-reasoning="standard" data-capability-verification="strict" data-capability-risk="low" data-status="implementable" data-links=""></section>
-    <p>
-      <code>_render_timeseries_mpl</code> sets <code>Time [s]</code> and <code>_render_radialprofile_mpl</code>
-      sets <code>&psi;_norm</code> as the x-label of every axes they draw, so both stacked builders,
-      <code>time_trace_figure_mpl</code> and <code>radial_profile_figure_mpl</code>, whose panels share one x
-      axis, repeat that label under every panel. The trace renderer already owns panel-label suppression
-      through its private <code>label_axes</code> keyword, so this section extends that mechanism rather than
-      clearing labels after drawing: both private renderers gain a private keyword, <code>label_x</code>
-      (default true), that alone controls the x-label, and both builders pass <code>label_x=False</code> for
-      every panel but the bottom one by calling the private renderer directly, as the trace builder already
-      does for a panel's later series, so the exported <code>render_mpl</code> gains no keyword and a single
-      trace or profile drawn through it keeps its label. The altair stack the MCP server builds in
-      <code>imas_ink/server/mcp.py</code> repeats its time title too, but it is a served application outside
-      the matplotlib figures this plan serves and is left unchanged. It adds no public name.
-    </p>
-    <p>
-      Done-when: a test in <code>tests/unit/test_trace_resolution.py</code> builds a three-panel trace figure
-      and a three-panel radial-profile figure and asserts only each bottom axes carries its x-label, and that
-      a single series drawn through <code>render_mpl</code> still carries it; <code>uv run --no-sync pytest -p
-      no:cacheprovider tests/unit</code> adds no failure against the base revision, and <code>uv run
-      --no-sync ruff check imas_ink tests</code> adds no finding against it.
-    </p>
+<section data-reckon="section" data-id="s2" data-effort-hours="0.5" data-capability-version="1.0" data-capability-class="general" data-capability-reasoning="standard" data-capability-verification="strict" data-capability-risk="low" data-status="done" data-links=""></section></header>
+  <p class="landed-summary">Landed a private <code>label_x</code> keyword on <code>_render_timeseries_mpl</code> and <code>_render_radialprofile_mpl</code>. <code>time_trace_figure_mpl</code> and <code>radial_profile_figure_mpl</code> now label only their bottom panel's x-axis, and <code>render_mpl</code> is unchanged. Three tests were added: the unit suite went from 405 to 408 passed, with the same five pre-existing failures. Review scored 116/120. <a href="s2">full record</a></p>
+</section>
 
     <section data-reckon="followups" id="followups" class="r-followups">
 <h2><span class="sec">§</span> Followups</h2>
-<article class="r-fu" data-id="f-tfdr-001" data-status="open" data-capability-version="1.0" data-capability-class="general" data-written-by="reckon-create" data-written-at="2026-10-06" data-recommends-skill="/reckon-build trace-figure-display-resolution §1" data-resolved-at="" data-resolved-by="">
+<article class="r-fu" data-id="f-tfdr-001" data-status="resolved" data-capability-version="1.0" data-capability-class="general" data-written-by="reckon-create" data-written-at="2026-10-06" data-recommends-skill="/reckon-build trace-figure-display-resolution §1" data-resolved-at="2026-10-06T13:40:53+00:00" data-resolved-by="reckon-build">
     <h4 class="r-fu-title">Decimate long traces, then label the shared time axis once</h4>
     <div class="r-fu-body"><p>Two sequential nodes; imas-ambix's JT-60SA signal figures re-render once both land.</p></div>
     <pre class="r-fu-prompt">/reckon-build trace-figure-display-resolution §1</pre>
+    <p class="r-fu-outcome">done — no followup: both sections landed (§1 merge 8639211, §2 merge 23b8823); the consumer, imas-ambix jt60sa-geometry-and-signal-figures §3, re-renders its signal figures through these bounds</p>
     </article>
 </section>
   <section data-reckon="comments" id="comments" class="r-comments">
@@ -85,7 +69,7 @@
     <div class="r-comment-body"><p>InkStyle gained path_simplify_threshold (1.0) and trace_max_points (4000); render_to_bytes saves under a matplotlib rc_context applying path.simplify with the style threshold; _render_timeseries_alt draws a series longer than trace_max_points through a min/max envelope in imas_ink/_decimate.py; tests/unit/test_trace_resolution.py renders a 300,000-sample trace to a 32,819-byte SVG (limit 100 KB) and the Altair renderer emits 4000 points with global min/max intact, a 500-sample series unchanged.</p></div>
 </div>
 <div class="r-comment" data-section="s1" data-id="c-run-r-20261006T131719915776-review-of-ink-trace-resolution" data-who="reckon-build" data-when="2026-10-06T13:24:45.065Z">
-    <div class="r-comment-body"><p>review of run r-20261006T130704483694-ink-trace-resolution (imas-ink:trace-figure-display-resolution §1) stored: studied base 596ad0f..head 540f3be, all six dimensions scored (goal_fidelity 20, evidence 19, scope_discipline 20, durability 20, fit 20, reuse 20; total 119), 0 added failures, one follow-on finding (the fragment&#x27;s quoted 32,819-byte head SVG does not reproduce — 51,648 measured — though both are under the 100 KB bound).</p></div>
+    <div class="r-comment-body"><p>review of run r-20261006T130704483694-ink-trace-resolution (imas-ink:trace-figure-display-resolution §1) stored: studied base 596ad0f..head 540f3be, all six dimensions scored (goal_fidelity 20, evidence 19, scope_discipline 20, durability 20, fit 20, reuse 20; total 119), 0 added failures, one follow-on finding (the fragment's quoted 32,819-byte head SVG does not reproduce — 51,648 measured — though both are under the 100 KB bound).</p></div>
 </div>
 </section>
 </main>
