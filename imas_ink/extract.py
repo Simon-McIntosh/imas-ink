@@ -476,8 +476,9 @@ def extract_vessel_shells(wall_ids, desc_2d=None) -> list[VesselShell]:
     Reads one ``description_2d`` entry's ``vessel.unit[*]``.  Each annular
     unit is read in this order:
 
-    - A filled ``annular.outline_inner`` and ``annular.outline_outer`` yield
-      one :class:`VesselShell` each, inner then outer.
+    - Filled ``annular.outline_inner`` / ``annular.outline_outer`` yield one
+      :class:`VesselShell` per filled outline, inner then outer; a unit with
+      only one of them yields that one shell.
     - Otherwise ``annular.centreline`` (r, z) with a positive ``thickness``
       offsets the centreline into a band; a zero thickness returns the
       centreline itself.
@@ -510,12 +511,17 @@ def extract_vessel_shells(wall_ids, desc_2d=None) -> list[VesselShell]:
         return shells
 
     for i, unit in enumerate(units):
-        # Filled annular skins: one shell per outline, inner then outer.
+        # Filled annular skins: one shell per filled outline, inner then outer.
+        # A unit may carry only one of the two outlines (the wall IDS permits
+        # it); each filled skin is returned, so a one-skin unit draws that skin
+        # rather than falling through and losing it.
         inner = _filled_outline(unit, "annular", "outline_inner")
         outer = _filled_outline(unit, "annular", "outline_outer")
-        if inner is not None and outer is not None:
-            shells.append(_shell_from_outline(inner[0], inner[1], f"vessel_{i}_inner"))
-            shells.append(_shell_from_outline(outer[0], outer[1], f"vessel_{i}_outer"))
+        if inner is not None or outer is not None:
+            if inner is not None:
+                shells.append(_shell_from_outline(inner[0], inner[1], f"vessel_{i}_inner"))
+            if outer is not None:
+                shells.append(_shell_from_outline(outer[0], outer[1], f"vessel_{i}_outer"))
             continue
 
         r: np.ndarray | None = None
