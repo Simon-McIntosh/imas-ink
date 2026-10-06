@@ -1,0 +1,607 @@
+{
+  "agent": {
+    "alias": "dsv4.1-flash",
+    "backend": "clive",
+    "effective_input_window": 230144,
+    "effort": "high",
+    "launch": "cli",
+    "local": true,
+    "model": "deepseek-v4.1-flash",
+    "sandbox": "worktree-full",
+    "usable_input_window": 230144
+  },
+  "attempt": 1,
+  "attempt_kind": "dispatch",
+  "backend": "clive",
+  "base_sha": "5eb401b64ebc5a9aa41a319982d4a0b25c25faa7",
+  "boundary_waiver": null,
+  "brief": null,
+  "budget": {
+    "cost_usd": null,
+    "cost_usd_cumulative": null,
+    "cost_usd_imputed": true,
+    "detail": "no rate-limit event in the stream yet",
+    "headroom": "unknown",
+    "rate_limit_period_minutes": null,
+    "rate_limit_type": null,
+    "refusal": false,
+    "resets_at": null,
+    "surpassed_threshold": null,
+    "threshold_status": null,
+    "tokens": {
+      "cache_creation_input_tokens": 0,
+      "cache_creation_input_tokens_cumulative": 0,
+      "cache_read_input_tokens": 0,
+      "cache_read_input_tokens_cumulative": 0,
+      "fallback_credit": null,
+      "inference_geo": "",
+      "input_tokens": 10777476,
+      "input_tokens_cumulative": 10777476,
+      "output_tokens": 45091,
+      "output_tokens_cumulative": 45091,
+      "service_tier": "standard",
+      "speed": "standard"
+    },
+    "utilisation_pct": null
+  },
+  "changed_lines": {
+    "added": 513,
+    "files": 11,
+    "removed": 149
+  },
+  "clone_matches": [],
+  "commit_resolution": null,
+  "commits": [
+    "03d95931f92cb43703ddc221d56456c64f79b282"
+  ],
+  "completed_at": "2026-10-06T11:32:31.734Z",
+  "completed_at_source": "terminal_event",
+  "dispatched_at": "2026-10-06T11:21:07Z",
+  "disposition": null,
+  "dispute_count": 0,
+  "duration_measurement": null,
+  "execution_fit": {
+    "allowed": true,
+    "execution_capable": true,
+    "matched_measure": "pytest -p",
+    "override": false,
+    "role": "implement",
+    "status": "compatible"
+  },
+  "failure_classification": "pre-existing-failure",
+  "follow_on_paths": [
+    "tests/unit",
+    "tests/three_d",
+    "tests/unit/three_d",
+    "tests/unit).",
+    "tests/unit'."
+  ],
+  "gate": "failed",
+  "gate_check": {
+    "command": "uv run --no-sync pytest -p no:cacheprovider tests/unit",
+    "exit_status": 1,
+    "log_digest": null,
+    "log_path": "/home/ITER/mcintos/.config/reckon/crew/runs/r-20261006T112102473187-ink-vessel-units/head_pytest.log"
+  },
+  "impl_move": {
+    "at_complete": null,
+    "at_dispatch": 0.0,
+    "plan": "geometry-figure-vessel-units",
+    "reason": "gate-not-passing",
+    "verdict": "exempt"
+  },
+  "lane_advisory": {
+    "backend": "clive",
+    "burn_multiple": null,
+    "cheaper_lane": {
+      "detail": "",
+      "lane": null,
+      "state": "not_evaluated"
+    },
+    "detail": "'clive' is unmetered, so it has no window to exhaust; the local lane's scarcity is throughput, which it does not publish",
+    "horizon_ends_at": "2026-10-06T12:11:02.664015+00:00",
+    "horizon_seconds": 3000,
+    "metered": false,
+    "observed_at": null,
+    "precedes_horizon": null,
+    "projected_exhaustion_at": null,
+    "resets_at": null,
+    "seconds_until_reset": null,
+    "state": "quiet",
+    "utilisation_pct": null
+  },
+  "lane_declaration": {
+    "backend": null,
+    "headroom": null,
+    "metered": false,
+    "observed_at": null,
+    "read_at": "2026-10-06T11:21:02Z",
+    "resolved_backend": "clive",
+    "utilisation_pct": null
+  },
+  "lane_reading": {
+    "age_seconds": 10,
+    "binding_observed": "unknown",
+    "detail": "",
+    "generating": 2,
+    "headroom": 13,
+    "mean_context": 160000,
+    "observed_at": "2026-10-06T11:20:52Z",
+    "state": "fresh",
+    "suggested_shelf_life_seconds": 45,
+    "throughput": {
+      "age_seconds": 10,
+      "aggregate_tokens_per_second": 270.992,
+      "detail": "",
+      "mean_tokens_per_second": 96.783,
+      "observed_at": "2026-10-06T11:20:52Z",
+      "runs": 2.8,
+      "state": "measured"
+    },
+    "waiting": 0
+  },
+  "lane_receipt": {
+    "effective_context_window": "unmeasured",
+    "notional_cost_usd": "unmeasured",
+    "observed_at": "2026-10-06T11:32:31.734Z",
+    "quota_state": "unmeasured",
+    "quota_windows": [],
+    "rate_basis": "unmeasured",
+    "unmeasured": {
+      "effective_context_window": "missing_rollout",
+      "notional_cost_usd": "missing_rollout",
+      "quota_windows": "unmetered",
+      "rate_basis": "missing_rollout"
+    }
+  },
+  "lineage": null,
+  "local": true,
+  "manifest_path": "/home/ITER/mcintos/.config/reckon/crew/runs/r-20261006T112102473187-ink-vessel-units/manifest.md",
+  "member": "disposable-r-20261006T112102473187-ink-vessel-units",
+  "negative_control": {
+    "reason": "gate-not-passing",
+    "test_paths": [
+      "tests/unit/test_vessel_units.py"
+    ],
+    "verdict": "exempt"
+  },
+  "no_commit": null,
+  "node": "ink-vessel-units",
+  "node_definition": {
+    "brief": "",
+    "brief_path": "",
+    "brief_sha256": "",
+    "coordinator": {
+      "authoring_turn": {
+        "source": "claude-code-session-transcript",
+        "status": "measured",
+        "tokens": {
+          "cache_creation_input_tokens": 2149,
+          "cached_input_tokens": 770101,
+          "input_tokens": 772252,
+          "output_tokens": 1937,
+          "reasoning_output_tokens": 242,
+          "total_tokens": 774189,
+          "uncached_input_tokens": 2
+        }
+      },
+      "harness": "claude-code",
+      "runtime_session_id": "1caa45fb-fbb8-4737-b47e-bf483c56289e",
+      "session_id": "1caa45fb-fbb8-4737-b47e-bf483c56289e"
+    },
+    "done_when": "WallOutline2D and VesselShell live in imas_ink/_types.py, extract_vessel_shells in imas_ink/extract.py and _offset_polygon in imas_ink/geometry.py; imas_ink/three_d/walls.py imports them from there and its private _safe_float is deleted; the lazy name map in imas_ink/__init__.py points VesselShell, WallOutline2D and extract_vessel_shells at their new modules; extract_vessel_shells takes the description_2d entry to read (index 0 when none is given), reads thickness through imas_ink._sentinel.safe_float, and returns one VesselShell per filled annular outline_inner and outline_outer (inner then outer) ahead of the unchanged centreline and outline paths; extract_geometry passes the entry _select_description_2d chose and fills a new MachineGeometry field of VesselShell objects; MachineGeometry.viewport includes the vessel shells' bounds; the WallOutline component carries the shells, _render_wall_alt gains the wall_units loop _render_wall_mpl has, and both renderers draw the shells as unfilled lines with wall_color and wall_linewidth; geometry_figure_mpl passes the shells to the WallOutline it builds; tests/unit/test_vessel_units.py builds a wall IDS with one limiter unit and one vessel unit whose annular outline_inner and outline_outer are filled and asserts: extract_vessel_shells returns two closed shells; a geometry whose richest description_2d entry is not index 0 takes its vessel from that entry; geometry_figure_mpl adds both shells' lines to the axes; a vessel skin outside the coil and limiter extent lies inside the axes limits; _render_wall_alt emits a mark for every limiter unit and both shells; importing imas_ink.extract and imas_ink.figures leaves imas_ink.three_d out of sys.modules; 'uv run --no-sync pytest -p no:cacheprovider tests/unit tests/three_d' adds no failure against the base revision, and 'uv run --no-sync ruff check imas_ink tests' exits 0",
+    "estimated_hours": 1.5,
+    "goal": "Draw a wall's annular vacuum-vessel skins in imas-ink's 2D geometry figure through the relocated extract_vessel_shells",
+    "id": "ink-vessel-units",
+    "lane_declaration": {
+      "backend": null,
+      "headroom": null,
+      "metered": false,
+      "observed_at": null,
+      "read_at": "2026-10-06T11:21:02Z",
+      "resolved_backend": "clive",
+      "utilisation_pct": null
+    },
+    "lane_reading": {
+      "age_seconds": 10,
+      "binding_observed": "unknown",
+      "detail": "",
+      "generating": 2,
+      "headroom": 13,
+      "mean_context": 160000,
+      "observed_at": "2026-10-06T11:20:52Z",
+      "state": "fresh",
+      "suggested_shelf_life_seconds": 45,
+      "throughput": {
+        "age_seconds": 10,
+        "aggregate_tokens_per_second": 270.992,
+        "detail": "",
+        "mean_tokens_per_second": 96.783,
+        "observed_at": "2026-10-06T11:20:52Z",
+        "runs": 2.8,
+        "state": "measured"
+      },
+      "waiting": 0
+    },
+    "manifest_path": "/home/ITER/mcintos/.config/reckon/crew/runs/r-20261006T112102473187-ink-vessel-units/manifest.md",
+    "negative_control": "make extract_vessel_shells ignore annular outline_inner and outline_outer; tests/unit/test_vessel_units.py must then fail",
+    "plan": "geometry-figure-vessel-units",
+    "requested_backend": null,
+    "requires_decisions": [],
+    "role": "implement",
+    "section": "§1",
+    "spec_level": "guided",
+    "time_budget": "50m",
+    "token_budget": null,
+    "write_paths": [
+      "imas_ink/_types.py",
+      "imas_ink/extract.py",
+      "imas_ink/geometry.py",
+      "imas_ink/three_d/walls.py",
+      "imas_ink/__init__.py",
+      "imas_ink/components.py",
+      "imas_ink/mpl.py",
+      "imas_ink/alt.py",
+      "imas_ink/figures.py",
+      "tests/unit/test_vessel_units.py",
+      "docs/evidence/fragments/geometry-figure-vessel-units/ink-vessel-units.html",
+      "docs/figures/geometry-figure-vessel-units/ink-vessel-units"
+    ]
+  },
+  "orchestrator_lane_override": null,
+  "orientation_input_tokens": 1918582.0,
+  "outcome": "",
+  "pace": {
+    "allowance": null,
+    "bar": null,
+    "clocks": {
+      "five_hour": {
+        "age_seconds": null,
+        "observed_at": null,
+        "period": "five_hour",
+        "resets_at": null,
+        "state": "unknown",
+        "utilisation": null,
+        "window_minutes": null
+      },
+      "seven_day": {
+        "age_seconds": null,
+        "observed_at": null,
+        "period": "seven_day",
+        "resets_at": null,
+        "state": "unknown",
+        "utilisation": null,
+        "window_minutes": null
+      }
+    },
+    "group": null,
+    "hold": null,
+    "lane": "clive",
+    "member": null,
+    "node": "ink-vessel-units",
+    "policy": {
+      "drain_lead_hours": 12.0,
+      "pace_multiple": 1.1
+    },
+    "reason": "the lane declares no budget group, so no wallet paced it",
+    "recorded_at": "2026-10-06T11:21:04.328952+00:00",
+    "score": 0.6625,
+    "source": null,
+    "state": "unknown"
+  },
+  "picker_selection": {
+    "action": "route",
+    "answering_model": "typesafe/jev-1.13-20260917",
+    "backend": "clive",
+    "comment": "",
+    "confidence": 0.85,
+    "decision_source": "jev",
+    "effort": "high",
+    "excluded": [
+      {
+        "availability": "not-probed",
+        "backend": "native",
+        "budget_reason": null,
+        "burn_multiple": null,
+        "congestion": null,
+        "days_to_reset": null,
+        "effort": "high",
+        "family": "in-harness",
+        "local": false,
+        "model": null,
+        "outcomes": {
+          "failed": 0,
+          "not-run": 0,
+          "passed": 0,
+          "unknown": 0
+        },
+        "pace_allowance": null,
+        "reasons": [
+          "in-harness-backend"
+        ],
+        "resets_at": null,
+        "utilisation_pct": null,
+        "worker_slots": null
+      }
+    ],
+    "fallback_reason": null,
+    "family": "local",
+    "jev_latency_ms": 1240.544,
+    "jev_model": "typesafe/jev-1.13",
+    "latency_ms": 1692.379,
+    "model": "deepseek-v4.1-flash",
+    "offered": [
+      {
+        "availability": "unknown",
+        "backend": "claude",
+        "budget_reason": null,
+        "burn_multiple": null,
+        "congestion": null,
+        "days_to_reset": null,
+        "effort": "high",
+        "family": "claude",
+        "local": false,
+        "model": "claude-sonnet-5-5",
+        "outcomes": {
+          "failed": 0,
+          "not-run": 0,
+          "passed": 0,
+          "unknown": 0
+        },
+        "pace_allowance": null,
+        "reason": "eligible",
+        "reasons": [],
+        "resets_at": null,
+        "utilisation_pct": null,
+        "worker_slots": null
+      },
+      {
+        "availability": "unknown",
+        "backend": "claude-haiku",
+        "budget_reason": null,
+        "burn_multiple": null,
+        "congestion": null,
+        "days_to_reset": null,
+        "effort": "high",
+        "family": "claude",
+        "local": false,
+        "model": "claude-haiku-4-5-20251001",
+        "outcomes": {
+          "failed": 0,
+          "not-run": 0,
+          "passed": 0,
+          "unknown": 0
+        },
+        "pace_allowance": null,
+        "reason": "eligible",
+        "reasons": [],
+        "resets_at": null,
+        "utilisation_pct": null,
+        "worker_slots": null
+      },
+      {
+        "availability": "unknown",
+        "backend": "claude-opus",
+        "budget_reason": null,
+        "burn_multiple": null,
+        "congestion": null,
+        "days_to_reset": null,
+        "effort": "high",
+        "family": "claude",
+        "local": false,
+        "model": "claude-opus-5-5",
+        "outcomes": {
+          "failed": 0,
+          "not-run": 0,
+          "passed": 0,
+          "unknown": 0
+        },
+        "pace_allowance": null,
+        "reason": "eligible",
+        "reasons": [],
+        "resets_at": null,
+        "utilisation_pct": null,
+        "worker_slots": null
+      },
+      {
+        "availability": "served",
+        "backend": "clive",
+        "budget_reason": null,
+        "burn_multiple": null,
+        "congestion": {
+          "admission_verdict": "open",
+          "running": 2,
+          "slots_state": "measured",
+          "stale": false,
+          "waiting": 0
+        },
+        "days_to_reset": null,
+        "effort": "high",
+        "family": "local",
+        "local": true,
+        "model": "deepseek-v4.1-flash",
+        "outcomes": {
+          "failed": 0,
+          "not-run": 0,
+          "passed": 0,
+          "unknown": 0
+        },
+        "pace_allowance": null,
+        "reason": "eligible",
+        "reasons": [],
+        "resets_at": null,
+        "utilisation_pct": null,
+        "worker_slots": 39
+      },
+      {
+        "availability": "unknown",
+        "backend": "codex",
+        "budget_reason": "recorded account-window reading is stale",
+        "burn_multiple": null,
+        "congestion": null,
+        "days_to_reset": null,
+        "effort": "high",
+        "family": "codex",
+        "local": false,
+        "model": "gpt-6-sol",
+        "outcomes": {
+          "failed": 0,
+          "not-run": 0,
+          "passed": 0,
+          "unknown": 0
+        },
+        "pace_allowance": null,
+        "reason": "eligible",
+        "reasons": [],
+        "resets_at": null,
+        "utilisation_pct": null,
+        "worker_slots": null
+      },
+      {
+        "availability": "unknown",
+        "backend": "codex-astra",
+        "budget_reason": "recorded account-window reading is stale",
+        "burn_multiple": null,
+        "congestion": null,
+        "days_to_reset": null,
+        "effort": "high",
+        "family": "codex",
+        "local": false,
+        "model": "gpt-6-astra",
+        "outcomes": {
+          "failed": 0,
+          "not-run": 0,
+          "passed": 0,
+          "unknown": 0
+        },
+        "pace_allowance": null,
+        "reason": "eligible",
+        "reasons": [],
+        "resets_at": null,
+        "utilisation_pct": null,
+        "worker_slots": null
+      },
+      {
+        "availability": "unknown",
+        "backend": "codex-luna",
+        "budget_reason": "recorded account-window reading is stale",
+        "burn_multiple": null,
+        "congestion": null,
+        "days_to_reset": null,
+        "effort": "high",
+        "family": "codex",
+        "local": false,
+        "model": "gpt-6-luna",
+        "outcomes": {
+          "failed": 0,
+          "not-run": 0,
+          "passed": 0,
+          "unknown": 0
+        },
+        "pace_allowance": null,
+        "reason": "eligible",
+        "reasons": [],
+        "resets_at": null,
+        "utilisation_pct": null,
+        "worker_slots": null
+      }
+    ],
+    "probabilities": {
+      "claude": 0.01,
+      "claude-haiku": 0.01,
+      "claude-opus": 0,
+      "clive": 0.88,
+      "codex": 0,
+      "codex-astra": 0,
+      "codex-luna": 0,
+      "hold": 0.1
+    },
+    "rendered_token_estimate": 1344,
+    "usage": {
+      "cost": 0.000138138,
+      "input_tokens": 3289,
+      "output_tokens": 89
+    }
+  },
+  "plan": "geometry-figure-vessel-units",
+  "plan_impl_at_dispatch": 0.0,
+  "plan_link": null,
+  "promoted_by": null,
+  "promoted_revision": "03d95931f92cb43703ddc221d56456c64f79b282",
+  "resume_waiver": null,
+  "review": {
+    "absent": [],
+    "reviewed_base_sha": "5eb401b64ebc5a9aa41a319982d4a0b25c25faa7",
+    "reviewed_head_sha": "03d95931f92cb43703ddc221d56456c64f79b282",
+    "scores": {
+      "durability": 18,
+      "evidence": 16,
+      "fit": 18,
+      "goal_fidelity": 19,
+      "reuse": 19,
+      "scope_discipline": 20
+    },
+    "status": "parsed",
+    "total": 110
+  },
+  "review_tier": "full",
+  "role": "implement",
+  "route_mode": "explicit",
+  "run_id": "r-20261006T112102473187-ink-vessel-units",
+  "scope_acceptances": null,
+  "scope_changed": false,
+  "section": "§1",
+  "session": "1caa45fb-fbb8-4737-b47e-bf483c56289e",
+  "session_harness": "claude",
+  "session_id": "207d797f-f74c-4daf-8225-5b9014098584",
+  "session_model": "deepseek-v4.1-flash",
+  "shadow_controlled": null,
+  "shadow_patch": "",
+  "spec_level": "guided",
+  "stalled": false,
+  "suite_delta": null,
+  "tests_added": 6,
+  "throughput": {
+    "cumulative_cached_input_tokens": 0,
+    "cumulative_input_tokens": 10777476,
+    "detail": "generation and wall clock reported separately by the backend; utilisation divided by the configured lane window 230144",
+    "elapsed_seconds": 672.609,
+    "generated_tokens": 45091,
+    "generation_seconds": 525.08,
+    "input_budget_tokens": 230144,
+    "input_utilisation_pct": 73.8,
+    "machine_seconds": 147.529,
+    "peak_input_tokens": 169838,
+    "tokens_per_second": 85.87,
+    "wall_tokens_per_second": 67.04
+  },
+  "time_budget": "50m",
+  "tool_steps": 91.0,
+  "unplanned_reason": null,
+  "unreconciled_override": null,
+  "wall_seconds": 684,
+  "watch_override": null,
+  "worker_exit": {
+    "attempt": 1,
+    "ended_during": "working",
+    "exit_code": 0,
+    "exited_at": "2026-10-06T11:32:33Z",
+    "last_record_type": "result",
+    "launched_at": "2026-10-06T11:21:12Z",
+    "recorded_by": "supervisor",
+    "run_id": "r-20261006T112102473187-ink-vessel-units",
+    "signal": null,
+    "signal_name": null,
+    "stream_records_seen": 5949,
+    "worker_pid": 2061488
+  },
+  "worker_seconds": 665,
+  "worker_seconds_source": "stream_events",
+  "worktree_retention": {
+    "classification": "retained-for-resume",
+    "retained_at": "2026-10-06T11:32:31.734Z",
+    "session_id": "207d797f-f74c-4daf-8225-5b9014098584",
+    "session_source": "stream",
+    "worktree": "/home/ITER/mcintos/Code/.reckon-worktrees/imas-ink-5ff1f8d15673/1caa45fb-fbb8-4737-b47e-bf483c56289e/ink-vessel-units"
+  }
+}

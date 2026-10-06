@@ -22,7 +22,7 @@
   <title>Geometry Figure Vessel Units | imas-ink</title>
   <link rel="stylesheet" href="/_shared/foundation.css">
   <link rel="stylesheet" href="/_shared/dashboard.css">
-<meta name="plan-version" content="7">
+<meta name="plan-version" content="8">
 <meta name="plan-modified" content="2026-10-06">
 <meta name="plan-section-declarations" content="{&quot;s1&quot;:&quot;implementable&quot;,&quot;s2&quot;:&quot;implementable&quot;,&quot;s3&quot;:&quot;implementable&quot;}">
 </head>
@@ -185,6 +185,11 @@
     <pre class="r-fu-prompt">/reckon-build geometry-figure-vessel-units §1</pre>
     </article>
 </section>
-  </main>
+  <section data-reckon="comments" id="comments" class="r-comments">
+<div class="r-comment" data-section="s1" data-id="c-run-r-20261006T112102473187-ink-vessel-units" data-who="reckon-build" data-when="2026-10-06T11:32:31.734Z">
+    <div class="r-comment-body"><p>§1 — extract_vessel_shells now returns one closed VesselShell per filled annular outline_inner/outline_outer (inner then outer), reads the selected description_2d entry, and extract_geometry fills MachineGeometry.vessel_shells which both renderers draw; 6 new tests pass and the pytest tests/unit gate adds no failure against the base revision.</p></div>
+</div>
+</section>
+</main>
 </body>
 </html>
