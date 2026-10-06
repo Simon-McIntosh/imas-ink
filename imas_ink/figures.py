@@ -40,7 +40,7 @@ from .components import (
 )
 from .contours import ContourExtractor
 from .geometry import classify_flux_segments, mask_pfr, split_by_polygon_membership
-from .mpl import render_mpl
+from .mpl import _render_timeseries_mpl, render_mpl
 from .style import DEFAULT_STYLE, InkStyle
 
 if TYPE_CHECKING:
@@ -58,8 +58,12 @@ def time_trace_figure_mpl(
 
     Parameters
     ----------
-    traces : list[TimeSeries]
-        List of time series components to render, one per subplot.
+    traces : list
+        One panel per entry.  An entry is a single
+        :class:`~imas_ink.components.TimeSeries`, or a list of them drawn on
+        one shared panel: the first owns the panel's labels and the colour,
+        and each later series adds a line in that same colour using its own
+        ``trace_linestyle``.
     style : InkStyle, optional
         Visual style. Defaults to :data:`DEFAULT_STYLE`.
     figsize : tuple, optional
@@ -85,8 +89,15 @@ def time_trace_figure_mpl(
     fig, axes = plt.subplots(n, 1, figsize=figsize, sharex=True, squeeze=False)
     axes = axes.ravel()
 
-    for ax_i, ts in zip(axes, traces, strict=False):
-        render_mpl(ax_i, ts)
+    for ax_i, panel in zip(axes, traces, strict=False):
+        if isinstance(panel, (list, tuple)):
+            series = list(panel)
+            render_mpl(ax_i, series[0])
+            first_color = ax_i.lines[-1].get_color()
+            for later in series[1:]:
+                _render_timeseries_mpl(ax_i, later, color=first_color, label_axes=False)
+        else:
+            render_mpl(ax_i, panel)
 
     fig.tight_layout()
     return fig, list(axes)

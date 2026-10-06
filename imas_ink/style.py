@@ -162,6 +162,7 @@ class InkStyle:
     # 1D plots
     trace_linewidth: float = 1.2
     trace_markersize: float = 3.0
+    trace_linestyle: str = "solid"
 
     # Altair
     altair_width: int = 500

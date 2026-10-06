@@ -42,13 +42,21 @@ if TYPE_CHECKING:
 # Helpers
 # ---------------------------------------------------------------------------
 
-# Vega-Lite stroke-dash patterns for the matplotlib line-style names used by
-# InkStyle.  A solid line is an on-only dash, so the default wall is unchanged.
-WALL_STROKE_DASH: dict[str, list[int]] = {
+# Vega-Lite stroke-dash patterns for the matplotlib line-style values used by
+# InkStyle.  Both the named forms and matplotlib's shorthand forms are mapped,
+# so a style field carrying either renders identically in both backends.  A
+# solid line is an on-only dash.
+STROKE_DASH: dict[str, list[int]] = {
+    # matplotlib names
     "solid": [1, 0],
     "dashed": [6, 4],
     "dotted": [1, 3],
     "dashdot": [6, 3, 1, 3],
+    # matplotlib shorthands
+    "-": [1, 0],
+    "--": [6, 4],
+    ":": [1, 3],
+    "-.": [6, 3, 1, 3],
 }
 
 
@@ -238,7 +246,7 @@ def _render_wall_alt(wall: WallOutline) -> alt.Chart:
         .mark_line(
             color=style.wall_color,
             strokeWidth=style.wall_linewidth,
-            strokeDash=WALL_STROKE_DASH.get(style.wall_linestyle, WALL_STROKE_DASH["solid"]),
+            strokeDash=STROKE_DASH.get(style.wall_linestyle, STROKE_DASH["solid"]),
         )
         .encode(
             x=alt.X("r:Q", title="R [m]"),
@@ -377,7 +385,10 @@ def _render_timeseries_alt(ts: TimeSeries) -> alt.LayerChart:
 
     line = (
         alt.Chart(df)
-        .mark_line(strokeWidth=style.trace_linewidth)
+        .mark_line(
+            strokeWidth=style.trace_linewidth,
+            strokeDash=STROKE_DASH.get(style.trace_linestyle, STROKE_DASH["solid"]),
+        )
         .encode(
             x=alt.X("time:Q", title="Time [s]"),
             y=alt.Y("value:Q", title=ylabel),

@@ -546,10 +546,31 @@ def _render_timelabel_mpl(ax: Axes, label: TimeLabel) -> None:
     )
 
 
-def _render_timeseries_mpl(ax: Axes, ts: TimeSeries) -> None:
-    """Render a time series line plot."""
+def _render_timeseries_mpl(
+    ax: Axes,
+    ts: TimeSeries,
+    *,
+    color: str | None = None,
+    label_axes: bool = True,
+) -> None:
+    """Render a time series line plot.
+
+    *color* overrides the axes colour cycle (``None`` keeps it, exactly as a
+    single series is drawn).  *label_axes* controls whether the panel's labels
+    are written: a second series sharing a panel passes ``False`` so it adds
+    only its line and leaves the panel's labelling to the first series.
+    """
     s = ts.style
-    ax.plot(ts.time, ts.values, linewidth=s.trace_linewidth, label=ts.label or None)
+    ax.plot(
+        ts.time,
+        ts.values,
+        linewidth=s.trace_linewidth,
+        color=color,
+        linestyle=s.trace_linestyle,
+        label=ts.label or None,
+    )
+    if not label_axes:
+        return
     ylabel = f"{ts.ylabel} [{ts.units}]" if ts.units else ts.ylabel
     if ylabel:
         ax.set_ylabel(ylabel)

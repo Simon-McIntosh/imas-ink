@@ -1,0 +1,32 @@
+<section data-reckon="evidence-fragment" id="ink-trace-panels">
+  <h2 id="ink-trace-panels-heading">Several traces on one panel</h2>
+
+  <p id="ink-trace-panels-landing">
+    <code>time_trace_figure_mpl</code> (<code>imas_ink/figures.py</code>) accepts
+    each panel as one <code>TimeSeries</code> or a list of them. The first series
+    is drawn exactly as a single series is today and owns the panel's labels and
+    colour; each later series is drawn by calling
+    <code>_render_timeseries_mpl</code> (<code>imas_ink/mpl.py</code>) directly
+    with <code>color</code> set to the first line's colour and
+    <code>label_axes=False</code>, so it adds a line in its own
+    <code>trace_linestyle</code> and writes no y-label, x-label or legend. The
+    public <code>render_mpl</code> signature is unchanged. <code>InkStyle</code>
+    (<code>imas_ink/style.py</code>) gains <code>trace_linestyle</code> (default
+    <code>"solid"</code>), applied by <code>_render_timeseries_mpl</code> and
+    <code>_render_timeseries_alt</code> (<code>imas_ink/alt.py</code>); the altair
+    stroke-dash map now accepts matplotlib's shorthand forms (<code>'-'</code>,
+    <code>'--'</code>, <code>':'</code>, <code>'-.'</code>) as well as the named
+    ones, so both renderers draw the same style for each. Measure:
+    <code>tests/unit/test_vessel_units.py</code> — three new tests (13 in the file,
+    all passing): a two-series panel draws both lines, the second dashed and in
+    the first line's colour with the first series' y-label and no legend, a
+    single-series panel still draws one line, and the altair wall and trace
+    renderers map <code>'--'</code> to a dash. Gate
+    <code>uv run --no-sync pytest -p no:cacheprovider tests/unit</code>: head 400
+    passed / 1 failed / 4 errors; base (ecf8eca) 397 passed / 1 failed / 4 errors —
+    the three extra passes are the new tests and the five failure ids are identical
+    (<code>three_d/test_scene_cutaway.py</code>), so no failure is added.
+    <code>uv run --no-sync ruff check imas_ink tests</code>: 55 findings, identical
+    to the base's 55 (delta zero).
+  </p>
+</section>
