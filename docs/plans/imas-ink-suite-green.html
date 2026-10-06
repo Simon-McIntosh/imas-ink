@@ -1,0 +1,114 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="docs-project"   content="imas-ink">
+  <meta name="reckon-type" content="plan">
+  <meta name="plan-slug" content="imas-ink-suite-green">
+  <meta name="plan-title" content="imas-ink Suite Green">
+  <meta name="plan-summary" content="Repair the scene-cutaway tests that patch a renamed builder, then clear the 56-finding ruff backlog in one behaviour-neutral commit">
+  <meta name="plan-status" content="draft">
+  <meta name="plan-roi" content="mid">
+  <meta name="plan-effort-hours" content="1.5">
+  <meta name="plan-capability-version" content="1.0">
+  <meta name="plan-capability-class" content="general">
+  <meta name="plan-capability-reasoning" content="standard">
+  <meta name="plan-capability-verification" content="strict">
+  <meta name="plan-capability-risk" content="low">
+  <meta name="plan-owner" content="Simon McIntosh">
+  <meta name="plan-tags" content="test-suite">
+  <meta name="plan-standalone" content="It repairs imas-ink&#x27;s own test suite and lint backlog; no plan waits on it and it waits on none.">
+  <meta name="plan-section-declarations" content="{&quot;s1&quot;:&quot;implementable&quot;,&quot;s2&quot;:&quot;implementable&quot;}">
+  <title>imas-ink Suite Green | imas-ink</title>
+  <link rel="stylesheet" href="/_shared/foundation.css">
+  <link rel="stylesheet" href="/_shared/dashboard.css">
+<meta name="plan-version" content="1">
+<meta name="plan-modified" content="2026-10-06">
+</head>
+<body>
+  <main class="plan-doc">
+    <header>
+      <p class="eyebrow">A red base hides every new failure</p>
+      <h1>imas-ink Suite Green</h1>
+      <p class="lead">
+        imas-ink's whole suite is red before any change lands: one failure and four setup errors in
+        the scene-cutaway tests, and 56 ruff findings across the tree. Both were measured on
+        2026-10-06 at base <code>ed08613</code> by the independent review of the
+        <code>animate_pulse</code> sensor-flag node, and both are identical at its head. A red base makes
+        every later node judge itself by delta rather than by a clean exit, so this plan returns the
+        suite and the lint gate to green, in two sequenced sections because they share files.
+      </p>
+    </header>
+
+    <h2 id="s1">§1 — The scene-cutaway tests patch the builder the composer calls</h2>
+<section data-reckon="section" data-id="s1" data-effort-hours="0.5" data-capability-version="1.0" data-capability-class="general" data-capability-reasoning="standard" data-capability-verification="strict" data-capability-risk="low" data-status="implementable" data-links=""></section>
+    <p>
+      The five tests of <code>TestRenderCutawaySynthetic</code> in
+      <code>tests/unit/three_d/test_scene_cutaway.py</code> patch
+      <code>imas_ink.three_d.scene._build_cutaway_static</code>, which no longer exists. Commit
+      <code>f22fcc0</code> (2026-08-18) split it in two: <code>_build_cutaway_geometry</code> returns the
+      clipped meshes and the first-wall outline, and <code>_build_cutaway_overlay</code> builds the flux
+      overlay for one slice. <code>render_cutaway_with_flux</code> calls both. So four tests error at
+      fixture setup with <code>AttributeError</code>, and <code>test_no_wall_renders_without_overlay</code>
+      fails.
+    </p>
+    <p>
+      The tests are repaired to patch <code>_build_cutaway_geometry</code>, which keeps the
+      <code>(clipped_blocks, first_wall)</code> return their fakes already produce. Each test keeps the
+      behaviour it asserts. <code>test_no_wall_renders_without_overlay</code> still proves that a render
+      whose geometry has no first wall draws no flux overlay, and if the overlay must now be observed
+      through <code>_build_cutaway_overlay</code>, the test says so in its docstring.
+      <code>imas_ink/three_d/scene.py</code> changes only if a repaired test exposes a real behaviour
+      regression, in which case the manifest names the regression and the fix separately.
+    </p>
+    <p>
+      Done-when: <code>uv run --no-sync pytest -p no:cacheprovider tests/unit/three_d/</code> exits 0 with
+      all five <code>TestRenderCutawaySynthetic</code> tests passing, and the whole suite
+      (<code>uv run --no-sync pytest -p no:cacheprovider -q</code>) reports no failure and no error. The
+      negative control patches the old name again and turns the four fixture-based tests red with
+      <code>AttributeError</code>.
+    </p>
+
+    <h2 id="s2">§2 — Clear the ruff backlog in one behaviour-neutral commit</h2>
+<section data-reckon="section" data-id="s2" data-effort-hours="1.0" data-capability-version="1.0" data-capability-class="general" data-capability-reasoning="standard" data-capability-verification="strict" data-capability-risk="low" data-status="implementable" data-links=""></section>
+    <p>
+      <code>ruff check imas_ink tests</code> reports 56 findings across 20 files, most of them under
+      <code>imas_ink/three_d/</code>, <code>tests/unit/ink/</code> and <code>tests/unit/three_d/</code>,
+      with 8 in <code>imas_ink/__init__.py</code>. By rule: 15 F401 unused imports, 6 I001, 6 RUF059,
+      5 RUF002, 4 RUF003, 4 SIM108, 3 E402, 3 RUF015, 2 RUF001, 2 SIM105, and one each of B017, F821,
+      F841, RUF022, RUF100 and W292. The sweep lands as one <code>style(lint)</code> commit that
+      changes nothing else, after §1, because both sections touch <code>imas_ink/three_d/scene.py</code>
+      and <code>tests/unit/three_d/test_scene_cutaway.py</code>.
+    </p>
+    <p>
+      Each finding is resolved by what it means, never by a blanket <code>noqa</code>. An F401 in
+      <code>imas_ink/__init__.py</code> that is a deliberate re-export goes into <code>__all__</code>
+      rather than being deleted. The F821 undefined name and the B017 assertion on a bare
+      <code>Exception</code> are read as possible defects: if the fix changes behaviour, it leaves the
+      sweep, lands as its own commit with a test, and the manifest names it. An ambiguous-unicode
+      finding (RUF001, RUF002, RUF003) that is deliberate notation, such as a Greek symbol in a
+      docstring, is kept and allowed through <code>allowed-confusables</code> in
+      <code>pyproject.toml</code>; one that is a typing slip, such as an en dash for a minus sign, is
+      replaced.
+    </p>
+    <p>
+      Done-when: <code>uv run --no-sync ruff check imas_ink tests</code> exits 0, and the whole suite
+      reports the same result after the sweep as before it: no failure and no error once §1 has
+      landed. The sweep commit touches only files ruff flagged, plus <code>pyproject.toml</code> when
+      a confusable is allowed.
+    </p>
+
+    
+
+    <section data-reckon="followups" id="followups" class="r-followups">
+<h2><span class="sec">§</span> Followups</h2>
+<article class="r-fu" data-id="f-isg-001" data-status="open" data-capability-version="1.0" data-capability-class="general" data-written-by="reckon-create" data-written-at="2026-10-06" data-recommends-skill="/reckon-build imas-ink-suite-green §1" data-resolved-at="" data-resolved-by="">
+    <h4 class="r-fu-title">Repair the scene-cutaway tests, then sweep the lint backlog</h4>
+    <div class="r-fu-body"><p>§1 is dispatchable now. §2 follows it, because both sections touch the scene module and its test.</p></div>
+    <pre class="r-fu-prompt">/reckon-build imas-ink-suite-green §1</pre>
+    </article>
+</section>
+  </main>
+</body>
+</html>
