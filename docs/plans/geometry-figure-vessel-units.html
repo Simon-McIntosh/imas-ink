@@ -22,10 +22,10 @@
   <title>Geometry Figure Vessel Units | imas-ink</title>
   <link rel="stylesheet" href="/_shared/foundation.css">
   <link rel="stylesheet" href="/_shared/dashboard.css">
-<meta name="plan-version" content="16">
+<meta name="plan-version" content="17">
 <meta name="plan-modified" content="2026-10-06">
-<meta name="plan-section-declarations" content="{&quot;s1&quot;:&quot;done&quot;,&quot;s2&quot;:&quot;done&quot;,&quot;s3&quot;:&quot;implementable&quot;,&quot;s4&quot;:&quot;implementable&quot;}">
-<meta name="plan-commits" content="03d9593,94bd8f3,3dc98af,aca351d">
+<meta name="plan-section-declarations" content="{&quot;s1&quot;:&quot;done&quot;,&quot;s2&quot;:&quot;done&quot;,&quot;s3&quot;:&quot;done&quot;,&quot;s4&quot;:&quot;implementable&quot;}">
+<meta name="plan-commits" content="03d9593,94bd8f3,3dc98af,aca351d,f1eadd8,db2ee9f">
 </head>
 <body>
   <main class="plan-doc">
@@ -56,40 +56,12 @@
   <p class="landed-summary"><code>geometry_figure_mpl</code> takes an optional <code>ax</code>; <code>InkStyle.wall_linestyle</code> drives both wall renderers (merge <code>aca351d</code>); review 20/19/20/18/19/19. <a href="s2">full record</a></p>
 </section>
 
+    <section class="section-landed">
+  <header><span class="badge badge-shipped">&#10003; landed 2026-10-06</span>
     <h2 id="s3">§3 — Two traces on one panel</h2>
-<section data-reckon="section" data-id="s3" data-effort-hours="1.0" data-capability-version="1.0" data-capability-class="general" data-capability-reasoning="standard" data-capability-verification="strict" data-capability-risk="low" data-status="implementable" data-links=""></section>
-<p>
-      <code>time_trace_figure_mpl</code> (<code>imas_ink/figures.py</code>) draws exactly one
-      <code>TimeSeries</code> per panel, and <code>_render_timeseries_mpl</code>
-      (<code>imas_ink/mpl.py</code>) plots it in matplotlib's default colour cycle with no line-style
-      control, so a caller cannot compare two channels on shared axes in the ink style. imas-ambix's
-      JT-60SA signal figures need exactly that: each processed flux-loop channel against the raw
-      channel of the same index. This section lets <code>time_trace_figure_mpl</code> take a panel as
-      either one <code>TimeSeries</code> or a list of them drawn on the same axes through
-      <code>render_mpl</code>, and adds one <code>InkStyle</code> constant, <code>trace_linestyle</code>
-      (default solid), which <code>_render_timeseries_mpl</code> and <code>_render_timeseries_alt</code>
-      (<code>imas_ink/alt.py</code>) apply; it retires nothing, because no style field sets a trace's
-      line style today. <code>_render_timeseries_mpl</code> gains two keyword arguments,
-      <code>color</code> (default none, meaning the colour cycle as today) and <code>label_axes</code>
-      (default true), and <code>time_trace_figure_mpl</code>'s panel loop uses them: the panel's first
-      series is drawn exactly as a single series is today and owns the panel's y-label, units and time
-      label; each later series is drawn with <code>color</code> set to the first line's colour and
-      <code>label_axes=False</code>, so it adds a line in its own style's <code>trace_linestyle</code> and
-      sets no label and no legend, and the panel's labelling never changes with the number of series.
-      The two keywords stay on the private renderer: the panel loop calls
-      <code>_render_timeseries_mpl</code> directly for the later series, so the public
-      <code>render_mpl</code> signature does not change. A caller marks the second series
-      with <code>replace(DEFAULT_STYLE, trace_linestyle=DEFAULT_STYLE.ref_lcfs_linestyle)</code>. A panel
-      given as a single <code>TimeSeries</code> is drawn exactly as today.
-    </p>
-    <p>
-      Done-when: a test in <code>tests/unit/test_vessel_units.py</code> builds a figure whose one panel
-      holds two <code>TimeSeries</code>, asserts both lines are on that panel's axes with the second
-      dashed and in the first line's colour, that the panel's y-label is the first series' and no legend
-      was added, and that a single-series panel still draws one line; the existing trace-figure tests pass; <code>uv run --no-sync pytest -p no:cacheprovider
-      tests/unit</code> adds no failure against the base revision, and <code>uv run --no-sync ruff check
-      imas_ink tests</code> adds no finding against it (the base carries 55).
-    </p>
+<section data-reckon="section" data-id="s3" data-effort-hours="1.0" data-capability-version="1.0" data-capability-class="general" data-capability-reasoning="standard" data-capability-verification="strict" data-capability-risk="low" data-status="done" data-links=""></section></header>
+  <p class="landed-summary">A trace panel takes a list of <code>TimeSeries</code>, later series dashed in the first one's colour with no labels (merge <code>db2ee9f</code>); review 20/19/20/18/19/19. <a href="s3">full record</a></p>
+</section>
 
     <h2 id="s4">§4 — An annular vessel unit with one skin</h2>
 <section data-reckon="section" data-id="s4" data-effort-hours="0.5" data-capability-version="1.0" data-capability-class="general" data-capability-reasoning="standard" data-capability-verification="strict" data-capability-risk="low" data-status="implementable" data-links=""></section>
@@ -134,7 +106,7 @@
     <div class="r-comment-body">node ink-trace-panels dispatched with --allow-unreviewed-plan: the only change since the answered v11 design review was the landing collapse of the finished §2 (record-keeping); §3's text is exactly as reviewed. The node also carries §2's review follow-on: the altair dash map accepts matplotlib's shorthand line styles.</div>
 </div>
 <div class="r-comment" data-section="s3" data-id="c-run-r-20261006T120241373754-ink-trace-panels" data-who="reckon-build" data-when="2026-10-06T12:12:17.557Z">
-    <div class="r-comment-body"><p>ink-trace-panels — time_trace_figure_mpl now takes each panel as one TimeSeries or a list of them and draws later series in the first line&#x27;s colour with label_axes=False, InkStyle gains trace_linestyle applied by both renderers, and the altair stroke-dash map accepts matplotlib shorthand forms; measure: tests/unit/test_vessel_units.py 13 passed, unit suite 400 passed vs base 397 with identical 5 failure ids, ruff 55 == base 55.</p></div>
+    <div class="r-comment-body"><p>ink-trace-panels — time_trace_figure_mpl now takes each panel as one TimeSeries or a list of them and draws later series in the first line's colour with label_axes=False, InkStyle gains trace_linestyle applied by both renderers, and the altair stroke-dash map accepts matplotlib shorthand forms; measure: tests/unit/test_vessel_units.py 13 passed, unit suite 400 passed vs base 397 with identical 5 failure ids, ruff 55 == base 55.</p></div>
 </div>
 </section>
 </main>

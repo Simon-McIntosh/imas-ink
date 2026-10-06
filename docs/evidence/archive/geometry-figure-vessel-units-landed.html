@@ -30,6 +30,11 @@
     <p>Node <code>ink-compose-phases</code> landed at <code>3dc98af</code>, merged in <code>aca351d</code>: <code>geometry_figure_mpl</code> takes an optional <code>ax</code> and draws into it without creating a figure, and <code>InkStyle.wall_linestyle</code> (default solid) is applied by <code>_render_wall_mpl</code> and <code>_render_wall_alt</code> to the limiter outlines and vessel shells. Gate: <code>pytest tests/unit</code> 397 passed against the base's 393 with the same pre-existing <code>test_scene_cutaway</code> failure and errors, none added; ruff unchanged at 55; a solid-only negative control turns the dashed-wall test red. Independent review at <code>3dc98af</code>: goal 20, evidence 19, scope 20, durability 18, fit 19, reuse 19; its follow-on, the altair dash map ignoring matplotlib's shorthand line styles, is folded into §3's node, which reuses that map for traces.</p>
   </section>
 
+  <section id="s3">
+    <h2>§3 — two traces on one panel landed</h2>
+    <p>Node <code>ink-trace-panels</code> landed at <code>f1eadd8</code>, merged in <code>db2ee9f</code>: <code>time_trace_figure_mpl</code> takes a panel as a list of <code>TimeSeries</code>; the first is drawn as a single series is today and owns the labels, and each later one is drawn through <code>_render_timeseries_mpl</code> with the first line's colour, its own <code>trace_linestyle</code> and no labels or legend; <code>render_mpl</code>'s signature is unchanged; the altair dash map accepts matplotlib's shorthand line styles. Gate: <code>pytest tests/unit</code> 400 passed against the base's 397 with the same pre-existing <code>test_scene_cutaway</code> failure and errors, none added; ruff unchanged at 55; routing later series through <code>render_mpl</code> with defaults turns the shared-colour test red. Independent review at <code>f1eadd8</code>: goal 20, evidence 19, scope 20, durability 18, fit 19, reuse 19; its residual note, that the altair map falls back to solid only for values matplotlib itself rejects, needs no change.</p>
+  </section>
+
 </main>
 </body>
 </html>
