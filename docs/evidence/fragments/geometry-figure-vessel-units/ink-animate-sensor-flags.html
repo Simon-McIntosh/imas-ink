@@ -1,0 +1,34 @@
+<section data-reckon="evidence-fragment" id="ink-animate-sensor-flags">
+  <h2 id="ink-animate-sensor-flags-heading">Sensor-visibility flags on the pulse animation</h2>
+
+  <p id="ink-animate-sensor-flags-what">
+    <code>imas_ink.animate.animate_pulse</code> gains
+    <code>show_probes: bool = True</code> and
+    <code>show_flux_loops: bool = True</code> and passes both to
+    <code>equilibrium_figure_mpl</code> for every frame. The MCP
+    <code>animate_pulse</code> tool in <code>imas_ink/server/mcp.py</code> gains
+    the same two optional flags and forwards them to the Python entry point,
+    matching its sibling <code>plot_geometry</code> tool. Defaults are
+    <code>True</code>, as the figure's are; no other parameter changed.
+  </p>
+
+  <p id="ink-animate-sensor-flags-measure">
+    Measure: <code>tests/unit/test_animate_sensor_flags.py</code> — three tests,
+    passing. A spy on the per-frame <code>equilibrium_figure_mpl</code> call
+    shows a two-slice animation drawn with both flags <code>False</code> reaches
+    every frame false, and that the default call reaches every frame true; the
+    MCP tool test patches <code>animate_pulse</code> and asserts both flags
+    arrive as <code>False</code>. Gate
+    <code>pytest tests/unit/test_animate_sensor_flags.py tests/unit/test_vessel_units.py tests/test_smoke.py</code>:
+    20 passed, <code>EXIT=0</code>.
+    <code>ruff check imas_ink tests</code>: 56 findings, identical to the base
+    revision's 56 (delta zero; the backlog is pre-existing).
+  </p>
+
+  <p id="ink-animate-sensor-flags-negative-control">
+    Negative control: making <code>animate_pulse</code> accept both flags but
+    not forward them to <code>equilibrium_figure_mpl</code> turns
+    <code>test_both_false_on_every_frame</code> red — 1 failed, 2 passed,
+    <code>EXIT=1</code>.
+  </p>
+</section>
