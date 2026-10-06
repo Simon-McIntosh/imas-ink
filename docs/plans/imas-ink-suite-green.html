@@ -23,7 +23,7 @@
   <title>imas-ink Suite Green | imas-ink</title>
   <link rel="stylesheet" href="/_shared/foundation.css">
   <link rel="stylesheet" href="/_shared/dashboard.css">
-<meta name="plan-version" content="1">
+<meta name="plan-version" content="2">
 <meta name="plan-modified" content="2026-10-06">
 </head>
 <body>
@@ -54,39 +54,49 @@
       fails.
     </p>
     <p>
-      The tests are repaired to patch <code>_build_cutaway_geometry</code>, which keeps the
+      The same commit left a defect behind in the composer. <code>render_cutaway_with_flux</code> still
+      reads <code>fw_capped.cap</code> when it draws the overlay (<code>scene.py</code> line 557), but
+      <code>fw_capped</code> is now a local of <code>_build_cutaway_overlay</code>, which takes it from
+      <code>clipped_blocks.get("first_wall")</code>. So any render that reaches the overlay raises
+      <code>NameError</code>; ruff reports it as the tree's one F821. The plan review reproduced it: with
+      only the patch target repaired, four of the five tests fail.
+    </p>
+    <p>
+      The section fixes both halves. In <code>imas_ink/three_d/scene.py</code>, the composer draws the
+      overlay on the first-wall cap taken from <code>clipped_blocks</code>, as
+      <code>_build_cutaway_overlay</code> does, and no other behaviour changes. The tests are repaired
+      to patch <code>_build_cutaway_geometry</code>, which keeps the
       <code>(clipped_blocks, first_wall)</code> return their fakes already produce. Each test keeps the
       behaviour it asserts. <code>test_no_wall_renders_without_overlay</code> still proves that a render
-      whose geometry has no first wall draws no flux overlay, and if the overlay must now be observed
-      through <code>_build_cutaway_overlay</code>, the test says so in its docstring.
-      <code>imas_ink/three_d/scene.py</code> changes only if a repaired test exposes a real behaviour
-      regression, in which case the manifest names the regression and the fix separately.
+      whose geometry has no first wall draws no flux overlay.
     </p>
     <p>
       Done-when: <code>uv run --no-sync pytest -p no:cacheprovider tests/unit/three_d/</code> exits 0 with
-      all five <code>TestRenderCutawaySynthetic</code> tests passing, and the whole suite
-      (<code>uv run --no-sync pytest -p no:cacheprovider -q</code>) reports no failure and no error. The
-      negative control patches the old name again and turns the four fixture-based tests red with
-      <code>AttributeError</code>.
+      all five <code>TestRenderCutawaySynthetic</code> tests passing, the whole suite
+      (<code>uv run --no-sync pytest -p no:cacheprovider -q</code>) reports no failure and no error, and
+      <code>ruff check --select F821 imas_ink tests</code> exits 0. The negative control restores the
+      dangling <code>fw_capped</code> read and turns the overlay-drawing tests red with
+      <code>NameError</code>.
     </p>
 
     <h2 id="s2">§2 — Clear the ruff backlog in one behaviour-neutral commit</h2>
 <section data-reckon="section" data-id="s2" data-effort-hours="1.0" data-capability-version="1.0" data-capability-class="general" data-capability-reasoning="standard" data-capability-verification="strict" data-capability-risk="low" data-status="implementable" data-links=""></section>
     <p>
-      <code>ruff check imas_ink tests</code> reports 56 findings across 20 files, most of them under
+      <code>ruff check imas_ink tests</code> reports 56 findings, most of them under
       <code>imas_ink/three_d/</code>, <code>tests/unit/ink/</code> and <code>tests/unit/three_d/</code>,
-      with 8 in <code>imas_ink/__init__.py</code>. By rule: 15 F401 unused imports, 6 I001, 6 RUF059,
-      5 RUF002, 4 RUF003, 4 SIM108, 3 E402, 3 RUF015, 2 RUF001, 2 SIM105, and one each of B017, F821,
-      F841, RUF022, RUF100 and W292. The sweep lands as one <code>style(lint)</code> commit that
+      with 8 in <code>imas_ink/__init__.py</code>. §1 removes one, the F821, because it is the
+      composer's defect. The sweep owns the other 55. By rule: 15 F401 unused imports, 6 I001,
+      6 RUF059, 5 RUF002, 4 RUF003, 4 SIM108, 3 E402, 3 RUF015, 2 RUF001, 2 SIM105, and one each of
+      B017, F841, RUF022, RUF100 and W292. The sweep lands as one <code>style(lint)</code> commit that
       changes nothing else, after §1, because both sections touch <code>imas_ink/three_d/scene.py</code>
       and <code>tests/unit/three_d/test_scene_cutaway.py</code>.
     </p>
     <p>
       Each finding is resolved by what it means, never by a blanket <code>noqa</code>. An F401 in
       <code>imas_ink/__init__.py</code> that is a deliberate re-export goes into <code>__all__</code>
-      rather than being deleted. The F821 undefined name and the B017 assertion on a bare
-      <code>Exception</code> are read as possible defects: if the fix changes behaviour, it leaves the
-      sweep, lands as its own commit with a test, and the manifest names it. An ambiguous-unicode
+      rather than being deleted. The B017 assertion on a bare <code>Exception</code> is read as a
+      possible defect: if its fix changes behaviour, it leaves the sweep, lands as its own commit with
+      a test, and the manifest names it. An ambiguous-unicode
       finding (RUF001, RUF002, RUF003) that is deliberate notation, such as a Greek symbol in a
       docstring, is kept and allowed through <code>allowed-confusables</code> in
       <code>pyproject.toml</code>; one that is a typing slip, such as an en dash for a minus sign, is
