@@ -32,10 +32,10 @@
     324,979 bytes and <code>test_long_trace_svg_is_bounded</code> fails
     (<code>negative-control.log</code>, EXIT=1). Gate
     <code>uv run --no-sync pytest -p no:cacheprovider tests/unit</code>: head 405
-    passed / 1 failed / 4 errors / 6 skipped, base (596ad0f) 399 passed / 1 failed /
-    4 errors / 9 skipped — the five failure ids are identical
-    (<code>three_d/test_scene_cutaway.py</code>), so no failure is added; the head's
-    six extra passes are the three new tests plus three tests the base run skipped.
+    passed / 1 failed / 4 errors / 6 skipped, base (596ad0f) 402 passed / 1 failed /
+    4 errors / 6 skipped — the three extra passes are the new tests and the five
+    failure ids are identical (<code>three_d/test_scene_cutaway.py</code>), so no
+    failure is added.
     <code>uv run --no-sync ruff check imas_ink tests</code>: 55 findings, identical
     to the base's 55 (delta zero).
   </p>
