@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="docs-project" content="imas-ink">
+  <meta name="reckon-type" content="evidence">
+  <meta name="plan-slug" content="imas-ink-suite-green-landed">
+  <meta name="plan-title" content="imas-ink Suite Green — landed record">
+  <meta name="plan-summary" content="Closure synthesis for imas-ink Suite Green: 0 committed run(s), 0 section-anchored comment(s), and 0 landed commit(s).">
+  <meta name="plan-evidence-for" content="imas-ink-suite-green">
+  <meta name="plan-verdict" content="qualified">
+  <title>imas-ink Suite Green — landed record | imas-ink</title>
+  <link rel="stylesheet" href="/_shared/foundation.css">
+  <link rel="stylesheet" href="/_shared/dashboard.css">
+</head>
+<body>
+ <main class="plan-doc">
+  <h1>imas-ink Suite Green — landed record</h1>
+  <p>Closure synthesis for imas-ink Suite Green: 0 committed run(s), 0 section-anchored comment(s), and 0 landed commit(s).</p>
+
+
+   <section id="s1">
+    <h2>§1 — the cutaway composer reads its first-wall cap again</h2>
+    <p>Run <code>r-20261006T164407940956-ink-scene-cutaway-repair</code>, merged at <code>1564fc7</code> (commit <code>89c2f75</code>). <code>render_cutaway_with_flux</code> takes the first-wall cap from <code>clipped_blocks</code> before drawing the overlay, as <code>_build_cutaway_overlay</code> does, so the dangling <code>fw_capped</code> read is gone. The five <code>TestRenderCutawaySynthetic</code> tests patch <code>_build_cutaway_geometry</code>. Before the repair: 1 failed, 4 errors. After: <code>tests/unit/three_d/</code> 64 passed, the whole suite 418 passed, 6 skipped, 0 failed, 0 errors, and <code>ruff --select F821</code> is clean. Negative control: restoring the dangling read turns the four overlay-drawing tests red with <code>NameError</code> at <code>scene.py:557</code>. Independent review: 119/120, no added failures.</p>
+  </section>
+
+</main>
+</body>
+</html>

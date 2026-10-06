@@ -8,7 +8,7 @@
   <meta name="plan-slug" content="imas-ink-suite-green">
   <meta name="plan-title" content="imas-ink Suite Green">
   <meta name="plan-summary" content="Repair the scene-cutaway tests that patch a renamed builder, then clear the 56-finding ruff backlog in one behaviour-neutral commit">
-  <meta name="plan-status" content="draft">
+  <meta name="plan-status" content="active">
   <meta name="plan-roi" content="mid">
   <meta name="plan-effort-hours" content="1.5">
   <meta name="plan-capability-version" content="1.0">
@@ -19,11 +19,11 @@
   <meta name="plan-owner" content="Simon McIntosh">
   <meta name="plan-tags" content="test-suite">
   <meta name="plan-standalone" content="It repairs imas-ink&#x27;s own test suite and lint backlog; no plan waits on it and it waits on none.">
-  <meta name="plan-section-declarations" content="{&quot;s1&quot;:&quot;implementable&quot;,&quot;s2&quot;:&quot;implementable&quot;}">
+  <meta name="plan-section-declarations" content="{&quot;s1&quot;:&quot;done&quot;,&quot;s2&quot;:&quot;implementable&quot;}">
   <title>imas-ink Suite Green | imas-ink</title>
   <link rel="stylesheet" href="/_shared/foundation.css">
   <link rel="stylesheet" href="/_shared/dashboard.css">
-<meta name="plan-version" content="2">
+<meta name="plan-version" content="3">
 <meta name="plan-modified" content="2026-10-06">
 </head>
 <body>
@@ -41,43 +41,12 @@
       </p>
     </header>
 
+    <section class="section-landed">
+  <header><span class="badge badge-shipped">&#10003; landed 2026-10-06</span>
     <h2 id="s1">§1 — The scene-cutaway tests patch the builder the composer calls</h2>
-<section data-reckon="section" data-id="s1" data-effort-hours="0.5" data-capability-version="1.0" data-capability-class="general" data-capability-reasoning="standard" data-capability-verification="strict" data-capability-risk="low" data-status="implementable" data-links=""></section>
-    <p>
-      The five tests of <code>TestRenderCutawaySynthetic</code> in
-      <code>tests/unit/three_d/test_scene_cutaway.py</code> patch
-      <code>imas_ink.three_d.scene._build_cutaway_static</code>, which no longer exists. Commit
-      <code>f22fcc0</code> (2026-08-18) split it in two: <code>_build_cutaway_geometry</code> returns the
-      clipped meshes and the first-wall outline, and <code>_build_cutaway_overlay</code> builds the flux
-      overlay for one slice. <code>render_cutaway_with_flux</code> calls both. So four tests error at
-      fixture setup with <code>AttributeError</code>, and <code>test_no_wall_renders_without_overlay</code>
-      fails.
-    </p>
-    <p>
-      The same commit left a defect behind in the composer. <code>render_cutaway_with_flux</code> still
-      reads <code>fw_capped.cap</code> when it draws the overlay (<code>scene.py</code> line 557), but
-      <code>fw_capped</code> is now a local of <code>_build_cutaway_overlay</code>, which takes it from
-      <code>clipped_blocks.get("first_wall")</code>. So any render that reaches the overlay raises
-      <code>NameError</code>; ruff reports it as the tree's one F821. The plan review reproduced it: with
-      only the patch target repaired, four of the five tests fail.
-    </p>
-    <p>
-      The section fixes both halves. In <code>imas_ink/three_d/scene.py</code>, the composer draws the
-      overlay on the first-wall cap taken from <code>clipped_blocks</code>, as
-      <code>_build_cutaway_overlay</code> does, and no other behaviour changes. The tests are repaired
-      to patch <code>_build_cutaway_geometry</code>, which keeps the
-      <code>(clipped_blocks, first_wall)</code> return their fakes already produce. Each test keeps the
-      behaviour it asserts. <code>test_no_wall_renders_without_overlay</code> still proves that a render
-      whose geometry has no first wall draws no flux overlay.
-    </p>
-    <p>
-      Done-when: <code>uv run --no-sync pytest -p no:cacheprovider tests/unit/three_d/</code> exits 0 with
-      all five <code>TestRenderCutawaySynthetic</code> tests passing, the whole suite
-      (<code>uv run --no-sync pytest -p no:cacheprovider -q</code>) reports no failure and no error, and
-      <code>ruff check --select F821 imas_ink tests</code> exits 0. The negative control restores the
-      dangling <code>fw_capped</code> read and turns the overlay-drawing tests red with
-      <code>NameError</code>.
-    </p>
+<section data-reckon="section" data-id="s1" data-effort-hours="0.5" data-capability-version="1.0" data-capability-class="general" data-capability-reasoning="standard" data-capability-verification="strict" data-capability-risk="low" data-status="done" data-links=""></section></header>
+  <p class="landed-summary"><code>render_cutaway_with_flux</code> reads the first-wall cap from <code>clipped_blocks</code>, and the cutaway tests patch <code>_build_cutaway_geometry</code>; merged at <code>1564fc7</code>, whole suite 418 passed with 0 failures and 0 errors, review 119/120. <a href="s1">full record</a></p>
+</section>
 
     <h2 id="s2">§2 — Clear the ruff backlog in one behaviour-neutral commit</h2>
 <section data-reckon="section" data-id="s2" data-effort-hours="1.0" data-capability-version="1.0" data-capability-class="general" data-capability-reasoning="standard" data-capability-verification="strict" data-capability-risk="low" data-status="implementable" data-links=""></section>
