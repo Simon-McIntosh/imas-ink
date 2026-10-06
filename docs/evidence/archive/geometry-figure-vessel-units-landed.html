@@ -40,6 +40,11 @@
     <p>Node <code>ink-one-skin</code> landed at <code>2c5cfec</code> (evidence <code>420b205</code>), merged in <code>16fd030</code>: <code>extract_vessel_shells</code> returns one <code>VesselShell</code> per filled annular outline, so a unit with only <code>outline_inner</code> or only <code>outline_outer</code> keeps that skin. Gate: <code>pytest tests/unit</code> 402 passed against the base's 400 with the same pre-existing <code>test_scene_cutaway</code> failure and errors, none added; ruff unchanged at 55; requiring both outlines turns the two new tests red. Independent review at <code>420b205</code>: goal 20, evidence 19, scope 20, durability 19, fit 20, reuse 20, no findings.</p>
   </section>
 
+  <section id="s5">
+    <h2>§5 — animate_pulse and the MCP animate tool forward the sensor flags</h2>
+    <p>Run <code>r-20261006T154936183044-ink-animate-sensor-flags</code>, merged at <code>5e3f70e</code> (commits <code>a90c1d5</code>, <code>a5d57a7</code>). <code>imas_ink.animate.animate_pulse</code> and the MCP <code>animate_pulse</code> tool in <code>imas_ink/server/mcp.py</code> take <code>show_probes</code> and <code>show_flux_loops</code>, defaulting to <code>True</code>, and forward both to <code>equilibrium_figure_mpl</code>, as the sibling <code>plot_geometry</code> tool already did. Gate: <code>tests/unit/test_animate_sensor_flags.py</code>, <code>tests/unit/test_vessel_units.py</code> and <code>tests/test_smoke.py</code>, 20 passed. Negative control: accepting the flags without forwarding them turns <code>test_both_false_on_every_frame</code> red. Independent review 119/120 with no added failures. Whole-tree ruff is red at base (56 findings), and the node added none; that backlog is not this plan's.</p>
+  </section>
+
 </main>
 </body>
 </html>

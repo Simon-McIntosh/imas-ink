@@ -8,9 +8,9 @@
   <meta name="plan-slug" content="geometry-figure-vessel-units">
   <meta name="plan-title" content="Geometry Figure Vessel Units">
   <meta name="plan-summary" content="Draw a wall&#x27;s vessel skins, compose two machine states, and put two traces on one panel, so imas-ambix&#x27;s JT-60SA figures need no drawing of their own">
-  <meta name="plan-status" content="active">
+  <meta name="plan-status" content="shipped">
   <meta name="plan-roi" content="mid">
-  <meta name="plan-effort-hours" content="4.0">
+  <meta name="plan-effort-hours" content="4.5">
   <meta name="plan-capability-version" content="1.0">
   <meta name="plan-capability-class" content="general">
   <meta name="plan-capability-reasoning" content="standard">
@@ -22,9 +22,9 @@
   <title>Geometry Figure Vessel Units | imas-ink</title>
   <link rel="stylesheet" href="/_shared/foundation.css">
   <link rel="stylesheet" href="/_shared/dashboard.css">
-<meta name="plan-version" content="24">
+<meta name="plan-version" content="25">
 <meta name="plan-modified" content="2026-10-06">
-<meta name="plan-section-declarations" content="{&quot;s1&quot;:&quot;done&quot;,&quot;s2&quot;:&quot;done&quot;,&quot;s3&quot;:&quot;done&quot;,&quot;s4&quot;:&quot;done&quot;,&quot;s5&quot;:&quot;implementable&quot;}">
+<meta name="plan-section-declarations" content="{&quot;s1&quot;:&quot;done&quot;,&quot;s2&quot;:&quot;done&quot;,&quot;s3&quot;:&quot;done&quot;,&quot;s4&quot;:&quot;done&quot;,&quot;s5&quot;:&quot;done&quot;}">
 <meta name="plan-commits" content="03d9593,94bd8f3,3dc98af,aca351d,f1eadd8,db2ee9f,2c5cfec,16fd030">
 </head>
 <body>
@@ -70,9 +70,12 @@
   <p class="landed-summary">A one-skin annular vessel unit keeps its skin (merge <code>16fd030</code>); review 20/19/20/19/20/20, no findings. <a href="s4">full record</a></p>
 </section>
 
+    <section class="section-landed">
+  <header><span class="badge badge-shipped">&#10003; landed 2026-10-06</span>
     <h2 id="s5">§5 — animate_pulse can leave the sensors out</h2>
-<section data-reckon="section" data-id="s5" data-effort-hours="0.5" data-capability-version="1.0" data-capability-class="general" data-capability-reasoning="standard" data-capability-verification="strict" data-capability-risk="low" data-status="implementable" data-links="imas-ambix:jt60sa-pulse-ids#s4"></section>
-<p><code>imas_ink.animate.animate_pulse</code> renders each frame with <code>equilibrium_figure_mpl</code> but does not pass that figure's <code>show_probes</code> and <code>show_flux_loops</code> through, so a caller cannot leave the magnetic probes and flux loops out of an equilibrium animation. imas-ambix's JT-60SA pulse animation (<code>imas-ambix:jt60sa-pulse-ids</code> §4) leaves them out, by the lead's decision <code>animation-sensors</code> on that plan. <code>animate_pulse</code> gains the two keyword arguments, defaulting to <code>True</code> as the figure does, and passes them through unchanged. No other parameter changes, and nothing is added in imas-ambix. The MCP <code>animate_pulse</code> tool in <code>imas_ink/server/mcp.py</code> gains the same two optional flags, which its sibling <code>geometry_figure</code> tool already carries, so the Python and MCP surfaces stay aligned. The interface account: two keyword arguments on one exported function and the same two on one existing MCP tool; no new definition or view, and nothing retired, because sensor visibility is a capability the animation lacks and <code>equilibrium_figure_mpl</code> already owns.</p><p>Done-when: a test renders a two-slice animation with <code>show_probes=False</code> and <code>show_flux_loops=False</code> and asserts that every frame was drawn with both flags false; a second assertion shows that the default call still draws them, and a third that the MCP tool forwards both flags to <code>animate_pulse</code>. The module's existing tests pass unchanged.</p>
+<section data-reckon="section" data-id="s5" data-effort-hours="0.5" data-capability-version="1.0" data-capability-class="general" data-capability-reasoning="standard" data-capability-verification="strict" data-capability-risk="low" data-status="done" data-links="imas-ambix:jt60sa-pulse-ids#s4"></section></header>
+  <p class="landed-summary"><code>animate_pulse</code> and the MCP <code>animate_pulse</code> tool forward <code>show_probes</code> and <code>show_flux_loops</code> to <code>equilibrium_figure_mpl</code>; merged at <code>5e3f70e</code>, gate 20 passed, review 119/120. <a href="s5">full record</a></p>
+</section>
 
     <section data-reckon="followups" id="followups" class="r-followups">
 <h2><span class="sec">§</span> Followups</h2>
