@@ -10,7 +10,7 @@
   <meta name="plan-summary" content="Repair the scene-cutaway tests that patch a renamed builder, then clear the 56-finding ruff backlog in one behaviour-neutral commit">
   <meta name="plan-status" content="active">
   <meta name="plan-roi" content="mid">
-  <meta name="plan-effort-hours" content="1.5">
+  <meta name="plan-effort-hours" content="1.75">
   <meta name="plan-capability-version" content="1.0">
   <meta name="plan-capability-class" content="general">
   <meta name="plan-capability-reasoning" content="standard">
@@ -19,11 +19,11 @@
   <meta name="plan-owner" content="Simon McIntosh">
   <meta name="plan-tags" content="test-suite">
   <meta name="plan-standalone" content="It repairs imas-ink&#x27;s own test suite and lint backlog; no plan waits on it and it waits on none.">
-  <meta name="plan-section-declarations" content="{&quot;s1&quot;:&quot;done&quot;,&quot;s2&quot;:&quot;implementable&quot;}">
+  <meta name="plan-section-declarations" content="{&quot;s1&quot;:&quot;done&quot;,&quot;s2&quot;:&quot;implementable&quot;,&quot;s3&quot;:&quot;implementable&quot;}">
   <title>imas-ink Suite Green | imas-ink</title>
   <link rel="stylesheet" href="/_shared/foundation.css">
   <link rel="stylesheet" href="/_shared/dashboard.css">
-<meta name="plan-version" content="5">
+<meta name="plan-version" content="6">
 <meta name="plan-modified" content="2026-10-06">
 </head>
 <body>
@@ -79,6 +79,10 @@
     </p>
 
     
+
+    <h2 id="s3">§3 — One ruff configuration, so its settings take effect</h2>
+<section data-reckon="section" data-id="s3" data-effort-hours="0.25" data-capability-version="1.0" data-capability-class="general" data-capability-reasoning="standard" data-capability-verification="strict" data-capability-risk="low" data-status="implementable" data-links=""></section>
+<p>imas-ink carries ruff's configuration twice. <code>.ruff.toml</code> and <code>pyproject.toml</code>'s <code>[tool.ruff]</code> agree on line length, target version, the selected rules and the E501 ignore. Only <code>pyproject.toml</code> also declares per-file ignores: B011 and SIM117 under <code>tests/**</code>, and E402 under <code>examples/**</code>. Ruff reads <code>.ruff.toml</code> in preference to <code>pyproject.toml</code>, so those ignores never apply, and any later edit to <code>pyproject.toml</code>'s ruff section is silently ignored. The lint sweep surfaced this when an <code>allowed-confusables</code> setting could not be placed where the plan said. The section deletes <code>.ruff.toml</code> and keeps <code>pyproject.toml</code> as the one configuration. This only relaxes what the project already declared it wanted relaxed, and changes no source file.</p><p>Done-when: <code>.ruff.toml</code> is gone, <code>ruff check --show-settings imas_ink/__init__.py</code> names <code>pyproject.toml</code> as the settings path and lists the <code>tests/**</code> per-file ignores, <code>uv run --no-sync ruff check imas_ink tests</code> exits 0, and the whole suite is unchanged at 418 passed with no failure or error.</p>
 
     <section data-reckon="followups" id="followups" class="r-followups">
 <h2><span class="sec">§</span> Followups</h2>
