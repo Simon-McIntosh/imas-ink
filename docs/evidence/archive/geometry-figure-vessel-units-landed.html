@@ -25,6 +25,11 @@
     <p>Node <code>ink-vessel-units</code> landed at <code>03d9593</code>, merged in <code>94bd8f3</code>. <code>WallOutline2D</code> and <code>VesselShell</code> moved to <code>_types.py</code>, <code>extract_vessel_shells</code> to <code>extract.py</code> and <code>_offset_polygon</code> to <code>geometry.py</code>, with <code>three_d/walls.py</code> importing them and its dead <code>_safe_float</code> removed; the extractor reads an annular unit's <code>outline_inner</code> and <code>outline_outer</code> from the <code>description_2d</code> entry <code>_select_description_2d</code> chose; <code>MachineGeometry.vessel_shells</code> feeds the viewport and both wall renderers. Gate: <code>pytest tests/unit</code> 393 passed against the base's 387, with the base's own 1 failure and 4 errors in <code>test_scene_cutaway</code> unchanged and none added; the 6 new tests in <code>tests/unit/test_vessel_units.py</code> pass and 4 turn red when the extractor ignores the skins; ruff findings unchanged at the base's 55. Independent review at <code>03d9593</code>: goal 19, evidence 16, scope 20, durability 18, fit 18, reuse 19; one follow-on, a unit with only one skin filled, folded as §4.</p>
   </section>
 
+  <section id="s2">
+    <h2>§2 — composing two machine states landed</h2>
+    <p>Node <code>ink-compose-phases</code> landed at <code>3dc98af</code>, merged in <code>aca351d</code>: <code>geometry_figure_mpl</code> takes an optional <code>ax</code> and draws into it without creating a figure, and <code>InkStyle.wall_linestyle</code> (default solid) is applied by <code>_render_wall_mpl</code> and <code>_render_wall_alt</code> to the limiter outlines and vessel shells. Gate: <code>pytest tests/unit</code> 397 passed against the base's 393 with the same pre-existing <code>test_scene_cutaway</code> failure and errors, none added; ruff unchanged at 55; a solid-only negative control turns the dashed-wall test red. Independent review at <code>3dc98af</code>: goal 20, evidence 19, scope 20, durability 18, fit 19, reuse 19; its follow-on, the altair dash map ignoring matplotlib's shorthand line styles, is folded into §3's node, which reuses that map for traces.</p>
+  </section>
+
 </main>
 </body>
 </html>

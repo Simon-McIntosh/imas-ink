@@ -22,10 +22,10 @@
   <title>Geometry Figure Vessel Units | imas-ink</title>
   <link rel="stylesheet" href="/_shared/foundation.css">
   <link rel="stylesheet" href="/_shared/dashboard.css">
-<meta name="plan-version" content="12">
+<meta name="plan-version" content="13">
 <meta name="plan-modified" content="2026-10-06">
-<meta name="plan-section-declarations" content="{&quot;s1&quot;:&quot;done&quot;,&quot;s2&quot;:&quot;implementable&quot;,&quot;s3&quot;:&quot;implementable&quot;,&quot;s4&quot;:&quot;implementable&quot;}">
-<meta name="plan-commits" content="03d9593,94bd8f3">
+<meta name="plan-section-declarations" content="{&quot;s1&quot;:&quot;done&quot;,&quot;s2&quot;:&quot;done&quot;,&quot;s3&quot;:&quot;implementable&quot;,&quot;s4&quot;:&quot;implementable&quot;}">
+<meta name="plan-commits" content="03d9593,94bd8f3,3dc98af,aca351d">
 </head>
 <body>
   <main class="plan-doc">
@@ -49,34 +49,12 @@
   <p class="landed-summary">Vessel skins drawn in the 2D figure through the relocated <code>extract_vessel_shells</code> and <code>WallOutline</code> (merge <code>94bd8f3</code>); 6 new tests, none added to the base's failures; review 19/16/20/18/18/19. <a href="s1">full record</a></p>
 </section>
 
+    <section class="section-landed">
+  <header><span class="badge badge-shipped">&#10003; landed 2026-10-06</span>
     <h2 id="s2">§2 — Compose two machine states into one figure</h2>
-<section data-reckon="section" data-id="s2" data-effort-hours="1.0" data-capability-version="1.0" data-capability-class="general" data-capability-reasoning="standard" data-capability-verification="strict" data-capability-risk="low" data-status="implementable" data-links=""></section>
-<p>
-      <code>geometry_figure_mpl</code> (<code>imas_ink/figures.py</code>) always makes its own figure with
-      <code>plt.subplots</code> and draws every wall outline in one solid line, so a caller cannot place
-      two machine states side by side on axes it lays out, nor overlay a second state as a reference.
-      imas-ambix's JT-60SA figures need both: the OP1 and OP2 operating phases side by side on one
-      viewport, and the two phases' wall and vessel overlaid on one panel. This section adds an optional
-      <code>ax</code> argument to <code>geometry_figure_mpl</code>, which draws into the given axes and
-      returns its figure instead of creating one, and one <code>InkStyle</code> constant,
-      <code>wall_linestyle</code> (default solid), applied by <code>_render_wall_mpl</code> and
-      <code>_render_wall_alt</code> to the limiter outline and the vessel shells,
-      so a caller draws a reference state with <code>replace(DEFAULT_STYLE,
-      wall_linestyle=DEFAULT_STYLE.ref_lcfs_linestyle)</code>, reusing the dashed reference vocabulary
-      the style already carries rather than a new one. Nothing else changes: called without
-      <code>ax</code>, the figure is drawn exactly as today. <code>wall_linestyle</code> retires nothing,
-      because no style field sets the wall's line style today; it is this section's one public
-      addition beside the <code>ax</code> argument.
-    </p>
-    <p>
-      Done-when: a test in <code>tests/unit/test_vessel_units.py</code> draws two geometries into two
-      axes of one figure through the <code>ax</code> argument and asserts each axes holds its geometry's
-      lines and no second figure was created, and draws one geometry with
-      <code>wall_linestyle="dashed"</code> and asserts its wall and vessel lines are dashed; the
-      existing geometry-figure tests pass unchanged; <code>uv run --no-sync pytest -p no:cacheprovider
-      tests/unit</code> adds no failure against the base revision, and <code>uv run --no-sync ruff check
-      imas_ink tests</code> adds no finding against it (the base carries 55).
-    </p>
+<section data-reckon="section" data-id="s2" data-effort-hours="1.0" data-capability-version="1.0" data-capability-class="general" data-capability-reasoning="standard" data-capability-verification="strict" data-capability-risk="low" data-status="done" data-links=""></section></header>
+  <p class="landed-summary"><code>geometry_figure_mpl</code> takes an optional <code>ax</code>; <code>InkStyle.wall_linestyle</code> drives both wall renderers (merge <code>aca351d</code>); review 20/19/20/18/19/19. <a href="s2">full record</a></p>
+</section>
 
     <h2 id="s3">§3 — Two traces on one panel</h2>
 <section data-reckon="section" data-id="s3" data-effort-hours="1.0" data-capability-version="1.0" data-capability-class="general" data-capability-reasoning="standard" data-capability-verification="strict" data-capability-risk="low" data-status="implementable" data-links=""></section>
