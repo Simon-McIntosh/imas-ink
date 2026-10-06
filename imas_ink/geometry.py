@@ -230,6 +230,55 @@ def close_polygon(vertices: np.ndarray) -> np.ndarray:
     return vertices
 
 
+def _offset_polygon(r, z, offset: float) -> tuple[np.ndarray, np.ndarray]:
+    """Naïve inward/outward offset of a 2D polygon.
+
+    Moves each vertex along the local outward normal by *offset*.
+    Positive offset = outward, negative = inward.
+
+    Parameters
+    ----------
+    r, z : array_like
+        Vertices of the 2D polygon.
+    offset : float
+        Signed displacement along the outward normal [m].
+
+    Returns
+    -------
+    tuple[np.ndarray, np.ndarray]
+        The offset ``(r, z)`` vertex arrays.
+
+    Examples
+    --------
+    >>> r = np.array([0.0, 1.0, 1.0, 0.0])
+    >>> z = np.array([0.0, 0.0, 1.0, 1.0])
+    >>> r_off, z_off = _offset_polygon(r, z, 0.1)
+    >>> r_off.shape == r.shape
+    True
+    """
+    import numpy as np
+
+    r = np.asarray(r, dtype=float)
+    z = np.asarray(z, dtype=float)
+    n = len(r)
+    r_off = np.empty(n)
+    z_off = np.empty(n)
+    for i in range(n):
+        i_prev = (i - 1) % n
+        i_next = (i + 1) % n
+        dr = r[i_next] - r[i_prev]
+        dz = z[i_next] - z[i_prev]
+        length = np.hypot(dr, dz)
+        if length < 1e-12:
+            r_off[i] = r[i]
+            z_off[i] = z[i]
+        else:
+            # Outward normal (assuming CCW winding)
+            r_off[i] = r[i] + offset * dz / length
+            z_off[i] = z[i] - offset * dr / length
+    return r_off, z_off
+
+
 def classify_probe_components(
     positions_r: np.ndarray,
     positions_z: np.ndarray,

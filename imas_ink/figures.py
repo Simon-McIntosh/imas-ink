@@ -182,6 +182,7 @@ def geometry_figure_mpl(
         geom.wall_r,
         geom.wall_z,
         wall_units=geom.wall_units if geom.wall_units else [],
+        vessel_shells=geom.vessel_shells if geom.vessel_shells else [],
         style=style,
     )
 
@@ -703,6 +704,7 @@ def equilibrium_chart_alt(
         geom.wall_r,
         geom.wall_z,
         wall_units=geom.wall_units if geom.wall_units else [],
+        vessel_shells=geom.vessel_shells if geom.vessel_shells else [],
         style=style,
     )
     coils = CoilRects(geom.coil_rects, style=style)

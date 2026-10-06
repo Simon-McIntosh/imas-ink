@@ -13,6 +13,10 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import TYPE_CHECKING
 
+from .._types import VesselShell, WallOutline2D
+from ..extract import extract_vessel_shells as extract_vessel_shells
+from ..geometry import _offset_polygon
+
 if TYPE_CHECKING:
     import numpy as np
     import pyvista as pv
@@ -24,23 +28,8 @@ if TYPE_CHECKING:
 
 
 @dataclass(frozen=True)
-class WallOutline2D:
-    """A 2D RZ polygon (or polyline) for one wall component."""
-
-    r: np.ndarray  # 1D
-    z: np.ndarray  # 1D
-    name: str
-    is_closed: bool  # True if last point == first
-
-
-@dataclass(frozen=True)
 class FirstWall(WallOutline2D):
     """Plasma-facing first-wall (limiter) contour."""
-
-
-@dataclass(frozen=True)
-class VesselShell(WallOutline2D):
-    """Vacuum vessel inner/outer shell or single-line approximation."""
 
 
 # ------------------------------------------------------------------
@@ -148,87 +137,6 @@ def extract_first_wall(wall_ids) -> FirstWall | None:
     return FirstWall(r=r, z=z, name="first_wall", is_closed=is_closed)
 
 
-def extract_vessel_shells(wall_ids) -> list[VesselShell]:
-    """Extract vessel shell outlines from a ``wall`` IDS.
-
-    Iterates ``wall.description_2d[0].vessel.unit[*]`` and reads:
-
-    - ``annular.centreline`` (r, z) with optional ``thickness`` for
-      annular vessel representations.
-    - Falls back to ``outline`` if annular data is absent.
-
-    Parameters
-    ----------
-    wall_ids
-        ``wall`` IDS object.
-
-    Returns
-    -------
-    list[VesselShell]
-        One per vessel unit.  Empty list if no vessel data.
-    """
-    import numpy as np
-
-    shells: list[VesselShell] = []
-
-    try:
-        desc = wall_ids.description_2d[0]
-        units = desc.vessel.unit
-    except (AttributeError, IndexError, TypeError):
-        return shells
-
-    for i, unit in enumerate(units):
-        r: np.ndarray | None = None
-        z: np.ndarray | None = None
-
-        # Try annular centreline first
-        try:
-            ann = unit.annular
-            r_cl = np.asarray(ann.centreline.r, dtype=float)
-            z_cl = np.asarray(ann.centreline.z, dtype=float)
-            if r_cl.size >= 3:
-                thickness = _safe_float(getattr(ann, "thickness", 0.0))
-                if thickness > 0:
-                    r_outer, z_outer = _offset_polygon(
-                        r_cl, z_cl, thickness / 2
-                    )
-                    r_inner, z_inner = _offset_polygon(
-                        r_cl, z_cl, -thickness / 2
-                    )
-                    r = np.concatenate([r_outer, r_inner[::-1]])
-                    z = np.concatenate([z_outer, z_inner[::-1]])
-                else:
-                    r, z = r_cl, z_cl
-        except (AttributeError, TypeError):
-            pass
-
-        # Fallback: outline
-        if r is None:
-            try:
-                outline = unit.outline
-                r = np.asarray(outline.r, dtype=float)
-                z = np.asarray(outline.z, dtype=float)
-            except (AttributeError, TypeError):
-                continue
-
-        if r is None or r.size < 3:
-            continue
-
-        gap = float(np.hypot(r[-1] - r[0], z[-1] - z[0]))
-        is_closed = gap < 1e-10
-
-        shells.append(
-            VesselShell(
-                r=r,
-                z=z,
-                name=f"vessel_{i}",
-                is_closed=is_closed,
-            )
-        )
-
-    return shells
-
-
 # ------------------------------------------------------------------
 # 3D revolution
 # ------------------------------------------------------------------
@@ -313,48 +221,3 @@ def synthesize_vessel_shell(
     is_closed = gap < 1e-10
 
     return VesselShell(r=r_off, z=z_off, name=name, is_closed=is_closed)
-
-
-# ------------------------------------------------------------------
-# Private helpers (migrated from coilset.py)
-# ------------------------------------------------------------------
-
-
-def _offset_polygon(
-    r, z, offset: float
-) -> tuple[np.ndarray, np.ndarray]:
-    """Naïve inward/outward offset of a 2D polygon.
-
-    Moves each vertex along the local outward normal by *offset*.
-    Positive offset = outward, negative = inward.
-    """
-    import numpy as np
-
-    r = np.asarray(r, dtype=float)
-    z = np.asarray(z, dtype=float)
-    n = len(r)
-    r_off = np.empty(n)
-    z_off = np.empty(n)
-    for i in range(n):
-        i_prev = (i - 1) % n
-        i_next = (i + 1) % n
-        dr = r[i_next] - r[i_prev]
-        dz = z[i_next] - z[i_prev]
-        length = np.hypot(dr, dz)
-        if length < 1e-12:
-            r_off[i] = r[i]
-            z_off[i] = z[i]
-        else:
-            # Outward normal (assuming CCW winding)
-            r_off[i] = r[i] + offset * dz / length
-            z_off[i] = z[i] - offset * dr / length
-    return r_off, z_off
-
-
-def _safe_float(value, default: float = 0.0) -> float:
-    """Convert *value* to float, falling back to *default*."""
-    try:
-        v = float(value)
-        return v if abs(v) < 1e30 else default
-    except (TypeError, ValueError):
-        return default
