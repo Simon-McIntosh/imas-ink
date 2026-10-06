@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="docs-project"   content="imas-ink">
+  <meta name="reckon-type"    content="plan">
+  <meta name="plan-slug"      content="geometry-figure-vessel-units">
+  <meta name="plan-title"     content="Geometry Figure Vessel Units">
+  <meta name="plan-summary"   content="Draw a wall's annular vacuum-vessel skins in the 2D geometry figure through the existing extract_vessel_shells owner">
+  <meta name="plan-status"    content="draft">
+  <meta name="plan-roi"       content="mid">
+  <meta name="plan-effort-hours" content="1.5">
+  <meta name="plan-capability-version" content="1.0">
+  <meta name="plan-capability-class" content="general">
+  <meta name="plan-capability-reasoning" content="standard">
+  <meta name="plan-capability-verification" content="strict">
+  <meta name="plan-capability-risk" content="low">
+  <meta name="plan-owner"     content="Simon McIntosh">
+  <meta name="plan-tags"      content="figures,machine-geometry">
+  <meta name="plan-informs"   content="imas-ambix:jt60sa-geometry-and-signal-figures">
+  <title>Geometry Figure Vessel Units | imas-ink</title>
+  <link rel="stylesheet" href="/_shared/foundation.css">
+  <link rel="stylesheet" href="/_shared/dashboard.css">
+</head>
+<body>
+  <main class="plan-doc">
+    <header>
+      <p class="eyebrow">Drawing the vessel a machine description declares</p>
+      <h1>Geometry Figure Vessel Units</h1>
+      <p class="lead">
+        imas-ink's poloidal geometry figure draws a wall's limiter units, coils and sensors, but not the
+        vacuum vessel a <code>wall</code> IDS declares in <code>description_2d.vessel</code>. The JT-60SA
+        machine description in imas-ambix now writes its vessel there, and the lead ruled on 2026-10-06
+        that the JT-60SA figures render through imas-ink with any missing drawing added to imas-ink
+        (imas-ambix plan <code>jt60sa-geometry-and-signal-figures</code>, decision
+        <code>figure-owner</code>). This plan adds that drawing.
+      </p>
+    </header>
+
+    <h2 id="s1">§1 — Vessel skins in the 2D geometry figure</h2>
+    <section data-reckon="section" data-id="s1" data-effort-hours="1.5" data-capability-version="1.0" data-capability-class="general" data-capability-reasoning="standard" data-capability-verification="strict" data-capability-risk="low" data-status="implementable" data-links=""></section>
+    <p>
+      imas-ink already owns vessel extraction: <code>extract_vessel_shells</code>
+      (<code>imas_ink/three_d/walls.py</code>) iterates <code>wall.description_2d[0].vessel.unit</code> and
+      returns one <code>VesselShell</code> per unit, from an annular unit's <code>centreline</code> (with
+      <code>thickness</code> offsetting it into a band) or from a plain <code>outline</code>. It does not
+      read an annular unit's <code>outline_inner</code> and <code>outline_outer</code>, which is how the
+      JT-60SA description writes its vessel: two closed 51-point skins, the same in both operating
+      phases. This section extends that one owner rather than adding a second extractor: when an annular
+      unit's <code>outline_inner</code> and <code>outline_outer</code> are filled,
+      <code>extract_vessel_shells</code> returns one <code>VesselShell</code> for each, inner then outer,
+      ahead of the centreline path, and leaves the centreline and outline paths unchanged.
+    </p>
+    <p>
+      The 2D pipeline then carries those shells. <code>extract_geometry</code>
+      (<code>imas_ink/extract.py</code>) fills one new field on <code>MachineGeometry</code>
+      (<code>imas_ink/_types.py</code>), typed with the existing <code>VesselShell</code>, from
+      <code>extract_vessel_shells</code>; <code>geometry_figure_mpl</code>
+      (<code>imas_ink/figures.py</code>) draws each shell as an unfilled line in the existing ink style
+      beside the limiter units, and the viewport covers the shells. A new <code>InkStyle</code> constant is
+      added only if the vessel needs a weight distinct from the wall. The 2D geometry has no vessel
+      representation today, so the field retires nothing; it is the one public addition and reuses the
+      type the 3D path already exports.
+    </p>
+    <p>
+      Done-when: a new test, <code>tests/unit/test_vessel_units.py</code>, builds a <code>wall</code> IDS with
+      one limiter unit and one vessel unit whose annular <code>outline_inner</code> and
+      <code>outline_outer</code> are filled, and asserts that <code>extract_vessel_shells</code> returns two
+      closed shells and that <code>geometry_figure_mpl</code> adds both shells' lines to the axes; it fails
+      when <code>extract_vessel_shells</code> ignores those outlines. <code>uv run --no-sync pytest -p
+      no:cacheprovider tests/unit</code> adds no failure against the base revision, and <code>uv run
+      --no-sync ruff check imas_ink tests</code> exits 0.
+    </p>
+
+    <section data-reckon="followups" id="followups" class="r-followups">
+      <h2><span class="sec">§</span> Followups</h2>
+      <article class="r-fu" data-id="f-gfvu-001" data-status="open" data-capability-version="1.0" data-capability-class="general" data-written-by="reckon-create" data-written-at="2026-10-06" data-recommends-skill="/reckon-build geometry-figure-vessel-units §1" data-resolved-at="" data-resolved-by="">
+        <h4 class="r-fu-title">Draw annular vessel skins in the geometry figure</h4>
+        <div class="r-fu-body"><p>One node; imas-ambix's JT-60SA geometry figures wait on it.</p></div>
+        <pre class="r-fu-prompt">/reckon-build geometry-figure-vessel-units §1</pre>
+      </article>
+    </section>
+  </main>
+</body>
+</html>

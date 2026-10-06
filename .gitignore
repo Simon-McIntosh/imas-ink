@@ -51,7 +51,9 @@ Thumbs.db
 *.gif
 *.html
 *.svg
-# …except docs/images (not present yet; add when needed)
+# …except the reckon docs tree: plans, evidence and their figures are tracked
+!docs/**/*.html
+!docs/**/*.svg
 
 # Session artefacts
 .mcp.local.json
