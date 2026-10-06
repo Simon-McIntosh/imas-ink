@@ -23,7 +23,7 @@
   <title>imas-ink Suite Green | imas-ink</title>
   <link rel="stylesheet" href="/_shared/foundation.css">
   <link rel="stylesheet" href="/_shared/dashboard.css">
-<meta name="plan-version" content="3">
+<meta name="plan-version" content="4">
 <meta name="plan-modified" content="2026-10-06">
 </head>
 <body>
@@ -88,6 +88,11 @@
     <pre class="r-fu-prompt">/reckon-build imas-ink-suite-green §1</pre>
     </article>
 </section>
-  </main>
+  <section data-reckon="comments" id="comments" class="r-comments">
+<div class="r-comment" data-section="s1" data-id="c-run-r-20261006T164407940956-ink-scene-cutaway-repair" data-who="reckon-build" data-when="2026-10-06T16:51:22.688Z">
+    <div class="r-comment-body"><p>Repair of the cutaway composer: render_cutaway_with_flux now reads the first-wall cap from clipped_blocks (its dangling fw_capped read is gone) and the five TestRenderCutawaySynthetic tests patch _build_cutaway_geometry, the builder the composer calls; measure - tests/unit/three_d/ exits 0 with 5-of-5 synthetic tests passing, full suite 418 passed / 6 skipped / 0 failed, ruff F821 exits 0.</p></div>
+</div>
+</section>
+</main>
 </body>
 </html>
