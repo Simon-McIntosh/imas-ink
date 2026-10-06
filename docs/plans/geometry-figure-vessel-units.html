@@ -4,24 +4,27 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="docs-project"   content="imas-ink">
-  <meta name="reckon-type"    content="plan">
-  <meta name="plan-slug"      content="geometry-figure-vessel-units">
-  <meta name="plan-title"     content="Geometry Figure Vessel Units">
-  <meta name="plan-summary"   content="Draw a wall's annular vacuum-vessel skins in the 2D geometry figure through the existing extract_vessel_shells owner">
-  <meta name="plan-status"    content="draft">
-  <meta name="plan-roi"       content="mid">
-  <meta name="plan-effort-hours" content="1.5">
+  <meta name="reckon-type" content="plan">
+  <meta name="plan-slug" content="geometry-figure-vessel-units">
+  <meta name="plan-title" content="Geometry Figure Vessel Units">
+  <meta name="plan-summary" content="Draw a wall&#x27;s annular vacuum-vessel skins in the 2D geometry figure through the existing extract_vessel_shells owner">
+  <meta name="plan-status" content="draft">
+  <meta name="plan-roi" content="mid">
+  <meta name="plan-effort-hours" content="2.5">
   <meta name="plan-capability-version" content="1.0">
   <meta name="plan-capability-class" content="general">
   <meta name="plan-capability-reasoning" content="standard">
   <meta name="plan-capability-verification" content="strict">
   <meta name="plan-capability-risk" content="low">
-  <meta name="plan-owner"     content="Simon McIntosh">
-  <meta name="plan-tags"      content="figures,machine-geometry">
-  <meta name="plan-informs"   content="imas-ambix:jt60sa-geometry-and-signal-figures">
+  <meta name="plan-owner" content="Simon McIntosh">
+  <meta name="plan-tags" content="figures,machine-geometry">
+  <meta name="plan-informs" content="imas-ambix:jt60sa-geometry-and-signal-figures">
   <title>Geometry Figure Vessel Units | imas-ink</title>
   <link rel="stylesheet" href="/_shared/foundation.css">
   <link rel="stylesheet" href="/_shared/dashboard.css">
+<meta name="plan-version" content="1">
+<meta name="plan-modified" content="2026-10-06">
+<meta name="plan-section-declarations" content="{&quot;s1&quot;:&quot;implementable&quot;,&quot;s2&quot;:&quot;implementable&quot;}">
 </head>
 <body>
   <main class="plan-doc">
@@ -73,14 +76,40 @@
       --no-sync ruff check imas_ink tests</code> exits 0.
     </p>
 
+    <h2 id="s2">§2 — Compose two machine states into one figure</h2>
+<section data-reckon="section" data-id="s2" data-effort-hours="1.0" data-capability-version="1.0" data-capability-class="general" data-capability-reasoning="standard" data-capability-verification="strict" data-capability-risk="low" data-status="implementable" data-links=""></section>
+<p>
+      <code>geometry_figure_mpl</code> (<code>imas_ink/figures.py</code>) always makes its own figure with
+      <code>plt.subplots</code> and draws every wall outline in one solid line, so a caller cannot place
+      two machine states side by side on axes it lays out, nor overlay a second state as a reference.
+      imas-ambix's JT-60SA figures need both: the OP1 and OP2 operating phases side by side on one
+      viewport, and the two phases' wall and vessel overlaid on one panel. This section adds an optional
+      <code>ax</code> argument to <code>geometry_figure_mpl</code>, which draws into the given axes and
+      returns its figure instead of creating one, and one <code>InkStyle</code> constant,
+      <code>wall_linestyle</code> (default solid), applied to the limiter outline and the vessel shells,
+      so a caller draws a reference state with <code>replace(DEFAULT_STYLE,
+      wall_linestyle=DEFAULT_STYLE.ref_lcfs_linestyle)</code>, reusing the dashed reference vocabulary
+      the style already carries rather than a new one. Nothing else changes: called without
+      <code>ax</code>, the figure is drawn exactly as today.
+    </p>
+    <p>
+      Done-when: a test in <code>tests/unit/test_vessel_units.py</code> draws two geometries into two
+      axes of one figure through the <code>ax</code> argument and asserts each axes holds its geometry's
+      lines and no second figure was created, and draws one geometry with
+      <code>wall_linestyle="dashed"</code> and asserts its wall and vessel lines are dashed; the
+      existing geometry-figure tests pass unchanged; <code>uv run --no-sync pytest -p no:cacheprovider
+      tests/unit</code> adds no failure against the base revision, and <code>uv run --no-sync ruff check
+      imas_ink tests</code> exits 0.
+    </p>
+
     <section data-reckon="followups" id="followups" class="r-followups">
-      <h2><span class="sec">§</span> Followups</h2>
-      <article class="r-fu" data-id="f-gfvu-001" data-status="open" data-capability-version="1.0" data-capability-class="general" data-written-by="reckon-create" data-written-at="2026-10-06" data-recommends-skill="/reckon-build geometry-figure-vessel-units §1" data-resolved-at="" data-resolved-by="">
-        <h4 class="r-fu-title">Draw annular vessel skins in the geometry figure</h4>
-        <div class="r-fu-body"><p>One node; imas-ambix's JT-60SA geometry figures wait on it.</p></div>
-        <pre class="r-fu-prompt">/reckon-build geometry-figure-vessel-units §1</pre>
-      </article>
-    </section>
+<h2><span class="sec">§</span> Followups</h2>
+<article class="r-fu" data-id="f-gfvu-001" data-status="open" data-capability-version="1.0" data-capability-class="general" data-written-by="reckon-create" data-written-at="2026-10-06" data-recommends-skill="/reckon-build geometry-figure-vessel-units §1" data-resolved-at="" data-resolved-by="">
+    <h4 class="r-fu-title">Draw annular vessel skins in the geometry figure</h4>
+    <div class="r-fu-body"><p>One node; imas-ambix's JT-60SA geometry figures wait on it.</p></div>
+    <pre class="r-fu-prompt">/reckon-build geometry-figure-vessel-units §1</pre>
+    </article>
+</section>
   </main>
 </body>
 </html>
