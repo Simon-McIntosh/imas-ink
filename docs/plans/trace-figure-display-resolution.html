@@ -22,7 +22,7 @@
   <title>Trace Figure Display Resolution | imas-ink</title>
   <link rel="stylesheet" href="/_shared/foundation.css">
   <link rel="stylesheet" href="/_shared/dashboard.css">
-<meta name="plan-version" content="5">
+<meta name="plan-version" content="6">
 <meta name="plan-modified" content="2026-10-06">
 <meta name="plan-section-declarations" content="{&quot;s1&quot;:&quot;done&quot;}">
 </head>
@@ -83,6 +83,9 @@
   <section data-reckon="comments" id="comments" class="r-comments">
 <div class="r-comment" data-section="s1" data-id="c-run-r-20261006T130704483694-ink-trace-resolution" data-who="reckon-build" data-when="2026-10-06T13:16:51.366Z">
     <div class="r-comment-body"><p>InkStyle gained path_simplify_threshold (1.0) and trace_max_points (4000); render_to_bytes saves under a matplotlib rc_context applying path.simplify with the style threshold; _render_timeseries_alt draws a series longer than trace_max_points through a min/max envelope in imas_ink/_decimate.py; tests/unit/test_trace_resolution.py renders a 300,000-sample trace to a 32,819-byte SVG (limit 100 KB) and the Altair renderer emits 4000 points with global min/max intact, a 500-sample series unchanged.</p></div>
+</div>
+<div class="r-comment" data-section="s1" data-id="c-run-r-20261006T131719915776-review-of-ink-trace-resolution" data-who="reckon-build" data-when="2026-10-06T13:24:45.065Z">
+    <div class="r-comment-body"><p>review of run r-20261006T130704483694-ink-trace-resolution (imas-ink:trace-figure-display-resolution §1) stored: studied base 596ad0f..head 540f3be, all six dimensions scored (goal_fidelity 20, evidence 19, scope_discipline 20, durability 20, fit 20, reuse 20; total 119), 0 added failures, one follow-on finding (the fragment&#x27;s quoted 32,819-byte head SVG does not reproduce — 51,648 measured — though both are under the 100 KB bound).</p></div>
 </div>
 </section>
 </main>
