@@ -22,7 +22,7 @@
   <title>Geometry Figure Vessel Units | imas-ink</title>
   <link rel="stylesheet" href="/_shared/foundation.css">
   <link rel="stylesheet" href="/_shared/dashboard.css">
-<meta name="plan-version" content="8">
+<meta name="plan-version" content="9">
 <meta name="plan-modified" content="2026-10-06">
 <meta name="plan-section-declarations" content="{&quot;s1&quot;:&quot;implementable&quot;,&quot;s2&quot;:&quot;implementable&quot;,&quot;s3&quot;:&quot;implementable&quot;}">
 </head>
@@ -188,6 +188,9 @@
   <section data-reckon="comments" id="comments" class="r-comments">
 <div class="r-comment" data-section="s1" data-id="c-run-r-20261006T112102473187-ink-vessel-units" data-who="reckon-build" data-when="2026-10-06T11:32:31.734Z">
     <div class="r-comment-body"><p>§1 — extract_vessel_shells now returns one closed VesselShell per filled annular outline_inner/outline_outer (inner then outer), reads the selected description_2d entry, and extract_geometry fills MachineGeometry.vessel_shells which both renderers draw; 6 new tests pass and the pytest tests/unit gate adds no failure against the base revision.</p></div>
+</div>
+<div class="r-comment" data-section="s1" data-id="c-run-r-20261006T113305690245-review-of-ink-vessel-units" data-who="reckon-build" data-when="2026-10-06T11:38:16.067Z">
+    <div class="r-comment-body"><p>Reviewed ink-vessel-units (r-20261006T112102473187) at head 03d9593 against base 5eb401b: goal met, 6/6 dimensions scored (goal_fidelity 19, evidence 16, scope_discipline 20, durability 18, fit 18, reuse 19; total 110), added_failure_count 0, one follow-on finding (annular branch requires both outline_inner and outline_outer filled).</p></div>
 </div>
 </section>
 </main>
