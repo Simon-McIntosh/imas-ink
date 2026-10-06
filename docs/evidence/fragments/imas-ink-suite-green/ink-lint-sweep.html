@@ -1,0 +1,18 @@
+<section data-reckon="evidence-fragment" id="ink-lint-sweep">
+  <h2 id="ink-lint-sweep-heading">The ruff backlog is cleared in one behaviour-neutral sweep</h2>
+  <p id="ink-lint-sweep-landing">
+    <code>ruff check imas_ink tests</code> exits 0, down from 55 findings at
+    base <code>1564fc7</code>. The sweep is one <code>style(lint)</code> commit
+    (<code>37cab9d</code>) touching only ruff-flagged files: the public
+    re-exports in <code>imas_ink/__init__.py</code> move into a sorted
+    <code>__all__</code>, unused imports and unpacked names are removed, the two
+    suppressed anti-aliasing faults use <code>contextlib.suppress</code>, four
+    <code>if</code>/<code>else</code> assignments become ternaries, and the
+    confusable characters in comments, docstrings and one error message use
+    ASCII. The one behaviour-affecting finding, the blind-exception assertion,
+    lands separately as <code>89ff7ec</code>. Measure: <code>pytest -q</code>
+    reports 418 passed, 6 skipped, 0 failed, 0 errors both before
+    (<code>1564fc7</code>) and after (<code>89ff7ec</code>); reverting the sweep
+    reproduces 55 findings with <code>EXIT=1</code>.
+  </p>
+</section>
