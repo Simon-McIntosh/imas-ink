@@ -1,0 +1,61 @@
+<section data-reckon="evidence-fragment" id="ink-vessel-units">
+  <h2 id="ink-vessel-units-heading">Annular vessel skins in the 2D geometry figure</h2>
+
+  <p id="ink-vessel-units-what">
+    The vessel types and extractor moved into core modules so the 2D figure no
+    longer loads the 3D subpackage: <code>WallOutline2D</code> and
+    <code>VesselShell</code> now live in <code>imas_ink/_types.py</code>,
+    <code>extract_vessel_shells</code> in <code>imas_ink/extract.py</code>, and
+    the pure-numpy <code>_offset_polygon</code> in <code>imas_ink/geometry.py</code>.
+    <code>three_d/walls.py</code> imports all three from their new homes and its
+    private <code>_safe_float</code> (its only caller was the moved extractor) is
+    deleted. The lazy name map in <code>imas_ink/__init__.py</code> points
+    <code>VesselShell</code>/<code>WallOutline2D</code> at <code>_types.py</code>
+    and <code>extract_vessel_shells</code> at <code>extract.py</code>.
+  </p>
+
+  <p id="ink-vessel-units-extractor">
+    <code>extract_vessel_shells(wall_ids, desc_2d=None)</code> takes the
+    <code>description_2d</code> entry to read (index 0 when none is given) and,
+    when an annular unit's <code>outline_inner</code> and
+    <code>outline_outer</code> are filled, returns one closed
+    <code>VesselShell</code> for each — inner then outer — ahead of the
+    unchanged centreline and outline paths. It reads <code>thickness</code>
+    through <code>imas_ink._sentinel.safe_float</code>.
+    <code>extract_geometry</code> passes the entry
+    <code>_select_description_2d</code> chose and fills
+    <code>MachineGeometry.vessel_shells</code>, whose <code>viewport</code> now
+    includes the shells' bounds.
+  </p>
+
+  <p id="ink-vessel-units-drawing">
+    <code>WallOutline</code> carries the shells; <code>_render_wall_mpl</code>
+    and <code>_render_wall_alt</code> draw them as unfilled lines in
+    <code>wall_color</code>/<code>wall_linewidth</code>, the altair renderer
+    gaining the <code>wall_units</code> loop the matplotlib renderer already
+    had. <code>geometry_figure_mpl</code> and <code>equilibrium_chart_alt</code>
+    pass the shells to the <code>WallOutline</code> they already build.
+  </p>
+
+  <p id="ink-vessel-units-measure">
+    Measure: <code>tests/unit/test_vessel_units.py</code> — six tests, all
+    passing. <code>extract_vessel_shells</code> returns two closed shells from
+    filled annular outlines; the vessel is read from the richest
+    <code>description_2d</code> entry (index 1, not 0);
+    <code>geometry_figure_mpl</code> draws three wall lines (one limiter plus
+    two shells) and the axes limits contain the outer skin at r≈7 beyond the
+    r≈6 limiter; <code>_render_wall_alt</code> emits three distinct segments;
+    and importing <code>imas_ink.extract</code>/<code>imas_ink.figures</code>
+    leaves <code>imas_ink.three_d</code> out of <code>sys.modules</code>.
+    Gate <code>pytest tests/unit</code>: head 393 passed / 1 failed / 4 errors;
+    base 387 passed / 1 failed / 4 errors — no added failure.
+    <code>ruff check imas_ink tests</code>: 55 findings, identical to the base
+    revision's 55 (delta zero; the backlog is pre-existing).
+  </p>
+
+  <p id="ink-vessel-units-negative-control">
+    Negative control: making <code>extract_vessel_shells</code> ignore annular
+    <code>outline_inner</code>/<code>outline_outer</code> turns the extractor
+    and figure tests red — 4 failed, 2 passed, <code>EXIT=1</code>.
+  </p>
+</section>

@@ -11,10 +11,14 @@ Components are **not** frozen because users may want to swap the
 from __future__ import annotations
 
 from dataclasses import dataclass, field
+from typing import TYPE_CHECKING
 
 import numpy as np
 
 from .style import DEFAULT_STYLE, InkStyle
+
+if TYPE_CHECKING:
+    from ._types import VesselShell
 
 
 @dataclass
@@ -141,6 +145,8 @@ class WallOutline:
     ``wall_r`` / ``wall_z`` hold the first unit for backward compatibility.
     ``wall_units`` holds all units as a list of ``(r_array, z_array)`` pairs.
     When non-empty, renderers iterate ``wall_units`` to draw every unit.
+    ``vessel_shells`` holds the vacuum-vessel shells, drawn as unfilled lines
+    in the wall's ink style.
 
     Examples
     --------
@@ -150,6 +156,7 @@ class WallOutline:
     wall_r: np.ndarray
     wall_z: np.ndarray
     wall_units: list[tuple[np.ndarray, np.ndarray]] = field(default_factory=list)
+    vessel_shells: list[VesselShell] = field(default_factory=list)
     style: InkStyle = field(default_factory=lambda: DEFAULT_STYLE)
 
 

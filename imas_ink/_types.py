@@ -13,6 +13,21 @@ import numpy as np
 
 
 @dataclass(frozen=True)
+class WallOutline2D:
+    """A 2D RZ polygon (or polyline) for one wall component."""
+
+    r: np.ndarray  # 1D
+    z: np.ndarray  # 1D
+    name: str
+    is_closed: bool  # True if last point == first
+
+
+@dataclass(frozen=True)
+class VesselShell(WallOutline2D):
+    """Vacuum vessel inner/outer shell or single-line approximation."""
+
+
+@dataclass(frozen=True)
 class EquilibriumSlice:
     """Single time-slice equilibrium data.
 
@@ -131,6 +146,8 @@ class MachineGeometry:
     wall_clip_vertices: np.ndarray  # (M, 2) closed polygon
     wall_units: list[tuple[np.ndarray, np.ndarray]] = field(default_factory=list)
     # list of (r_array, z_array) for every limiter unit in the selected desc_2d
+    vessel_shells: list[VesselShell] = field(default_factory=list)
+    # vacuum-vessel shells from the selected desc_2d (2D figure); empty when absent
     probe_r: np.ndarray = field(default_factory=lambda: np.array([]))
     probe_z: np.ndarray = field(default_factory=lambda: np.array([]))
     probe_angle: np.ndarray = field(default_factory=lambda: np.array([]))
@@ -150,6 +167,9 @@ class MachineGeometry:
         else:
             all_r = [self.wall_r.min(), self.wall_r.max()]
             all_z = [self.wall_z.min(), self.wall_z.max()]
+        for shell in self.vessel_shells:
+            all_r.extend([float(shell.r.min()), float(shell.r.max())])
+            all_z.extend([float(shell.z.min()), float(shell.z.max())])
         for c in self.coil_rects:
             all_r.extend([c.r, c.r + c.width])
             all_z.extend([c.z, c.z + c.height])

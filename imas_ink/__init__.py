@@ -121,15 +121,13 @@ from .style import DEFAULT_STYLE, InkStyle
 def __getattr__(name: str):
     _MANIFOLD_NAMES = {"MeshNotManifoldError", "ensure_closed_manifold"}
     _WALL_NAMES = {
-        "WallOutline2D",
         "FirstWall",
-        "VesselShell",
         "extract_first_wall",
-        "extract_vessel_shells",
         "close_or_reject_outline",
         "revolve_wall_outline",
         "synthesize_vessel_shell",
     }
+    _VESSEL_TYPE_NAMES = {"VesselShell", "WallOutline2D"}
     _CUTAWAY_NAMES = {
         "ClipPlane",
         "CappedMesh",
@@ -163,6 +161,14 @@ def __getattr__(name: str):
         from .three_d import walls
 
         return getattr(walls, name)
+    if name in _VESSEL_TYPE_NAMES:
+        from . import _types
+
+        return getattr(_types, name)
+    if name == "extract_vessel_shells":
+        from . import extract
+
+        return extract.extract_vessel_shells
     if name in _CUTAWAY_NAMES:
         from .three_d import cutaway
 

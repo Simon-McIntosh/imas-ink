@@ -358,11 +358,12 @@ def _render_strikes_mpl(ax: Axes, strikes: StrikePoints) -> None:
 
 
 def _render_wall_mpl(ax: Axes, wall: WallOutline) -> None:
-    """Plot all first-wall unit outlines.
+    """Plot the wall unit outlines and the vacuum-vessel shells.
 
     When ``wall.wall_units`` is populated (new multi-unit path), each unit is
     drawn as a separate line.  Falls back to the single ``wall_r``/``wall_z``
-    pair for backward compatibility when ``wall_units`` is empty.
+    pair for backward compatibility when ``wall_units`` is empty.  Any
+    ``vessel_shells`` are drawn as unfilled lines in the same wall ink style.
     """
     s = wall.style
     units = getattr(wall, "wall_units", None)
@@ -379,6 +380,14 @@ def _render_wall_mpl(ax: Axes, wall: WallOutline) -> None:
         ax.plot(
             wall.wall_r,
             wall.wall_z,
+            color=s.wall_color,
+            linewidth=s.wall_linewidth,
+            zorder=s.zorder_wall,
+        )
+    for shell in getattr(wall, "vessel_shells", None) or []:
+        ax.plot(
+            shell.r,
+            shell.z,
             color=s.wall_color,
             linewidth=s.wall_linewidth,
             zorder=s.zorder_wall,

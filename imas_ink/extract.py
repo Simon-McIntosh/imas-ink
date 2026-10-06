@@ -16,8 +16,9 @@ from ._types import (
     MachineGeometry,
     RadialProfiles,
     TimeTraces,
+    VesselShell,
 )
-from .geometry import coil_bboxes, wall_clip_vertices
+from .geometry import _offset_polygon, coil_bboxes, wall_clip_vertices
 
 # contour_tree node critical_type codes (IMAS DDv4 magnetic-topology convention,
 # PR-243): 0 = O-point (extremum / magnetic axis), 1 = X-point (saddle).
@@ -443,6 +444,117 @@ def _select_mobile_unit(desc_2d, time: float | None) -> list:
     return selected
 
 
+def _filled_outline(unit, *path):
+    """Return ``(r, z)`` for ``unit.<path>.r/.z`` when filled, else ``None``.
+
+    A path is filled when it resolves to at least three R points matching the
+    Z array length.  Any missing or malformed attribute yields ``None`` so the
+    caller can fall through to the next representation.
+    """
+    obj = unit
+    try:
+        for attr in path:
+            obj = getattr(obj, attr)
+        r = np.asarray(obj.r, dtype=float)
+        z = np.asarray(obj.z, dtype=float)
+    except (AttributeError, TypeError, ValueError):
+        return None
+    if r.size < 3 or r.size != z.size:
+        return None
+    return r, z
+
+
+def _shell_from_outline(r: np.ndarray, z: np.ndarray, name: str) -> VesselShell:
+    """Build a :class:`VesselShell` from an RZ outline, detecting closure."""
+    gap = float(np.hypot(r[-1] - r[0], z[-1] - z[0]))
+    return VesselShell(r=r, z=z, name=name, is_closed=gap < 1e-10)
+
+
+def extract_vessel_shells(wall_ids, desc_2d=None) -> list[VesselShell]:
+    """Extract vessel shell outlines from a ``wall`` IDS.
+
+    Reads one ``description_2d`` entry's ``vessel.unit[*]``.  Each annular
+    unit is read in this order:
+
+    - A filled ``annular.outline_inner`` and ``annular.outline_outer`` yield
+      one :class:`VesselShell` each, inner then outer.
+    - Otherwise ``annular.centreline`` (r, z) with a positive ``thickness``
+      offsets the centreline into a band; a zero thickness returns the
+      centreline itself.
+    - Falls back to ``outline`` when annular data is absent.
+
+    Parameters
+    ----------
+    wall_ids
+        ``wall`` IDS object.
+    desc_2d : optional
+        The ``description_2d`` entry to read.  When ``None`` the entry at
+        index 0 is used, matching the 3D path.
+
+    Returns
+    -------
+    list[VesselShell]
+        One per filled shell representation.  Empty list if no vessel data.
+    """
+    shells: list[VesselShell] = []
+
+    if desc_2d is None:
+        try:
+            desc_2d = wall_ids.description_2d[0]
+        except (AttributeError, IndexError, TypeError):
+            return shells
+
+    try:
+        units = desc_2d.vessel.unit
+    except (AttributeError, TypeError):
+        return shells
+
+    for i, unit in enumerate(units):
+        # Filled annular skins: one shell per outline, inner then outer.
+        inner = _filled_outline(unit, "annular", "outline_inner")
+        outer = _filled_outline(unit, "annular", "outline_outer")
+        if inner is not None and outer is not None:
+            shells.append(_shell_from_outline(inner[0], inner[1], f"vessel_{i}_inner"))
+            shells.append(_shell_from_outline(outer[0], outer[1], f"vessel_{i}_outer"))
+            continue
+
+        r: np.ndarray | None = None
+        z: np.ndarray | None = None
+
+        # Annular centreline, offset into a band when thickness is positive.
+        try:
+            ann = unit.annular
+            r_cl = np.asarray(ann.centreline.r, dtype=float)
+            z_cl = np.asarray(ann.centreline.z, dtype=float)
+            if r_cl.size >= 3:
+                thickness = safe_float(getattr(ann, "thickness", 0.0), 0.0)
+                if thickness > 0:
+                    r_outer, z_outer = _offset_polygon(r_cl, z_cl, thickness / 2)
+                    r_inner, z_inner = _offset_polygon(r_cl, z_cl, -thickness / 2)
+                    r = np.concatenate([r_outer, r_inner[::-1]])
+                    z = np.concatenate([z_outer, z_inner[::-1]])
+                else:
+                    r, z = r_cl, z_cl
+        except (AttributeError, TypeError):
+            pass
+
+        # Fallback: outline
+        if r is None:
+            try:
+                outline = unit.outline
+                r = np.asarray(outline.r, dtype=float)
+                z = np.asarray(outline.z, dtype=float)
+            except (AttributeError, TypeError):
+                continue
+
+        if r is None or r.size < 3:
+            continue
+
+        shells.append(_shell_from_outline(r, z, f"vessel_{i}"))
+
+    return shells
+
+
 def extract_geometry(
     wall_ids, pf_ids, magnetics_ids=None, time: float | None = None
 ) -> MachineGeometry:
@@ -495,6 +607,9 @@ def extract_geometry(
     clip_verts = wall_clip_vertices(wall_r, wall_z)
     coils = coil_bboxes(pf_ids)
 
+    # Vessel shells from the same description_2d entry as the limiter units.
+    vessel_shells = extract_vessel_shells(wall_ids, desc_2d)
+
     probe_r_list: list[float] = []
     probe_z_list: list[float] = []
     probe_angle_list: list[float] = []
@@ -541,6 +656,7 @@ def extract_geometry(
         coil_rects=coils,
         wall_clip_vertices=clip_verts,
         wall_units=wall_units,
+        vessel_shells=vessel_shells,
         probe_r=np.asarray(probe_r_list, dtype=float),
         probe_z=np.asarray(probe_z_list, dtype=float),
         probe_angle=np.asarray(probe_angle_list, dtype=float),

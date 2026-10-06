@@ -200,12 +200,28 @@ def _render_sep_alt(sep: Separatrix) -> alt.Chart | alt.LayerChart:
 
 
 def _render_wall_alt(wall: WallOutline) -> alt.Chart:
-    """Render :class:`WallOutline` — first wall polygon."""
+    """Render :class:`WallOutline` — wall units and vacuum-vessel shells.
+
+    Draws every limiter unit in ``wall_units`` (falling back to the single
+    ``wall_r``/``wall_z`` pair) plus every ``vessel_shell``, each as its own
+    path via ``seg_id``.
+    """
     import altair as alt
     import pandas as pd
 
     style = wall.style
-    df = pd.DataFrame({"r": wall.wall_r, "z": wall.wall_z, "seg_id": 0})
+    units = getattr(wall, "wall_units", None)
+    if not units:
+        units = [(wall.wall_r, wall.wall_z)]
+    frames = []
+    seg_id = 0
+    for r_u, z_u in units:
+        frames.append(pd.DataFrame({"r": r_u, "z": z_u, "seg_id": seg_id}))
+        seg_id += 1
+    for shell in getattr(wall, "vessel_shells", None) or []:
+        frames.append(pd.DataFrame({"r": shell.r, "z": shell.z, "seg_id": seg_id}))
+        seg_id += 1
+    df = pd.concat(frames, ignore_index=True)
 
     return (
         alt.Chart(df)
