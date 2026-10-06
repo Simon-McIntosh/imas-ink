@@ -192,45 +192,49 @@ __all__ = [
     "DEFAULT_DD_VERSION",
     "DEFAULT_STYLE",
     "EMPTY_THRESHOLD",
+    # 3D cutaway (lazy — from imas_ink.three_d.cutaway)
+    "CappedMesh",
+    "ClipPlane",
     "CoilRect",
     "CoilRects",
-    "DivertorLegs",
-    "StrikePoints",
     # contours
     "ContourExtractor",
+    "DivertorLegs",
     # types
     "EquilibriumSlice",
     # 3D equilibrium (lazy — from imas_ink.three_d.equilibrium)
     "EquilibriumSlice2D",
+    # 3D walls (lazy — from imas_ink.three_d.walls)
+    "FirstWall",
     # components
     "FluxContours",
-    "LcfsOutline",
-    "SolContours",
+    "FluxLoops",
     # 3D flux projection (lazy — from imas_ink.three_d.flux_projection)
     "FluxMode",
     "FluxOverlay",
     # style
     "InkStyle",
+    "LcfsOutline",
     "MachineGeometry",
-    # 3D cutaway (lazy — from imas_ink.three_d.cutaway)
-    "CappedMesh",
-    "ClipPlane",
-    # 3D walls (lazy — from imas_ink.three_d.walls)
-    "FirstWall",
+    "MagneticProbes",
     # 3D manifold validation (lazy — from imas_ink.three_d)
     "MeshNotManifoldError",
     "OPointMarker",
     "RadialProfile",
     "RadialProfiles",
-    "ReferenceLcfs",
     "ReferenceContours",
+    "ReferenceLcfs",
     "ReferenceXPoints",
     "ScatterPoints",
     "Separatrix",
+    "SolContours",
+    "StrikePoints",
     "TimeLabel",
     "TimeSeries",
     "TimeTraces",
+    "VesselShell",
     "WallOutline",
+    "WallOutline2D",
     "XPoint",
     "XPointMarkers",
     # version
@@ -244,14 +248,18 @@ __all__ = [
     "cap_face_of",
     "capped_clip",
     "capped_clip_multiblock",
+    "classify_flux_segments",
     # 3D walls (lazy — from imas_ink.three_d.walls)
     "close_or_reject_outline",
     "close_polygon",
     "coil_bboxes",
     # 3D flux projection (lazy — from imas_ink.three_d.flux_projection)
     "contours_on_cap",
+    "encloses_point",
     # 3D manifold validation (lazy — from imas_ink.three_d)
     "ensure_closed_manifold",
+    "equilibrium_chart_alt",
+    "equilibrium_figure_mpl",
     # 3D walls (lazy — from imas_ink.three_d.walls)
     "extract_first_wall",
     "extract_geometry",
@@ -263,10 +271,7 @@ __all__ = [
     "extract_time_traces",
     # 3D walls (lazy — from imas_ink.three_d.walls)
     "extract_vessel_shells",
-    "classify_flux_segments",
-    "encloses_point",
-    "points_in_polygon",
-    "split_by_polygon_membership",
+    "geometry_figure_mpl",
     "is_closed_contour",
     # sentinel
     "is_empty",
@@ -276,32 +281,34 @@ __all__ = [
     "mask_pfr",
     # 3D flux projection (lazy — from imas_ink.three_d.flux_projection)
     "offset_along_normal",
+    "points_in_polygon",
     # 3D equilibrium (lazy — from imas_ink.three_d.equilibrium)
     "psi_grid_interpolator",
+    "radial_profile_figure_mpl",
     # 3D equilibrium (lazy — from imas_ink.three_d.equilibrium)
     "read_equilibrium",
-    # 3D scene (lazy — from imas_ink.three_d.scene)
-    "render_cutaway_with_flux",
     # altair backend
     "render_alt",
+    # 3D scene (lazy — from imas_ink.three_d.scene)
+    "render_cutaway_with_flux",
     # mpl backend
     "render_mpl",
-    # 3D walls (lazy — from imas_ink.three_d.walls)
-    "revolve_wall_outline",
-    # DD version
-    "resolve_dd_version",
     # I/O
     "render_to_bytes",
+    # DD version
+    "resolve_dd_version",
+    # 3D walls (lazy — from imas_ink.three_d.walls)
+    "revolve_wall_outline",
     "safe_float",
     # 3D flux projection (lazy — from imas_ink.three_d.flux_projection)
     "sample_psi_on_cap",
     "save_html",
     "save_png",
     "segments_to_dataframe",
+    "split_by_polygon_membership",
     "split_path_segs",
     # 3D walls (lazy — from imas_ink.three_d.walls)
     "synthesize_vessel_shell",
-    "VesselShell",
-    "WallOutline2D",
+    "time_trace_figure_mpl",
     "wall_clip_vertices",
 ]

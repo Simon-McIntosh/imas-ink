@@ -155,13 +155,14 @@ class ContourExtractor:
         list[list[np.ndarray]]
             ``segments[level_index]`` is a list of ``(N, 2)`` arrays.
         """
-        # Grid extremum in the vacuum direction (works for either COCOS sign)
-        if psi_axis < psi_bnd:
-            # Vacuum psi is LARGER than psi_bnd (e.g. COCOS-3 / WEST DDv3)
-            psi_grid_edge = float(self.psi_2d.max())
-        else:
-            # Vacuum psi is SMALLER than psi_bnd (e.g. COCOS-17 / DDv4)
-            psi_grid_edge = float(self.psi_2d.min())
+        # Grid extremum in the vacuum direction (works for either COCOS sign):
+        # vacuum psi is LARGER than psi_bnd when it increases outward
+        # (e.g. COCOS-3 / WEST DDv3) and SMALLER otherwise (e.g. COCOS-17 / DDv4).
+        psi_grid_edge = (
+            float(self.psi_2d.max())
+            if psi_axis < psi_bnd
+            else float(self.psi_2d.min())
+        )
         # n evenly-spaced levels between LCFS and grid edge (endpoints excluded)
         levels = np.linspace(psi_bnd, psi_grid_edge, n + 2)[1:-1]
         return [self.lines_at(lev) for lev in levels]

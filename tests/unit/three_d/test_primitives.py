@@ -113,11 +113,11 @@ class TestSweepSectionAlongPath:
         """Open-path sweep of a rectangle adds start + end cap triangles.
 
         Rectangle section (4 vertices) along a 2-point path:
-        - Side faces: 1 segment × 4 quads = 4 quads
+        - Side faces: 1 segment x 4 quads = 4 quads
         - Start cap: 2 fan triangles (4 - 2 = 2)
         - End cap:   2 fan triangles
         - Total:     4 quads + 4 triangles = 8 cells
-        - Vertices:  2 rings × 4 section pts = 8 points
+        - Vertices:  2 rings x 4 section pts = 8 points
         """
         from imas_ink.three_d.primitives import sweep_section_along_path
 

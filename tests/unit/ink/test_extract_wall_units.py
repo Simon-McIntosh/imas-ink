@@ -14,10 +14,9 @@ from __future__ import annotations
 import types
 
 import numpy as np
-import pytest
 
-from imas_ink.extract import extract_geometry
 from imas_ink._types import MachineGeometry
+from imas_ink.extract import extract_geometry
 
 
 # ---------------------------------------------------------------------------
@@ -236,7 +235,7 @@ class TestMobileOutlineSelection:
         # desc[1] is selected (type=2 > type=1)
         # nearest to t=22.0 is t=20.0 → r_arr[1] = [2.1, 3.1, 3.1, 2.1]
         assert len(geom.wall_units) >= 1
-        r0, z0 = geom.wall_units[0]
+        r0, _z0 = geom.wall_units[0]
         np.testing.assert_allclose(r0, r_arr[1], atol=1e-10)
 
     def test_no_time_returns_limiter_units(self):
@@ -261,8 +260,9 @@ class TestContainmentAnnotationInFigure:
 
     def _make_minimal_eq_slice(self):
         """Return a minimal EquilibriumSlice-like object via extract_slice."""
-        from imas_ink.extract import extract_slice
         import types
+
+        from imas_ink.extract import extract_slice
 
         n_r, n_z = 33, 33
         r_grid = np.linspace(4.0, 8.0, n_r)
@@ -314,7 +314,7 @@ class TestContainmentAnnotationInFigure:
             "psi_boundary": 9.0,
         }
         # Should not raise:
-        fig, ax = equilibrium_figure_mpl(sl, geom, containment_result=containment)
+        fig, _ax = equilibrium_figure_mpl(sl, geom, containment_result=containment)
         import matplotlib.pyplot as plt
         plt.close(fig)
 
@@ -354,7 +354,7 @@ class TestContainmentAnnotationInFigure:
         sl = self._make_minimal_eq_slice()
         geom = self._make_minimal_geom()
         # Default: no containment_result → backward compat
-        fig, ax = equilibrium_figure_mpl(sl, geom)
+        fig, _ax = equilibrium_figure_mpl(sl, geom)
         import matplotlib.pyplot as plt
         plt.close(fig)
 

@@ -92,7 +92,7 @@ def close_or_reject_outline(
 
     raise ValueError(
         f"Outline gap ({gap:.6g} m) exceeds tolerance "
-        f"({threshold:.6g} m = {tol} × bbox_diag {bbox_diag:.6g} m). "
+        f"({threshold:.6g} m = {tol} x bbox_diag {bbox_diag:.6g} m). "
         f"First point: ({r[0]:.6g}, {z[0]:.6g}), "
         f"last point: ({r[-1]:.6g}, {z[-1]:.6g})."
     )

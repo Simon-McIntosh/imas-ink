@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-import os
 from pathlib import Path
 
 import numpy as np
@@ -11,7 +10,6 @@ import pytest
 # ---------------------------------------------------------------------------
 # DD version resolution tests (no imas dependency)
 # ---------------------------------------------------------------------------
-
 from imas_ink._dd import DEFAULT_DD_VERSION, resolve_dd_version
 
 
@@ -59,7 +57,7 @@ from imas_ink.three_d.equilibrium import (  # noqa: E402
 
 
 def _make_synthetic_eq(dd_version: str = DEFAULT_DD_VERSION):
-    """Build a minimal 5×5 equilibrium IDS for testing."""
+    """Build a minimal 5x5 equilibrium IDS for testing."""
     factory = imas.IDSFactory(version=dd_version)
     eq = factory.new("equilibrium")
 
@@ -68,7 +66,7 @@ def _make_synthetic_eq(dd_version: str = DEFAULT_DD_VERSION):
     eq.time_slice.resize(1)
     ts = eq.time_slice[0]
 
-    # 5×5 ψ grid
+    # 5x5 ψ grid
     r_vals = np.linspace(5.0, 7.0, 5)
     z_vals = np.linspace(-1.0, 1.0, 5)
     psi_vals = np.outer(r_vals - 6.0, z_vals - 0.0) + 0.5  # simple saddle

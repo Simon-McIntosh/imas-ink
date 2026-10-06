@@ -9,6 +9,14 @@ Import from here for the public API::
 """
 
 from .coilset import CoilMesh, extract_pf_coils, extract_tf_coils, extract_wall
+from .cutaway import (
+    CappedMesh,
+    ClipPlane,
+    auto_camera,
+    cap_face_of,
+    capped_clip,
+    capped_clip_multiblock,
+)
 from .equilibrium import (
     EquilibriumSlice2D,
     extract_slice_2d,
@@ -22,14 +30,6 @@ from .flux_projection import (
     contours_on_cap,
     offset_along_normal,
     sample_psi_on_cap,
-)
-from .cutaway import (
-    CappedMesh,
-    ClipPlane,
-    auto_camera,
-    cap_face_of,
-    capped_clip,
-    capped_clip_multiblock,
 )
 from .manifold import MeshNotManifoldError, ensure_closed_manifold
 from .primitives import (
