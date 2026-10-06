@@ -1,0 +1,22 @@
+{
+  "format": "distributed",
+  "status": "complete",
+  "project": "imas-ink",
+  "resources": [
+    {
+      "type": "project",
+      "id": "project",
+      "path": "state/imas-ink/project.json",
+      "sha256": "b29fe1c54ded315b51155855ab829c905fa9a565228cdb03865c9689f266e3a0",
+      "version": 0
+    },
+    {
+      "type": "timeline",
+      "id": "timeline",
+      "path": "state/imas-ink/timeline.html",
+      "sha256": "66f14655d88314e09e426facc9af8af78a6c4d289e8298822ad70adfef53b8c7",
+      "version": 0
+    }
+  ],
+  "completed_at": "2026-10-06T10:34:37+00:00"
+}
