@@ -42,6 +42,15 @@ if TYPE_CHECKING:
 # Helpers
 # ---------------------------------------------------------------------------
 
+# Vega-Lite stroke-dash patterns for the matplotlib line-style names used by
+# InkStyle.  A solid line is an on-only dash, so the default wall is unchanged.
+WALL_STROKE_DASH: dict[str, list[int]] = {
+    "solid": [1, 0],
+    "dashed": [6, 4],
+    "dotted": [1, 3],
+    "dashdot": [6, 3, 1, 3],
+}
+
 
 def segments_to_dataframe(
     segments: list[np.ndarray],
@@ -204,7 +213,8 @@ def _render_wall_alt(wall: WallOutline) -> alt.Chart:
 
     Draws every limiter unit in ``wall_units`` (falling back to the single
     ``wall_r``/``wall_z`` pair) plus every ``vessel_shell``, each as its own
-    path via ``seg_id``.
+    path via ``seg_id``.  The stroke dash follows ``InkStyle.wall_linestyle``
+    so a reference machine state can be drawn dashed.
     """
     import altair as alt
     import pandas as pd
@@ -225,7 +235,11 @@ def _render_wall_alt(wall: WallOutline) -> alt.Chart:
 
     return (
         alt.Chart(df)
-        .mark_line(color=style.wall_color, strokeWidth=style.wall_linewidth)
+        .mark_line(
+            color=style.wall_color,
+            strokeWidth=style.wall_linewidth,
+            strokeDash=WALL_STROKE_DASH.get(style.wall_linestyle, WALL_STROKE_DASH["solid"]),
+        )
         .encode(
             x=alt.X("r:Q", title="R [m]"),
             y=alt.Y("z:Q", title="Z [m]"),

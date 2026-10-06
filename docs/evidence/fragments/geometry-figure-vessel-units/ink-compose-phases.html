@@ -1,0 +1,44 @@
+<section data-reckon="evidence-fragment" id="ink-compose-phases">
+  <h2 id="ink-compose-phases-heading">Compose two machine states into one figure</h2>
+
+  <p id="ink-compose-phases-what">
+    <code>geometry_figure_mpl</code> (<code>imas_ink/figures.py</code>) takes an
+    optional <code>ax</code>. When given one it draws into that axes and returns
+    <code>ax.get_figure()</code> without calling <code>plt.subplots</code>, so a
+    caller places two machine states on axes it lays out itself; when omitted it
+    builds its own figure exactly as before. <code>InkStyle</code>
+    (<code>imas_ink/style.py</code>) gains <code>wall_linestyle</code> (default
+    <code>"solid"</code>), applied by <code>_render_wall_mpl</code>
+    (<code>imas_ink/mpl.py</code>) and <code>_render_wall_alt</code>
+    (<code>imas_ink/alt.py</code>) to the limiter units and the vacuum-vessel
+    shells. The altair renderer maps the style name to a Vega-Lite
+    <code>strokeDash</code> through a module-level
+    <code>WALL_STROKE_DASH</code>, leaving no second style vocabulary.
+  </p>
+
+  <p id="ink-compose-phases-measure">
+    Measure: <code>tests/unit/test_vessel_units.py</code>. Two new figure tests
+    plus one altair test and a solid control. Drawing two geometries into two
+    axes of one figure through <code>ax</code> leaves
+    <code>plt.get_fignums()</code> unchanged, returns the caller's figure and
+    axes, and each axes holds its own geometry's wall lines (one limiter unit on
+    one, three lines — limiter plus two shells — on the other). Drawing a
+    geometry with <code>wall_linestyle="dashed"</code> makes all three wall lines
+    dashed, against a control that the default draws them solid. The altair test
+    asserts the mark carries <code>strokeDash=[6, 4]</code> when the style is
+    dashed. Gate <code>uv run --no-sync pytest -p no:cacheprovider tests/unit</code>:
+    head 397 passed / 1 failed / 4 errors; base (5fad354) 393 passed / 1 failed /
+    4 errors — the four extra passes are the new tests, the five failure ids are
+    identical (<code>three_d/test_scene_cutaway.py</code>), so no failure is
+    added. <code>uv run --no-sync ruff check imas_ink tests</code>: 55 findings,
+    identical to the base's 55 (delta zero; the backlog is pre-existing).
+  </p>
+
+  <p id="ink-compose-phases-negative-control">
+    Negative control: making <code>_render_wall_mpl</code> ignore
+    <code>InkStyle.wall_linestyle</code> and always draw solid lines turns
+    <code>TestWallLinestyle::test_dashed_wall_and_vessel_lines</code> red —
+    1 failed / 9 passed, <code>EXIT=1</code>. That test passes in the head arm,
+    so it measures the style field and not a fixed pattern.
+  </p>
+</section>
