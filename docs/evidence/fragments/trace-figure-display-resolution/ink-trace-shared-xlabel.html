@@ -1,0 +1,24 @@
+<section data-reckon="evidence-fragment" id="ink-trace-shared-xlabel">
+  <h2 id="ink-trace-shared-xlabel-heading">Label a stacked figure's shared x-axis once</h2>
+
+  <p id="ink-trace-shared-xlabel-landing">
+    <code>_render_timeseries_mpl</code> and <code>_render_radialprofile_mpl</code>
+    (<code>imas_ink/mpl.py</code>) each gain a private keyword
+    <code>label_x</code> (default <code>True</code>) that alone controls whether
+    the axes' x-label (<code>Time [s]</code> / <code>ψ_norm</code>) is written;
+    the exported <code>render_mpl</code> gains no keyword.
+    <code>time_trace_figure_mpl</code> and <code>radial_profile_figure_mpl</code>
+    (<code>imas_ink/figures.py</code>) now call the private renderers directly and
+    pass <code>label_x=False</code> for every panel but the bottom one, so a
+    stacked figure labels its shared axis once. Measure
+    <code>tests/unit/test_trace_resolution.py</code> — three tests, all passing:
+    a three-panel trace figure and a three-panel radial-profile figure each carry
+    a non-empty x-label on the bottom axes only, and a lone
+    <code>TimeSeries</code> drawn through <code>render_mpl</code> still carries
+    <code>Time [s]</code>. Gate <code>uv run --no-sync pytest -p no:cacheprovider
+    -q tests/unit</code>: head 408 passed / 1 failed / 4 errors, base 405 passed /
+    1 failed / 4 errors (identical failure and error ids, all in
+    <code>tests/unit/three_d/test_scene_cutaway.py</code>);
+    <code>uv run --no-sync ruff check imas_ink tests</code> 56 at head, 57 at base.
+  </p>
+</section>

@@ -9,10 +9,18 @@ a series long enough to matter.
 
 from __future__ import annotations
 
+import matplotlib.pyplot as plt
 import numpy as np
 import pytest
 
-from imas_ink import TimeSeries, render_to_bytes, time_trace_figure_mpl
+from imas_ink import (
+    RadialProfile,
+    TimeSeries,
+    radial_profile_figure_mpl,
+    render_mpl,
+    render_to_bytes,
+    time_trace_figure_mpl,
+)
 from imas_ink.alt import _render_timeseries_alt
 from imas_ink.style import DEFAULT_STYLE
 
@@ -51,3 +59,25 @@ def test_altair_keeps_short_series_unchanged():
     ts = _noisy_series(n=500)
     chart = _render_timeseries_alt(ts)
     assert len(chart.data) == ts.values.size
+
+
+def test_stacked_trace_labels_only_bottom_panel():
+    """Three stacked trace panels sharing one time axis label it once, at the bottom."""
+    panels = [_noisy_series(n=100) for _ in range(3)]
+    _fig, axes = time_trace_figure_mpl(panels)
+    assert [ax.get_xlabel() for ax in axes] == ["", "", "Time [s]"]
+
+
+def test_stacked_radial_profile_labels_only_bottom_panel():
+    """Three stacked radial-profile panels sharing one x-axis label it once."""
+    psi_norm = np.linspace(0.0, 1.0, 50)
+    profiles = [RadialProfile(psi_norm, psi_norm**i) for i in (1, 2, 3)]
+    _fig, axes = radial_profile_figure_mpl(profiles)
+    assert [ax.get_xlabel() for ax in axes] == ["", "", "ψ_norm"]
+
+
+def test_single_series_through_render_mpl_keeps_x_label():
+    """A lone series drawn through the public renderer keeps its time label."""
+    _fig, ax = plt.subplots()
+    render_mpl(ax, _noisy_series(n=100))
+    assert ax.get_xlabel() == "Time [s]"
