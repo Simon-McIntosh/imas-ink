@@ -8,7 +8,7 @@
   <meta name="plan-slug" content="geometry-figure-vessel-units">
   <meta name="plan-title" content="Geometry Figure Vessel Units">
   <meta name="plan-summary" content="Draw a wall&#x27;s vessel skins, compose two machine states, and put two traces on one panel, so imas-ambix&#x27;s JT-60SA figures need no drawing of their own">
-  <meta name="plan-status" content="draft">
+  <meta name="plan-status" content="shipped">
   <meta name="plan-roi" content="mid">
   <meta name="plan-effort-hours" content="4.0">
   <meta name="plan-capability-version" content="1.0">
@@ -22,10 +22,10 @@
   <title>Geometry Figure Vessel Units | imas-ink</title>
   <link rel="stylesheet" href="/_shared/foundation.css">
   <link rel="stylesheet" href="/_shared/dashboard.css">
-<meta name="plan-version" content="20">
+<meta name="plan-version" content="21">
 <meta name="plan-modified" content="2026-10-06">
-<meta name="plan-section-declarations" content="{&quot;s1&quot;:&quot;done&quot;,&quot;s2&quot;:&quot;done&quot;,&quot;s3&quot;:&quot;done&quot;,&quot;s4&quot;:&quot;implementable&quot;}">
-<meta name="plan-commits" content="03d9593,94bd8f3,3dc98af,aca351d,f1eadd8,db2ee9f">
+<meta name="plan-section-declarations" content="{&quot;s1&quot;:&quot;done&quot;,&quot;s2&quot;:&quot;done&quot;,&quot;s3&quot;:&quot;done&quot;,&quot;s4&quot;:&quot;done&quot;}">
+<meta name="plan-commits" content="03d9593,94bd8f3,3dc98af,aca351d,f1eadd8,db2ee9f,2c5cfec,16fd030">
 </head>
 <body>
   <main class="plan-doc">
@@ -63,30 +63,20 @@
   <p class="landed-summary">A trace panel takes a list of <code>TimeSeries</code>, later series dashed in the first one's colour with no labels (merge <code>db2ee9f</code>); review 20/19/20/18/19/19. <a href="s3">full record</a></p>
 </section>
 
+    <section class="section-landed">
+  <header><span class="badge badge-shipped">&#10003; landed 2026-10-06</span>
     <h2 id="s4">§4 — An annular vessel unit with one skin</h2>
-<section data-reckon="section" data-id="s4" data-effort-hours="0.5" data-capability-version="1.0" data-capability-class="general" data-capability-reasoning="standard" data-capability-verification="strict" data-capability-risk="low" data-status="implementable" data-links=""></section>
-<p>
-      <code>extract_vessel_shells</code> (<code>imas_ink/extract.py</code>) returns shells from an annular
-      unit only when both <code>outline_inner</code> and <code>outline_outer</code> are filled, so a unit
-      with just one of them, which the <code>wall</code> IDS permits, falls through to the centreline and
-      outline paths and its filled skin is silently dropped. This section makes the annular branch
-      return one <code>VesselShell</code> for each skin that is filled, inner then outer, so a one-skin unit
-      draws that skin; a unit with both behaves exactly as now. It adds no public name.
-    </p>
-    <p>
-      Done-when: a test in <code>tests/unit/test_vessel_units.py</code> builds an annular vessel unit
-      with only <code>outline_outer</code> filled and asserts <code>extract_vessel_shells</code> returns
-      that one closed shell, and the existing vessel tests pass; <code>uv run --no-sync pytest -p
-      no:cacheprovider tests/unit</code> adds no failure against the base revision, and <code>uv run
-      --no-sync ruff check imas_ink tests</code> adds no finding against it.
-    </p>
+<section data-reckon="section" data-id="s4" data-effort-hours="0.5" data-capability-version="1.0" data-capability-class="general" data-capability-reasoning="standard" data-capability-verification="strict" data-capability-risk="low" data-status="done" data-links=""></section></header>
+  <p class="landed-summary">A one-skin annular vessel unit keeps its skin (merge <code>16fd030</code>); review 20/19/20/19/20/20, no findings. <a href="s4">full record</a></p>
+</section>
 
     <section data-reckon="followups" id="followups" class="r-followups">
 <h2><span class="sec">§</span> Followups</h2>
-<article class="r-fu" data-id="f-gfvu-001" data-status="open" data-capability-version="1.0" data-capability-class="general" data-written-by="reckon-create" data-written-at="2026-10-06" data-recommends-skill="/reckon-build geometry-figure-vessel-units §1" data-resolved-at="" data-resolved-by="">
+<article class="r-fu" data-id="f-gfvu-001" data-status="resolved" data-capability-version="1.0" data-capability-class="general" data-written-by="reckon-create" data-written-at="2026-10-06" data-recommends-skill="/reckon-build geometry-figure-vessel-units §1" data-resolved-at="2026-10-06T12:27:26+00:00" data-resolved-by="reckon-build">
     <h4 class="r-fu-title">Draw annular vessel skins in the geometry figure</h4>
     <div class="r-fu-body"><p>One node; imas-ambix's JT-60SA geometry figures wait on it.</p></div>
     <pre class="r-fu-prompt">/reckon-build geometry-figure-vessel-units §1</pre>
+    <p class="r-fu-outcome">done — no followup: all four sections landed and merged on imas-ink main (94bd8f3, aca351d, db2ee9f, 16fd030); imas-ambix's JT-60SA figures continue in imas-ambix:jt60sa-geometry-and-signal-figures</p>
     </article>
 </section>
   <section data-reckon="comments" id="comments" class="r-comments">

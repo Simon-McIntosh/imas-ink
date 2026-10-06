@@ -35,6 +35,11 @@
     <p>Node <code>ink-trace-panels</code> landed at <code>f1eadd8</code>, merged in <code>db2ee9f</code>: <code>time_trace_figure_mpl</code> takes a panel as a list of <code>TimeSeries</code>; the first is drawn as a single series is today and owns the labels, and each later one is drawn through <code>_render_timeseries_mpl</code> with the first line's colour, its own <code>trace_linestyle</code> and no labels or legend; <code>render_mpl</code>'s signature is unchanged; the altair dash map accepts matplotlib's shorthand line styles. Gate: <code>pytest tests/unit</code> 400 passed against the base's 397 with the same pre-existing <code>test_scene_cutaway</code> failure and errors, none added; ruff unchanged at 55; routing later series through <code>render_mpl</code> with defaults turns the shared-colour test red. Independent review at <code>f1eadd8</code>: goal 20, evidence 19, scope 20, durability 18, fit 19, reuse 19; its residual note, that the altair map falls back to solid only for values matplotlib itself rejects, needs no change.</p>
   </section>
 
+  <section id="s4">
+    <h2>§4 — one-skin annular vessel unit landed</h2>
+    <p>Node <code>ink-one-skin</code> landed at <code>2c5cfec</code> (evidence <code>420b205</code>), merged in <code>16fd030</code>: <code>extract_vessel_shells</code> returns one <code>VesselShell</code> per filled annular outline, so a unit with only <code>outline_inner</code> or only <code>outline_outer</code> keeps that skin. Gate: <code>pytest tests/unit</code> 402 passed against the base's 400 with the same pre-existing <code>test_scene_cutaway</code> failure and errors, none added; ruff unchanged at 55; requiring both outlines turns the two new tests red. Independent review at <code>420b205</code>: goal 20, evidence 19, scope 20, durability 19, fit 20, reuse 20, no findings.</p>
+  </section>
+
 </main>
 </body>
 </html>
