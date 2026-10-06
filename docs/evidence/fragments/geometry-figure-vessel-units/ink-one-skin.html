@@ -1,0 +1,13 @@
+<section data-reckon="evidence-fragment" id="ink-one-skin">
+  <h2 id="ink-one-skin-heading">An annular vessel unit with one skin</h2>
+  <p id="ink-one-skin-landing">
+    <code>extract_vessel_shells</code> now returns one <code>VesselShell</code>
+    for each filled annular outline, inner then outer, so a unit with only
+    <code>outline_outer</code> (or only <code>outline_inner</code>) filled
+    yields that one closed shell instead of dropping it; a unit with both
+    yields two exactly as before. Measure: 15 tests pass in
+    <code>tests/unit/test_vessel_units.py</code> (two new one-skin tests);
+    <code>pytest tests/unit</code> adds no failure against the base revision
+    and <code>ruff check imas_ink tests</code> adds no finding.
+  </p>
+</section>
