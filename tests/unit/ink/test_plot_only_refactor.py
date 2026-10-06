@@ -10,12 +10,10 @@ from __future__ import annotations
 import types
 
 import numpy as np
-import pytest
 
-from imas_ink.components import LcfsOutline, SolContours, FluxContours
+from imas_ink.components import LcfsOutline
 from imas_ink.extract import extract_slice
 from imas_ink.geometry import classify_flux_segments, encloses_point
-
 
 # ---------------------------------------------------------------------------
 # Helpers
@@ -186,10 +184,7 @@ def _make_minimal_time_slice(
     )
 
     # X-points
-    if x_points is None:
-        xp_list = []
-    else:
-        xp_list = [ns(r=r, z=z) for (r, z) in x_points]
+    xp_list = [] if x_points is None else [ns(r=r, z=z) for (r, z) in x_points]
 
     # Boundary
     if r_bnd is not None and z_bnd is not None:

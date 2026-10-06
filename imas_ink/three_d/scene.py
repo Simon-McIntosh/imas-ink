@@ -6,6 +6,7 @@ pyvista plotter. All heavy imports are inside function bodies.
 
 from __future__ import annotations
 
+import contextlib
 import pathlib
 from typing import TYPE_CHECKING
 
@@ -149,11 +150,9 @@ def render_coilset(
         light_type="scene light",
     )
     pl.add_light(fill)
-    try:
-        pl.enable_anti_aliasing("ssaa")
-    except Exception:
+    with contextlib.suppress(Exception):
         # Older pyvista may not support ssaa; fall back silently.
-        pass
+        pl.enable_anti_aliasing("ssaa")
 
     def _maybe_clip(mesh: pv.PolyData) -> pv.PolyData:
         if clip_normal is None or mesh.n_points == 0:
@@ -498,10 +497,8 @@ def render_cutaway_with_flux(
         light_type="scene light",
     )
     pl.add_light(fill)
-    try:
+    with contextlib.suppress(Exception):
         pl.enable_anti_aliasing("ssaa")
-    except Exception:
-        pass
 
     _matte = dict(ambient=0.25, diffuse=0.85, specular=0.08, specular_power=8)
 

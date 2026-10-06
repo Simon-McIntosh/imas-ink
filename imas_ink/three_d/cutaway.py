@@ -254,7 +254,7 @@ def capped_clip_multiblock(
         pts = np.asarray(mesh.points, dtype=float)
         signed_dists = (pts - origin) @ normal
         if np.all(signed_dists < 0):
-            # Entirely on the removed side (−normal side)
+            # Entirely on the removed side (-normal side)
             empty = pv.PolyData()
             results[block_name] = CappedMesh(
                 full=empty, cap=empty, name=block_name
@@ -320,9 +320,9 @@ def auto_camera(
             )
         raise ValueError(f"Unknown view preset {view!r}")
 
-    xmin, xmax, ymin, ymax, zmin, zmax = mesh_bounds
+    _xmin, xmax, _ymin, _ymax, zmin, zmax = mesh_bounds
 
-    # For poloidal_rhs: camera looks along +y (toward −y), up = +z.
+    # For poloidal_rhs: camera looks along +y (toward -y), up = +z.
     # Frames the RHS poloidal cross-section: x ∈ [0, x_max], z ∈ [z_min, z_max].
     # Use x ∈ [0, xmax] because R > 0 always for tokamak geometry.
     frame_xmin = 0.0

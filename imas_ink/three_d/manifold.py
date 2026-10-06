@@ -54,8 +54,6 @@ def ensure_closed_manifold(
     MeshNotManifoldError
         If the mesh still has open edges after repair.
     """
-    import pyvista as pv  # noqa: F811 — lazy import
-
     result = mesh.triangulate()
     result = result.clean()
 

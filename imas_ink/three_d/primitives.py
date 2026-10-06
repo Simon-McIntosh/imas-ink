@@ -186,10 +186,11 @@ def _rmf_frame(
             t_ref = t_prev - (2.0 / c1) * np.dot(v1, t_prev) * v1
             v2 = t_cur - t_ref
             c2 = float(np.dot(v2, v2))
-            if c2 < 1e-18:
-                n_cur = n_ref
-            else:
-                n_cur = n_ref - (2.0 / c2) * np.dot(v2, n_ref) * v2
+            n_cur = (
+                n_ref
+                if c2 < 1e-18
+                else n_ref - (2.0 / c2) * np.dot(v2, n_ref) * v2
+            )
         n_cur = n_cur - np.dot(n_cur, t_cur) * t_cur
         nrm = np.linalg.norm(n_cur)
         if nrm < 1e-12:

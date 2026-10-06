@@ -6,7 +6,7 @@ The IMAS Data Dictionary defines
 ``magnetics/b_field_pol_probe/poloidal_angle`` as the angle of the *sensor
 normal vector* (the coil axis, i.e. the direction of the magnetic-field
 component the probe measures), clockwise from +R̂.  EFIT consumes the
-identical vector n = (cos θ, −sin θ).  The direction tick must therefore be
+identical vector n = (cos θ, -sin θ).  The direction tick must therefore be
 drawn along θ with that exact convention (no +90° offset, no sign flip).
 
 Multi-component sensors (WEST, ITER) mount two pickup coils at one location
@@ -99,7 +99,7 @@ class TestProbeOrientationRendering:
     """_render_probes_mpl — DD-correct sensor-normal direction + family colour."""
 
     def test_tick_drawn_along_poloidal_angle(self):
-        """Tick axis must align with n = (cos θ, −sin θ) — the DD sensor normal."""
+        """Tick axis must align with n = (cos θ, -sin θ) — the DD sensor normal."""
         fig, ax = plt.subplots()
         theta = np.pi / 3  # 60 deg, clockwise from +R
         r0, z0 = 5.0, 0.0
@@ -109,15 +109,15 @@ class TestProbeOrientationRendering:
             angles=np.array([theta]),
         )
         render_mpl(ax, mp)
-        lc = [c for c in ax.collections if isinstance(c, LineCollection)][0]
+        lc = next(c for c in ax.collections if isinstance(c, LineCollection))
         seg = lc.get_segments()[0]
         dr = seg[1, 0] - seg[0, 0]
         dz = seg[1, 1] - seg[0, 1]
-        # Axis orientation (undirected): atan2(dz, dr) ≡ −θ (mod π).
+        # Axis orientation (undirected): atan2(dz, dr) ≡ -θ (mod π).
         axis_ang = np.arctan2(dz, dr)
         diff = (axis_ang - (-theta)) % np.pi
         diff = min(diff, np.pi - diff)
-        assert diff < 1e-6, "tick must lie along DD sensor-normal axis (cos θ, −sin θ)"
+        assert diff < 1e-6, "tick must lie along DD sensor-normal axis (cos θ, -sin θ)"
         # Centred tick: midpoint is the probe position.
         mid_r = 0.5 * (seg[0, 0] + seg[1, 0])
         mid_z = 0.5 * (seg[0, 1] + seg[1, 1])
@@ -137,7 +137,7 @@ class TestProbeOrientationRendering:
             angles=np.array([0.0, np.pi / 2]),
         )
         render_mpl(ax, mp)
-        lc = [c for c in ax.collections if isinstance(c, LineCollection)][0]
+        lc = next(c for c in ax.collections if isinstance(c, LineCollection))
         colors = lc.get_colors()
         assert len(colors) == 2
         assert not np.allclose(colors[0], colors[1]), (
@@ -155,7 +155,7 @@ class TestProbeOrientationRendering:
             angles=np.array([0.1, 0.2, 0.3, 0.4]),
         )
         render_mpl(ax, mp)
-        lc = [c for c in ax.collections if isinstance(c, LineCollection)][0]
+        lc = next(c for c in ax.collections if isinstance(c, LineCollection))
         colors = lc.get_colors()
         # All ticks the same (primary) colour.
         assert all(np.allclose(colors[0], c) for c in colors)

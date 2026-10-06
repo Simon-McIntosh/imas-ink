@@ -262,8 +262,6 @@ def extract_walls(wall) -> list[tuple[str, pv.PolyData]]:
         Ordered list of ``(name, mesh)`` pairs.  Typical names:
         ``"vessel"`` and ``"first_wall"``.
     """
-    import pyvista as pv
-
     from .primitives import revolve_polygon
     from .walls import extract_first_wall, extract_vessel_shells
 

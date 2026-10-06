@@ -156,8 +156,6 @@ class TestAutoCamera:
             f"parallel_scale {cam['parallel_scale']} < z_half {z_half}"
         )
 
-        # Also must cover half the X-extent scaled by aspect
-        x_half = bounds[1] / 2.0  # from 0 to xmax
         assert cam["parallel_scale"] > 0
 
     def test_auto_camera_overlay_margin_reduces_drawable(self):

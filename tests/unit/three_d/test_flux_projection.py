@@ -5,8 +5,6 @@ from __future__ import annotations
 import numpy as np
 import pytest
 
-pv = pytest.importorskip("pyvista", reason="pyvista not installed")
-
 from imas_ink._cocos import make_levels
 from imas_ink.three_d.equilibrium import EquilibriumSlice2D
 from imas_ink.three_d.flux_projection import (
@@ -16,6 +14,8 @@ from imas_ink.three_d.flux_projection import (
     offset_along_normal,
     sample_psi_on_cap,
 )
+
+pv = pytest.importorskip("pyvista", reason="pyvista not installed")
 
 
 # ---------------------------------------------------------------------------
