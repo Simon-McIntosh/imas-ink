@@ -1,0 +1,901 @@
+{
+  "agent": {
+    "alias": "dsv4.1-flash",
+    "backend": "clive",
+    "effective_input_window": 230144,
+    "effort": "high",
+    "launch": "cli",
+    "local": true,
+    "model": "deepseek-v4.1-flash",
+    "sandbox": "worktree-full",
+    "usable_input_window": 230144
+  },
+  "attempt": 1,
+  "attempt_kind": "dispatch",
+  "backend": "clive",
+  "base_sha": "1564fc72e792bbc09619a04fa1bce393e0aa5925",
+  "boundary_waiver": null,
+  "brief": null,
+  "budget": {
+    "cost_usd": null,
+    "cost_usd_cumulative": null,
+    "cost_usd_imputed": true,
+    "detail": "no rate-limit event in the stream yet",
+    "headroom": "unknown",
+    "rate_limit_period_minutes": null,
+    "rate_limit_type": null,
+    "refusal": false,
+    "resets_at": null,
+    "surpassed_threshold": null,
+    "threshold_status": null,
+    "tokens": {
+      "cache_creation_input_tokens": 0,
+      "cache_creation_input_tokens_cumulative": 0,
+      "cache_read_input_tokens": 0,
+      "cache_read_input_tokens_cumulative": 0,
+      "fallback_credit": null,
+      "inference_geo": "",
+      "input_tokens": 11321869,
+      "input_tokens_cumulative": 11321869,
+      "output_tokens": 60546,
+      "output_tokens_cumulative": 60546,
+      "service_tier": "standard",
+      "speed": "standard"
+    },
+    "utilisation_pct": null
+  },
+  "changed_lines": {
+    "added": 103,
+    "files": 20,
+    "removed": 93
+  },
+  "clone_matches": [
+    {
+      "existing_function": {
+        "line": 321,
+        "name": "test_containment_text_in_figure_when_outside",
+        "path": "tests/unit/ink/test_extract_wall_units.py"
+      },
+      "run_function": {
+        "line": 299,
+        "name": "test_figure_rendered_without_error",
+        "path": "tests/unit/ink/test_extract_wall_units.py"
+      },
+      "window_line": 301
+    },
+    {
+      "existing_function": {
+        "line": 152,
+        "name": "test_field_only_mode",
+        "path": "tests/unit/three_d/test_scene_cutaway.py"
+      },
+      "run_function": {
+        "line": 131,
+        "name": "test_writes_png",
+        "path": "tests/unit/three_d/test_scene_cutaway.py"
+      },
+      "window_line": 139
+    },
+    {
+      "existing_function": {
+        "line": 173,
+        "name": "test_contours_only_mode",
+        "path": "tests/unit/three_d/test_scene_cutaway.py"
+      },
+      "run_function": {
+        "line": 131,
+        "name": "test_writes_png",
+        "path": "tests/unit/three_d/test_scene_cutaway.py"
+      },
+      "window_line": 139
+    },
+    {
+      "existing_function": {
+        "line": 194,
+        "name": "test_build_static_called_once",
+        "path": "tests/unit/three_d/test_scene_cutaway.py"
+      },
+      "run_function": {
+        "line": 131,
+        "name": "test_writes_png",
+        "path": "tests/unit/three_d/test_scene_cutaway.py"
+      },
+      "window_line": 137
+    },
+    {
+      "existing_function": {
+        "line": 213,
+        "name": "test_no_wall_renders_without_overlay",
+        "path": "tests/unit/three_d/test_scene_cutaway.py"
+      },
+      "run_function": {
+        "line": 131,
+        "name": "test_writes_png",
+        "path": "tests/unit/three_d/test_scene_cutaway.py"
+      },
+      "window_line": 137
+    },
+    {
+      "existing_function": {
+        "line": 131,
+        "name": "test_writes_png",
+        "path": "tests/unit/three_d/test_scene_cutaway.py"
+      },
+      "run_function": {
+        "line": 152,
+        "name": "test_field_only_mode",
+        "path": "tests/unit/three_d/test_scene_cutaway.py"
+      },
+      "window_line": 161
+    },
+    {
+      "existing_function": {
+        "line": 173,
+        "name": "test_contours_only_mode",
+        "path": "tests/unit/three_d/test_scene_cutaway.py"
+      },
+      "run_function": {
+        "line": 152,
+        "name": "test_field_only_mode",
+        "path": "tests/unit/three_d/test_scene_cutaway.py"
+      },
+      "window_line": 154
+    },
+    {
+      "existing_function": {
+        "line": 194,
+        "name": "test_build_static_called_once",
+        "path": "tests/unit/three_d/test_scene_cutaway.py"
+      },
+      "run_function": {
+        "line": 152,
+        "name": "test_field_only_mode",
+        "path": "tests/unit/three_d/test_scene_cutaway.py"
+      },
+      "window_line": 161
+    },
+    {
+      "existing_function": {
+        "line": 213,
+        "name": "test_no_wall_renders_without_overlay",
+        "path": "tests/unit/three_d/test_scene_cutaway.py"
+      },
+      "run_function": {
+        "line": 152,
+        "name": "test_field_only_mode",
+        "path": "tests/unit/three_d/test_scene_cutaway.py"
+      },
+      "window_line": 161
+    },
+    {
+      "existing_function": {
+        "line": 131,
+        "name": "test_writes_png",
+        "path": "tests/unit/three_d/test_scene_cutaway.py"
+      },
+      "run_function": {
+        "line": 173,
+        "name": "test_contours_only_mode",
+        "path": "tests/unit/three_d/test_scene_cutaway.py"
+      },
+      "window_line": 182
+    },
+    {
+      "existing_function": {
+        "line": 152,
+        "name": "test_field_only_mode",
+        "path": "tests/unit/three_d/test_scene_cutaway.py"
+      },
+      "run_function": {
+        "line": 173,
+        "name": "test_contours_only_mode",
+        "path": "tests/unit/three_d/test_scene_cutaway.py"
+      },
+      "window_line": 175
+    },
+    {
+      "existing_function": {
+        "line": 194,
+        "name": "test_build_static_called_once",
+        "path": "tests/unit/three_d/test_scene_cutaway.py"
+      },
+      "run_function": {
+        "line": 173,
+        "name": "test_contours_only_mode",
+        "path": "tests/unit/three_d/test_scene_cutaway.py"
+      },
+      "window_line": 182
+    },
+    {
+      "existing_function": {
+        "line": 213,
+        "name": "test_no_wall_renders_without_overlay",
+        "path": "tests/unit/three_d/test_scene_cutaway.py"
+      },
+      "run_function": {
+        "line": 173,
+        "name": "test_contours_only_mode",
+        "path": "tests/unit/three_d/test_scene_cutaway.py"
+      },
+      "window_line": 182
+    },
+    {
+      "existing_function": {
+        "line": 131,
+        "name": "test_writes_png",
+        "path": "tests/unit/three_d/test_scene_cutaway.py"
+      },
+      "run_function": {
+        "line": 194,
+        "name": "test_build_static_called_once",
+        "path": "tests/unit/three_d/test_scene_cutaway.py"
+      },
+      "window_line": 200
+    },
+    {
+      "existing_function": {
+        "line": 152,
+        "name": "test_field_only_mode",
+        "path": "tests/unit/three_d/test_scene_cutaway.py"
+      },
+      "run_function": {
+        "line": 194,
+        "name": "test_build_static_called_once",
+        "path": "tests/unit/three_d/test_scene_cutaway.py"
+      },
+      "window_line": 202
+    },
+    {
+      "existing_function": {
+        "line": 173,
+        "name": "test_contours_only_mode",
+        "path": "tests/unit/three_d/test_scene_cutaway.py"
+      },
+      "run_function": {
+        "line": 194,
+        "name": "test_build_static_called_once",
+        "path": "tests/unit/three_d/test_scene_cutaway.py"
+      },
+      "window_line": 202
+    },
+    {
+      "existing_function": {
+        "line": 213,
+        "name": "test_no_wall_renders_without_overlay",
+        "path": "tests/unit/three_d/test_scene_cutaway.py"
+      },
+      "run_function": {
+        "line": 194,
+        "name": "test_build_static_called_once",
+        "path": "tests/unit/three_d/test_scene_cutaway.py"
+      },
+      "window_line": 198
+    },
+    {
+      "existing_function": {
+        "line": 131,
+        "name": "test_writes_png",
+        "path": "tests/unit/three_d/test_scene_cutaway.py"
+      },
+      "run_function": {
+        "line": 213,
+        "name": "test_no_wall_renders_without_overlay",
+        "path": "tests/unit/three_d/test_scene_cutaway.py"
+      },
+      "window_line": 226
+    },
+    {
+      "existing_function": {
+        "line": 152,
+        "name": "test_field_only_mode",
+        "path": "tests/unit/three_d/test_scene_cutaway.py"
+      },
+      "run_function": {
+        "line": 213,
+        "name": "test_no_wall_renders_without_overlay",
+        "path": "tests/unit/three_d/test_scene_cutaway.py"
+      },
+      "window_line": 228
+    },
+    {
+      "existing_function": {
+        "line": 173,
+        "name": "test_contours_only_mode",
+        "path": "tests/unit/three_d/test_scene_cutaway.py"
+      },
+      "run_function": {
+        "line": 213,
+        "name": "test_no_wall_renders_without_overlay",
+        "path": "tests/unit/three_d/test_scene_cutaway.py"
+      },
+      "window_line": 228
+    },
+    {
+      "existing_function": {
+        "line": 194,
+        "name": "test_build_static_called_once",
+        "path": "tests/unit/three_d/test_scene_cutaway.py"
+      },
+      "run_function": {
+        "line": 213,
+        "name": "test_no_wall_renders_without_overlay",
+        "path": "tests/unit/three_d/test_scene_cutaway.py"
+      },
+      "window_line": 224
+    }
+  ],
+  "commit_resolution": null,
+  "commits": [
+    "37cab9dca24746c513fe96d772b6323e706ef8e6",
+    "89ff7ec0405d455d3921e8141c8aa548f1d5e2e9",
+    "54e491bf3b44c85410dc2fb530c3eaec36e14888"
+  ],
+  "completed_at": "2026-10-06T17:15:46.953Z",
+  "completed_at_source": "terminal_event",
+  "dispatched_at": "2026-10-06T16:59:32Z",
+  "disposition": null,
+  "dispute_count": 0,
+  "duration_measurement": null,
+  "execution_fit": {
+    "allowed": true,
+    "execution_capable": true,
+    "matched_measure": "pytest -p",
+    "override": false,
+    "role": "implement",
+    "status": "compatible"
+  },
+  "failure_classification": null,
+  "follow_on_paths": [
+    ".ruff.toml",
+    "tool.ruff",
+    "pyproject.toml"
+  ],
+  "gate": "passed",
+  "gate_check": {
+    "command": "uv run --no-sync pytest -p no:cacheprovider -q",
+    "exit_status": 0,
+    "log_digest": null,
+    "log_path": "/home/ITER/mcintos/.config/reckon/crew/runs/r-20261006T165928994809-ink-lint-sweep/after-suite.log"
+  },
+  "impl_move": {
+    "at_complete": 0.8571428571428571,
+    "at_dispatch": 0.0,
+    "plan": "imas-ink-suite-green",
+    "verdict": "moved"
+  },
+  "lane_advisory": {
+    "backend": "clive",
+    "burn_multiple": null,
+    "cheaper_lane": {
+      "detail": "",
+      "lane": null,
+      "state": "not_evaluated"
+    },
+    "detail": "'clive' is unmetered, so it has no window to exhaust; the local lane's scarcity is throughput, which it does not publish",
+    "horizon_ends_at": "2026-10-06T17:44:29.383188+00:00",
+    "horizon_seconds": 2700,
+    "metered": false,
+    "observed_at": null,
+    "precedes_horizon": null,
+    "projected_exhaustion_at": null,
+    "resets_at": null,
+    "seconds_until_reset": null,
+    "state": "quiet",
+    "utilisation_pct": null
+  },
+  "lane_declaration": {
+    "backend": null,
+    "headroom": null,
+    "metered": false,
+    "observed_at": null,
+    "read_at": "2026-10-06T16:59:29Z",
+    "resolved_backend": "clive",
+    "utilisation_pct": null
+  },
+  "lane_reading": {
+    "age_seconds": 1,
+    "binding_observed": "unknown",
+    "detail": "",
+    "generating": 7,
+    "headroom": 9,
+    "mean_context": 114286,
+    "observed_at": "2026-10-06T16:59:28Z",
+    "state": "fresh",
+    "suggested_shelf_life_seconds": 45,
+    "throughput": {
+      "age_seconds": 1,
+      "aggregate_tokens_per_second": 430.827,
+      "detail": "",
+      "mean_tokens_per_second": 56.688,
+      "observed_at": "2026-10-06T16:59:28Z",
+      "runs": 7.6,
+      "state": "measured"
+    },
+    "waiting": 0
+  },
+  "lane_receipt": {
+    "effective_context_window": "unmeasured",
+    "notional_cost_usd": "unmeasured",
+    "observed_at": "2026-10-06T17:15:46.953Z",
+    "quota_state": "unmeasured",
+    "quota_windows": [],
+    "rate_basis": "unmeasured",
+    "unmeasured": {
+      "effective_context_window": "missing_rollout",
+      "notional_cost_usd": "missing_rollout",
+      "quota_windows": "unmetered",
+      "rate_basis": "missing_rollout"
+    }
+  },
+  "lineage": null,
+  "local": true,
+  "manifest_path": "/home/ITER/mcintos/.config/reckon/crew/runs/r-20261006T165928994809-ink-lint-sweep/manifest.md",
+  "member": "disposable-r-20261006T165928994809-ink-lint-sweep",
+  "negative_control": {
+    "added_failure_ids": [],
+    "baseline_failure_ids": [],
+    "comparison_arm": "after_suite",
+    "control_exit_status": 1,
+    "control_failure_ids": [],
+    "declaration": "reverting the sweep commit makes ruff check imas_ink tests exit 1 with its 55 findings",
+    "head_failure_ids": [],
+    "log": "/home/ITER/mcintos/.config/reckon/crew/runs/r-20261006T165928994809-ink-lint-sweep/negative-control.log",
+    "reason": "the declared control is a lint gate, not a test: reverting the sweep makes ruff check imas_ink tests exit 1 with all 55 findings listed by file and rule (negative-control.log ends Found 55 errors, EXIT=1), so no test id can fail",
+    "resolved_log": "/home/ITER/mcintos/.config/reckon/crew/runs/r-20261006T165928994809-ink-lint-sweep/negative-control.log",
+    "test_paths": [
+      "tests/unit/ink/test_extract_wall_units.py",
+      "tests/unit/ink/test_plot_only_refactor.py",
+      "tests/unit/ink/test_probe_components.py",
+      "tests/unit/three_d/test_cutaway.py",
+      "tests/unit/three_d/test_equilibrium.py",
+      "tests/unit/three_d/test_flux_projection.py",
+      "tests/unit/three_d/test_primitives.py",
+      "tests/unit/three_d/test_scene_cutaway.py"
+    ],
+    "verdict": "waived"
+  },
+  "no_commit": null,
+  "node": "ink-lint-sweep",
+  "node_definition": {
+    "brief": "",
+    "brief_path": "",
+    "brief_sha256": "",
+    "coordinator": {
+      "authoring_turn": {
+        "source": "claude-code-session-transcript",
+        "status": "measured",
+        "tokens": {
+          "cache_creation_input_tokens": 1344,
+          "cached_input_tokens": 455227,
+          "input_tokens": 456573,
+          "output_tokens": 1385,
+          "reasoning_output_tokens": 130,
+          "total_tokens": 457958,
+          "uncached_input_tokens": 2
+        }
+      },
+      "harness": "claude-code",
+      "runtime_session_id": "9fd87e71-22d3-40c8-8630-1b1d5afe0282",
+      "session_id": "9fd87e71-22d3-40c8-8630-1b1d5afe0282"
+    },
+    "done_when": "uv run --no-sync ruff check imas_ink tests exits 0; the whole suite uv run --no-sync pytest -p no:cacheprovider -q, run before and after the sweep and each captured to a log, reports the same result (418 passed, 6 skipped, 0 failed, 0 errors at base 1564fc7); the sweep commit's subject begins style(lint): and touches only ruff-flagged files plus pyproject.toml when a confusable is allowed; any fix that changes behaviour, such as the B017 assertion, is a separate commit with its own test and is named in the manifest; run in place on the fleet allocation",
+    "estimated_hours": 1.0,
+    "goal": "ruff check imas_ink tests exits 0 through one behaviour-neutral style(lint) commit over the 55 findings",
+    "id": "ink-lint-sweep",
+    "lane_declaration": {
+      "backend": null,
+      "headroom": null,
+      "metered": false,
+      "observed_at": null,
+      "read_at": "2026-10-06T16:59:29Z",
+      "resolved_backend": "clive",
+      "utilisation_pct": null
+    },
+    "lane_reading": {
+      "age_seconds": 1,
+      "binding_observed": "unknown",
+      "detail": "",
+      "generating": 7,
+      "headroom": 9,
+      "mean_context": 114286,
+      "observed_at": "2026-10-06T16:59:28Z",
+      "state": "fresh",
+      "suggested_shelf_life_seconds": 45,
+      "throughput": {
+        "age_seconds": 1,
+        "aggregate_tokens_per_second": 430.827,
+        "detail": "",
+        "mean_tokens_per_second": 56.688,
+        "observed_at": "2026-10-06T16:59:28Z",
+        "runs": 7.6,
+        "state": "measured"
+      },
+      "waiting": 0
+    },
+    "manifest_path": "/home/ITER/mcintos/.config/reckon/crew/runs/r-20261006T165928994809-ink-lint-sweep/manifest.md",
+    "negative_control": "reverting the sweep commit makes ruff check imas_ink tests exit 1 with its 55 findings",
+    "plan": "imas-ink-suite-green",
+    "requested_backend": null,
+    "requires_decisions": [],
+    "role": "implement",
+    "section": "§2",
+    "spec_level": "exact",
+    "time_budget": "45m",
+    "token_budget": null,
+    "write_paths": [
+      "imas_ink/__init__.py",
+      "imas_ink/_decimate.py",
+      "imas_ink/_version.py",
+      "imas_ink/contours.py",
+      "imas_ink/three_d/__init__.py",
+      "imas_ink/three_d/coilset.py",
+      "imas_ink/three_d/cutaway.py",
+      "imas_ink/three_d/equilibrium.py",
+      "imas_ink/three_d/manifold.py",
+      "imas_ink/three_d/primitives.py",
+      "imas_ink/three_d/scene.py",
+      "imas_ink/three_d/walls.py",
+      "tests/unit/ink/test_extract_wall_units.py",
+      "tests/unit/ink/test_plot_only_refactor.py",
+      "tests/unit/ink/test_probe_components.py",
+      "tests/unit/three_d/test_cutaway.py",
+      "tests/unit/three_d/test_equilibrium.py",
+      "tests/unit/three_d/test_flux_projection.py",
+      "tests/unit/three_d/test_primitives.py",
+      "tests/unit/three_d/test_scene_cutaway.py",
+      "pyproject.toml",
+      "docs/evidence/fragments/imas-ink-suite-green/ink-lint-sweep.html",
+      "docs/figures/imas-ink-suite-green/ink-lint-sweep"
+    ]
+  },
+  "orchestrator_lane_override": null,
+  "orientation_input_tokens": 1670491.0,
+  "outcome": "",
+  "pace": {
+    "allowance": null,
+    "bar": null,
+    "clocks": {
+      "five_hour": {
+        "age_seconds": null,
+        "observed_at": null,
+        "period": "five_hour",
+        "resets_at": null,
+        "state": "unknown",
+        "utilisation": null,
+        "window_minutes": null
+      },
+      "seven_day": {
+        "age_seconds": null,
+        "observed_at": null,
+        "period": "seven_day",
+        "resets_at": null,
+        "state": "unknown",
+        "utilisation": null,
+        "window_minutes": null
+      }
+    },
+    "group": null,
+    "hold": null,
+    "lane": "clive",
+    "member": null,
+    "node": "ink-lint-sweep",
+    "policy": {
+      "drain_lead_hours": 12.0,
+      "pace_multiple": 1.1
+    },
+    "reason": "the lane declares no budget group, so no wallet paced it",
+    "recorded_at": "2026-10-06T16:59:30.929541+00:00",
+    "score": 0.64375,
+    "source": null,
+    "state": "unknown"
+  },
+  "picker_selection": {
+    "action": "route",
+    "answering_model": "typesafe/jev-1.13-20260917",
+    "backend": "clive",
+    "comment": "",
+    "confidence": 0.86,
+    "decision_source": "jev",
+    "effort": "high",
+    "excluded": [
+      {
+        "availability": "not-probed",
+        "backend": "native",
+        "budget_reason": null,
+        "burn_multiple": null,
+        "congestion": null,
+        "days_to_reset": null,
+        "effort": "high",
+        "family": "in-harness",
+        "local": false,
+        "model": null,
+        "outcomes": {
+          "failed": 0,
+          "not-run": 0,
+          "passed": 0,
+          "unknown": 0
+        },
+        "pace_allowance": null,
+        "reasons": [
+          "in-harness-backend"
+        ],
+        "resets_at": null,
+        "utilisation_pct": null,
+        "worker_slots": null
+      }
+    ],
+    "fallback_reason": null,
+    "family": "local",
+    "jev_latency_ms": 388.944,
+    "jev_model": "typesafe/jev-1.13",
+    "latency_ms": 2823.513,
+    "model": "deepseek-v4.1-flash",
+    "offered": [
+      {
+        "availability": "unknown",
+        "backend": "claude",
+        "budget_reason": null,
+        "burn_multiple": null,
+        "congestion": null,
+        "days_to_reset": null,
+        "effort": "high",
+        "family": "claude",
+        "local": false,
+        "model": "claude-sonnet-5-5",
+        "outcomes": {
+          "failed": 0,
+          "not-run": 0,
+          "passed": 0,
+          "unknown": 0
+        },
+        "pace_allowance": null,
+        "reason": "eligible",
+        "reasons": [],
+        "resets_at": null,
+        "utilisation_pct": null,
+        "worker_slots": null
+      },
+      {
+        "availability": "unknown",
+        "backend": "claude-haiku",
+        "budget_reason": null,
+        "burn_multiple": null,
+        "congestion": null,
+        "days_to_reset": null,
+        "effort": "high",
+        "family": "claude",
+        "local": false,
+        "model": "claude-haiku-4-5-20251001",
+        "outcomes": {
+          "failed": 0,
+          "not-run": 0,
+          "passed": 0,
+          "unknown": 0
+        },
+        "pace_allowance": null,
+        "reason": "eligible",
+        "reasons": [],
+        "resets_at": null,
+        "utilisation_pct": null,
+        "worker_slots": null
+      },
+      {
+        "availability": "unknown",
+        "backend": "claude-opus",
+        "budget_reason": null,
+        "burn_multiple": null,
+        "congestion": null,
+        "days_to_reset": null,
+        "effort": "high",
+        "family": "claude",
+        "local": false,
+        "model": "claude-opus-5-5",
+        "outcomes": {
+          "failed": 0,
+          "not-run": 0,
+          "passed": 0,
+          "unknown": 0
+        },
+        "pace_allowance": null,
+        "reason": "eligible",
+        "reasons": [],
+        "resets_at": null,
+        "utilisation_pct": null,
+        "worker_slots": null
+      },
+      {
+        "availability": "served",
+        "backend": "clive",
+        "budget_reason": null,
+        "burn_multiple": null,
+        "congestion": {
+          "admission_verdict": "open",
+          "running": 7,
+          "slots_state": "measured",
+          "stale": false,
+          "waiting": 0
+        },
+        "days_to_reset": null,
+        "effort": "high",
+        "family": "local",
+        "local": true,
+        "model": "deepseek-v4.1-flash",
+        "outcomes": {
+          "failed": 5,
+          "not-run": 0,
+          "passed": 1,
+          "unknown": 0
+        },
+        "pace_allowance": null,
+        "reason": "eligible",
+        "reasons": [],
+        "resets_at": null,
+        "utilisation_pct": null,
+        "worker_slots": 7
+      },
+      {
+        "availability": "unknown",
+        "backend": "codex",
+        "budget_reason": "recorded account-window reading is stale",
+        "burn_multiple": null,
+        "congestion": null,
+        "days_to_reset": null,
+        "effort": "high",
+        "family": "codex",
+        "local": false,
+        "model": "gpt-6-sol",
+        "outcomes": {
+          "failed": 0,
+          "not-run": 0,
+          "passed": 0,
+          "unknown": 0
+        },
+        "pace_allowance": null,
+        "reason": "eligible",
+        "reasons": [],
+        "resets_at": null,
+        "utilisation_pct": null,
+        "worker_slots": null
+      },
+      {
+        "availability": "unknown",
+        "backend": "codex-astra",
+        "budget_reason": "recorded account-window reading is stale",
+        "burn_multiple": null,
+        "congestion": null,
+        "days_to_reset": null,
+        "effort": "high",
+        "family": "codex",
+        "local": false,
+        "model": "gpt-6-astra",
+        "outcomes": {
+          "failed": 0,
+          "not-run": 0,
+          "passed": 0,
+          "unknown": 0
+        },
+        "pace_allowance": null,
+        "reason": "eligible",
+        "reasons": [],
+        "resets_at": null,
+        "utilisation_pct": null,
+        "worker_slots": null
+      },
+      {
+        "availability": "unknown",
+        "backend": "codex-luna",
+        "budget_reason": "recorded account-window reading is stale",
+        "burn_multiple": null,
+        "congestion": null,
+        "days_to_reset": null,
+        "effort": "high",
+        "family": "codex",
+        "local": false,
+        "model": "gpt-6-luna",
+        "outcomes": {
+          "failed": 0,
+          "not-run": 0,
+          "passed": 0,
+          "unknown": 0
+        },
+        "pace_allowance": null,
+        "reason": "eligible",
+        "reasons": [],
+        "resets_at": null,
+        "utilisation_pct": null,
+        "worker_slots": null
+      }
+    ],
+    "probabilities": {
+      "claude": 0.01,
+      "claude-haiku": 0.01,
+      "claude-opus": 0,
+      "clive": 0.87,
+      "codex": 0.01,
+      "codex-astra": 0,
+      "codex-luna": 0,
+      "hold": 0.1
+    },
+    "rendered_token_estimate": 1006,
+    "usage": {
+      "cost": 0.000124656,
+      "input_tokens": 2968,
+      "output_tokens": 89
+    }
+  },
+  "plan": "imas-ink-suite-green",
+  "plan_impl_at_dispatch": 0.0,
+  "plan_link": null,
+  "promoted_by": null,
+  "promoted_revision": "54e491bf3b44c85410dc2fb530c3eaec36e14888",
+  "resume_waiver": null,
+  "review": {
+    "absent": [],
+    "reviewed_base_sha": "1564fc72e792bbc09619a04fa1bce393e0aa5925",
+    "reviewed_head_sha": "54e491bf3b44c85410dc2fb530c3eaec36e14888",
+    "scores": {
+      "durability": 20,
+      "evidence": 20,
+      "fit": 20,
+      "goal_fidelity": 19,
+      "reuse": 20,
+      "scope_discipline": 20
+    },
+    "status": "parsed",
+    "total": 119
+  },
+  "review_tier": "full",
+  "role": "implement",
+  "route_mode": "explicit",
+  "run_id": "r-20261006T165928994809-ink-lint-sweep",
+  "scope_acceptances": null,
+  "scope_changed": false,
+  "section": "§2",
+  "session": "9fd87e71-22d3-40c8-8630-1b1d5afe0282",
+  "session_harness": "claude",
+  "session_id": "e4c21855-c9ff-4fd7-8db0-8c0d1c766117",
+  "session_model": "deepseek-v4.1-flash",
+  "shadow_controlled": null,
+  "shadow_patch": "",
+  "spec_level": "exact",
+  "stalled": false,
+  "suite_delta": null,
+  "tests_added": null,
+  "throughput": {
+    "cumulative_cached_input_tokens": 0,
+    "cumulative_input_tokens": 11321869,
+    "detail": "generation and wall clock reported separately by the backend; utilisation divided by the configured lane window 230144",
+    "elapsed_seconds": 966.454,
+    "generated_tokens": 60546,
+    "generation_seconds": 852.553,
+    "input_budget_tokens": 230144,
+    "input_utilisation_pct": 71.4,
+    "machine_seconds": 113.901,
+    "peak_input_tokens": 164214,
+    "tokens_per_second": 71.02,
+    "wall_tokens_per_second": 62.65
+  },
+  "time_budget": "45m",
+  "tool_steps": 127.0,
+  "unplanned_reason": null,
+  "unreconciled_override": null,
+  "wall_seconds": 974,
+  "watch_override": null,
+  "worker_exit": {
+    "attempt": 1,
+    "ended_during": "working",
+    "exit_code": 0,
+    "exited_at": "2026-10-06T17:15:48Z",
+    "last_record_type": "result",
+    "launched_at": "2026-10-06T16:59:36Z",
+    "recorded_by": "supervisor",
+    "run_id": "r-20261006T165928994809-ink-lint-sweep",
+    "signal": null,
+    "signal_name": null,
+    "stream_records_seen": 13367,
+    "worker_pid": 3814122
+  },
+  "worker_seconds": 957,
+  "worker_seconds_source": "stream_events",
+  "worktree_retention": null
+}
