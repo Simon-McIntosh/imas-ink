@@ -27,6 +27,7 @@ Forward port 8766 from the remote host to your laptop before calling
 Then open http://localhost:8766/ in your browser.  Every subsequent
 ``push_chart`` call reloads the page automatically.
 """
+
 from __future__ import annotations
 
 import threading

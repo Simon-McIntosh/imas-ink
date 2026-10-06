@@ -121,9 +121,7 @@ class TestSweepSectionAlongPath:
         """
         from imas_ink.three_d.primitives import sweep_section_along_path
 
-        section = np.array(
-            [[-0.5, -0.5], [0.5, -0.5], [0.5, 0.5], [-0.5, 0.5]]
-        )
+        section = np.array([[-0.5, -0.5], [0.5, -0.5], [0.5, 0.5], [-0.5, 0.5]])
         path = np.array([[0, 0, 0], [5, 0, 0]], dtype=float)
         mesh = sweep_section_along_path(section, path, frame="frenet")
 
@@ -139,14 +137,10 @@ class TestSweepSectionAlongPath:
         """Closed-loop (ring) path produces no extra cap faces."""
         from imas_ink.three_d.primitives import sweep_section_along_path
 
-        section = np.array(
-            [[-0.1, -0.1], [0.1, -0.1], [0.1, 0.1], [-0.1, 0.1]]
-        )
+        section = np.array([[-0.1, -0.1], [0.1, -0.1], [0.1, 0.1], [-0.1, 0.1]])
         # Circular ring: first == last point
         theta = np.linspace(0, 2 * np.pi, 21)
-        path = np.column_stack(
-            [3.0 * np.cos(theta), 3.0 * np.sin(theta), np.zeros_like(theta)]
-        )
+        path = np.column_stack([3.0 * np.cos(theta), 3.0 * np.sin(theta), np.zeros_like(theta)])
         mesh = sweep_section_along_path(section, path, frame="frenet")
 
         n_sec = 4

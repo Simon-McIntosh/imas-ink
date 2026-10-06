@@ -5,6 +5,7 @@ Three categories:
 2. LCFS-from-IDS: boundary.outline verbatim, no recomputation from psi.
 3. No-xpoint-when-absent: x_points empty if IDS has none.
 """
+
 from __future__ import annotations
 
 import types
@@ -19,30 +20,36 @@ from imas_ink.geometry import classify_flux_segments, encloses_point
 # Helpers
 # ---------------------------------------------------------------------------
 
+
 def _diamond_poly(cx: float, cz: float, r: float) -> np.ndarray:
     """Return a closed diamond polygon centred at (cx, cz) with half-width r."""
-    verts = np.array([
-        [cx, cz - r],
-        [cx + r, cz],
-        [cx, cz + r],
-        [cx - r, cz],
-        [cx, cz - r],  # closed
-    ])
+    verts = np.array(
+        [
+            [cx, cz - r],
+            [cx + r, cz],
+            [cx, cz + r],
+            [cx - r, cz],
+            [cx, cz - r],  # closed
+        ]
+    )
     return verts
 
 
 def _open_line(r0: float = 1.0, z0: float = 0.0, z1: float = 1.0) -> np.ndarray:
     """Return an open line segment (first != last)."""
-    return np.array([
-        [r0, z0],
-        [r0 + 0.5, (z0 + z1) / 2],
-        [r0 + 1.0, z1],
-    ])
+    return np.array(
+        [
+            [r0, z0],
+            [r0 + 0.5, (z0 + z1) / 2],
+            [r0 + 1.0, z1],
+        ]
+    )
 
 
 # ---------------------------------------------------------------------------
 # 1. Enclosure-styling tests
 # ---------------------------------------------------------------------------
+
 
 class TestEnclosesPoint:
     """encloses_point — pure geometry, drives enclosure-styling."""
@@ -148,6 +155,7 @@ class TestSolOnlySegments:
 # 2. LCFS-from-IDS tests
 # ---------------------------------------------------------------------------
 
+
 def _make_minimal_time_slice(
     r_bnd: np.ndarray | None = None,
     z_bnd: np.ndarray | None = None,
@@ -165,7 +173,7 @@ def _make_minimal_time_slice(
     r_1d = np.linspace(4.0, 8.0, 17)
     z_1d = np.linspace(-2.0, 2.0, 17)
     r_2d, z_2d = np.meshgrid(r_1d, z_1d, indexing="ij")
-    dist_sq = (r_2d - 6.0) ** 2 + z_2d ** 2
+    dist_sq = (r_2d - 6.0) ** 2 + z_2d**2
     psi_2d = 4.0 - dist_sq  # psi_axis ~ 4.0
 
     p2d = ns(
@@ -248,6 +256,7 @@ class TestLcfsFromIds:
 # ---------------------------------------------------------------------------
 # 3. No-xpoint-when-absent tests
 # ---------------------------------------------------------------------------
+
 
 class TestNoXpointWhenAbsent:
     """X-points must be read from IDS only; absent → empty list."""

@@ -28,18 +28,20 @@ def _ns(**kw):
 
 def _make_unit(r, z):
     """Return a wall limiter unit with outline.r/z."""
-    return _ns(outline=_ns(r=np.asarray(r, dtype=float),
-                           z=np.asarray(z, dtype=float)))
+    return _ns(outline=_ns(r=np.asarray(r, dtype=float), z=np.asarray(z, dtype=float)))
 
 
 def _make_pf_ids(n_coils=1):
     """Minimal pf_active IDS with no coils (tests don't need them)."""
     coils = []
     for i in range(n_coils):
-        elem = _ns(geometry=_ns(outline=_ns(r=np.array([4.0, 4.5, 4.5, 4.0]),
-                                            z=np.array([0.0, 0.0, 0.5, 0.5])),
-                                rectangle=_ns(r=4.2, z=0.25, width=0.5, height=0.5)))
-        coils.append(_ns(element=[elem], name=f"PF{i+1}"))
+        elem = _ns(
+            geometry=_ns(
+                outline=_ns(r=np.array([4.0, 4.5, 4.5, 4.0]), z=np.array([0.0, 0.0, 0.5, 0.5])),
+                rectangle=_ns(r=4.2, z=0.25, width=0.5, height=0.5),
+            )
+        )
+        coils.append(_ns(element=[elem], name=f"PF{i + 1}"))
     return _ns(coil=coils)
 
 
@@ -66,7 +68,7 @@ def _make_wall_two_descs_typed_first():
     unit1a = _make_unit([1.5, 4.0, 4.0, 1.5], [-0.5, -0.5, 1.5, 1.5])
     unit1b = _make_unit([1.8, 3.5, 3.5, 1.8], [-0.3, -0.3, 1.2, 1.2])
 
-    limiter0 = _ns(unit=[unit0], type=_ns(index=1))   # typed wins
+    limiter0 = _ns(unit=[unit0], type=_ns(index=1))  # typed wins
     limiter1 = _ns(unit=[unit1a, unit1b], type=_ns(index=-999999999))  # untyped
 
     desc0 = _ns(limiter=limiter0)
@@ -117,9 +119,7 @@ class TestMultiUnitExtraction:
         pf = _make_pf_ids()
         geom = extract_geometry(wall, pf)
         assert hasattr(geom, "wall_units"), "MachineGeometry must have wall_units field"
-        assert len(geom.wall_units) == 3, (
-            f"Expected 3 wall units, got {len(geom.wall_units)}"
-        )
+        assert len(geom.wall_units) == 3, f"Expected 3 wall units, got {len(geom.wall_units)}"
 
     def test_wall_units_are_array_pairs(self):
         """Each entry in wall_units is an (r_array, z_array) pair."""
@@ -277,16 +277,16 @@ class TestContainmentAnnotationInFigure:
         br = r0 + 0.5 * np.cos(theta)
         bz = z0 + 0.5 * np.sin(theta)
         gq = types.SimpleNamespace(
-            psi_axis=10.0, psi_boundary=9.0,
+            psi_axis=10.0,
+            psi_boundary=9.0,
             magnetic_axis=types.SimpleNamespace(r=r0, z=z0),
-            ip=1e6, beta_pol=0.5, li_3=1.0, q95=3.5,
+            ip=1e6,
+            beta_pol=0.5,
+            li_3=1.0,
+            q95=3.5,
         )
-        boundary = types.SimpleNamespace(
-            outline=types.SimpleNamespace(r=br, z=bz), x_point=[]
-        )
-        ts = types.SimpleNamespace(
-            profiles_2d=[p2d], global_quantities=gq, boundary=boundary
-        )
+        boundary = types.SimpleNamespace(outline=types.SimpleNamespace(r=br, z=bz), x_point=[])
+        ts = types.SimpleNamespace(profiles_2d=[p2d], global_quantities=gq, boundary=boundary)
         eq = types.SimpleNamespace(time_slice=[ts], time=np.array([0.5]))
         return extract_slice(eq, 0)
 
@@ -299,6 +299,7 @@ class TestContainmentAnnotationInFigure:
     def test_figure_rendered_without_error(self):
         """equilibrium_figure_mpl with containment_result must not raise."""
         import matplotlib
+
         matplotlib.use("Agg")
         from imas_ink.figures import equilibrium_figure_mpl
 
@@ -316,11 +317,13 @@ class TestContainmentAnnotationInFigure:
         # Should not raise:
         fig, _ax = equilibrium_figure_mpl(sl, geom, containment_result=containment)
         import matplotlib.pyplot as plt
+
         plt.close(fig)
 
     def test_containment_text_in_figure_when_outside(self):
         """When lcfs_outside>0, annotation text must appear in the axes."""
         import matplotlib
+
         matplotlib.use("Agg")
         from imas_ink.figures import equilibrium_figure_mpl
 
@@ -343,11 +346,13 @@ class TestContainmentAnnotationInFigure:
             f"Expected 'lcfs_outside=7' in annotation text; got: {combined!r}"
         )
         import matplotlib.pyplot as plt
+
         plt.close(fig)
 
     def test_no_annotation_when_containment_none(self):
         """When containment_result=None, figure renders without annotation."""
         import matplotlib
+
         matplotlib.use("Agg")
         from imas_ink.figures import equilibrium_figure_mpl
 
@@ -356,11 +361,13 @@ class TestContainmentAnnotationInFigure:
         # Default: no containment_result → backward compat
         fig, _ax = equilibrium_figure_mpl(sl, geom)
         import matplotlib.pyplot as plt
+
         plt.close(fig)
 
     def test_all_wall_units_rendered(self):
         """geometry_figure_mpl renders all wall units in geom.wall_units."""
         import matplotlib
+
         matplotlib.use("Agg")
         from imas_ink.figures import geometry_figure_mpl
 
@@ -369,8 +376,7 @@ class TestContainmentAnnotationInFigure:
         fig, ax = geometry_figure_mpl(geom)
         # Count lines in axes — each unit should add at least 1 line
         n_lines = len(ax.lines)
-        assert n_lines >= 2, (
-            f"Expected at least 2 wall outlines plotted, got {n_lines} lines"
-        )
+        assert n_lines >= 2, f"Expected at least 2 wall outlines plotted, got {n_lines} lines"
         import matplotlib.pyplot as plt
+
         plt.close(fig)

@@ -115,9 +115,12 @@ def mock_imas_entry():
     fake_imas = MagicMock()
     fake_imas.DBEntry.return_value = mock_entry
 
-    with patch.dict("sys.modules", {"imas": fake_imas}), patch(
-        "imas_ink.three_d.equilibrium.extract_slice_2d",
-        return_value=slice_2d,
+    with (
+        patch.dict("sys.modules", {"imas": fake_imas}),
+        patch(
+            "imas_ink.three_d.equilibrium.extract_slice_2d",
+            return_value=slice_2d,
+        ),
     ):
         yield mock_entry
 
@@ -235,4 +238,3 @@ class TestRenderCutawaySynthetic:
             )
 
             assert outfile.exists()
-

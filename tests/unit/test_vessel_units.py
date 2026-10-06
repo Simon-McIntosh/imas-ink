@@ -29,6 +29,7 @@ def _closed_ellipse(r0: float, a: float, z0: float = 0.0, b: float = 1.0):
 # Fixtures: a wall IDS with one limiter unit and one annular vessel unit
 # ---------------------------------------------------------------------------
 
+
 def _make_limiter_unit():
     r, z = _closed_ellipse(5.0, 1.0)
     return _ns(outline=_ns(r=r, z=z))
@@ -116,6 +117,7 @@ def _make_one_skin_wall_ids(skin: str):
 # Extraction
 # ---------------------------------------------------------------------------
 
+
 class TestExtractVesselShells:
     def test_two_closed_shells_from_annular_outlines(self):
         from imas_ink.extract import extract_vessel_shells
@@ -170,6 +172,7 @@ class TestAnnularOneSkin:
 # geometry_figure_mpl draws the shells
 # ---------------------------------------------------------------------------
 
+
 class TestGeometryFigureDrawsShells:
     def _geom(self):
         from imas_ink.extract import extract_geometry
@@ -178,6 +181,7 @@ class TestGeometryFigureDrawsShells:
 
     def test_both_shells_drawn_on_axes(self):
         import matplotlib
+
         matplotlib.use("Agg")
         import matplotlib.pyplot as plt
 
@@ -197,6 +201,7 @@ class TestGeometryFigureDrawsShells:
 
     def test_vessel_skin_inside_axes_limits(self):
         import matplotlib
+
         matplotlib.use("Agg")
         import matplotlib.pyplot as plt
 
@@ -220,6 +225,7 @@ class TestGeometryFigureDrawsShells:
 # Composing two machine states on caller-owned axes
 # ---------------------------------------------------------------------------
 
+
 class TestGeometryFigureComposesIntoAxes:
     def _geom_with_vessel(self):
         from imas_ink.extract import extract_geometry
@@ -233,6 +239,7 @@ class TestGeometryFigureComposesIntoAxes:
 
     def test_two_geometries_share_one_figure_via_ax(self):
         import matplotlib
+
         matplotlib.use("Agg")
         import matplotlib.pyplot as plt
 
@@ -262,6 +269,7 @@ class TestGeometryFigureComposesIntoAxes:
 # Wall / vessel line style follows InkStyle.wall_linestyle
 # ---------------------------------------------------------------------------
 
+
 class TestWallLinestyle:
     def _geom(self):
         from imas_ink.extract import extract_geometry
@@ -270,6 +278,7 @@ class TestWallLinestyle:
 
     def test_dashed_wall_and_vessel_lines(self):
         import matplotlib
+
         matplotlib.use("Agg")
         from dataclasses import replace
 
@@ -293,6 +302,7 @@ class TestWallLinestyle:
         # Control: the default style draws solid, so the dashed assertion in
         # the sibling test measures the style field, not a fixed pattern.
         import matplotlib
+
         matplotlib.use("Agg")
         import matplotlib.pyplot as plt
 
@@ -312,6 +322,7 @@ class TestWallLinestyle:
 # ---------------------------------------------------------------------------
 # Altair renderer emits a mark per limiter unit and per shell
 # ---------------------------------------------------------------------------
+
 
 class TestWallOutlineAlt:
     def test_alt_marks_every_unit_and_shell(self):
@@ -370,10 +381,12 @@ class TestTracePanels:
             label=label,
             ylabel=ylabel,
             units=units,
-            style=style if style is not None else DEFAULT_STYLE)
+            style=style if style is not None else DEFAULT_STYLE,
+        )
 
     def test_panel_list_draws_second_in_first_colour_and_style(self):
         import matplotlib
+
         matplotlib.use("Agg")
         from dataclasses import replace
 
@@ -408,6 +421,7 @@ class TestTracePanels:
 
     def test_single_series_panel_draws_one_line(self):
         import matplotlib
+
         matplotlib.use("Agg")
 
         import matplotlib.pyplot as plt
@@ -416,9 +430,7 @@ class TestTracePanels:
 
         fig, axes = time_trace_figure_mpl([self._ts([1.0] * 11, ylabel="Ip")])
         try:
-            assert len(axes[0].lines) == 1, (
-                f"single-series panel drew {len(axes[0].lines)} lines"
-            )
+            assert len(axes[0].lines) == 1, f"single-series panel drew {len(axes[0].lines)} lines"
         finally:
             plt.close(fig)
 
@@ -457,6 +469,7 @@ class TestStrokeDashShorthand:
 # ---------------------------------------------------------------------------
 # The 2D import graph must not load the 3D subpackage
 # ---------------------------------------------------------------------------
+
 
 class TestImportGraph:
     def test_2d_modules_do_not_load_three_d(self):

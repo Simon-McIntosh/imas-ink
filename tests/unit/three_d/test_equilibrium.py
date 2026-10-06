@@ -206,9 +206,7 @@ class TestEmptyDoubleSentinelFiltering:
 # Optional integration test against ITER 135013 reference data
 # ---------------------------------------------------------------------------
 
-_REF_PATH = Path(
-    "/home/ITER/mcintos/Code/efitpp/tests/data/imas/ITER/135013/reference/run_set_1"
-)
+_REF_PATH = Path("/home/ITER/mcintos/Code/efitpp/tests/data/imas/ITER/135013/reference/run_set_1")
 
 _REF_H5 = _REF_PATH / "equilibrium.h5"
 

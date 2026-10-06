@@ -79,9 +79,7 @@ def close_or_reject_outline(
         raise ValueError("Outline must have at least 2 points")
 
     gap = float(np.hypot(r[-1] - r[0], z[-1] - z[0]))
-    bbox_diag = float(
-        np.hypot(r.max() - r.min(), z.max() - z.min())
-    )
+    bbox_diag = float(np.hypot(r.max() - r.min(), z.max() - z.min()))
     threshold = tol * bbox_diag if bbox_diag > 0 else tol
 
     if gap <= threshold:
@@ -215,9 +213,7 @@ def synthesize_vessel_shell(
     """
     r_off, z_off = _offset_polygon(first_wall.r, first_wall.z, offset)
 
-    gap = float(
-        __import__("numpy").hypot(r_off[-1] - r_off[0], z_off[-1] - z_off[0])
-    )
+    gap = float(__import__("numpy").hypot(r_off[-1] - r_off[0], z_off[-1] - z_off[0]))
     is_closed = gap < 1e-10
 
     return VesselShell(r=r_off, z=z_off, name=name, is_closed=is_closed)

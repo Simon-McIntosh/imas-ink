@@ -1,0 +1,16 @@
+<section data-reckon="evidence-fragment" id="ink-ruff-config-format">
+  <h2 id="ink-ruff-config-format-heading">One ruff configuration, and CI's lint job green</h2>
+  <p id="ink-ruff-config-format-landing">
+    <code>.ruff.toml</code> is deleted in its own commit (<code>a5196af</code>),
+    leaving <code>pyproject.toml</code> as the one ruff configuration:
+    <code>ruff check --show-settings imas_ink/__init__.py</code> now names
+    <code>pyproject.toml</code> as the settings path and reports the
+    <code>tests/**</code> B011/SIM117 and <code>examples/**</code> E402
+    per-file ignores that previously never applied. A <code>style(format):</code>
+    commit (<code>8034d2a</code>) runs the formatter over the 19 files
+    <code>ruff format --check .</code> named, touching nothing else. Measure:
+    <code>uv run --no-sync ruff check .</code> and <code>uv run --no-sync ruff
+    format --check .</code> both exit 0, and the suite is unchanged at 418
+    passed / 6 skipped / 0 failed.
+  </p>
+</section>

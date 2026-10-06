@@ -92,9 +92,9 @@ class TestAnimatePulseForwardsFlags:
         gif = animate_pulse(_make_eq_ids(2), _geom(), show_probes=False, show_flux_loops=False)
 
         assert len(frame_calls) == 2, "one equilibrium_figure_mpl call per time slice"
-        assert all(
-            probes is False and loops is False for probes, loops in frame_calls
-        ), f"not every frame drew with both flags false: {frame_calls}"
+        assert all(probes is False and loops is False for probes, loops in frame_calls), (
+            f"not every frame drew with both flags false: {frame_calls}"
+        )
         assert gif[:6] in (b"GIF87a", b"GIF89a"), "output is not a GIF"
 
     def test_default_call_draws_them(self, frame_calls):
@@ -102,9 +102,9 @@ class TestAnimatePulseForwardsFlags:
         animate_pulse(_make_eq_ids(2), _geom())
 
         assert len(frame_calls) == 2
-        assert all(
-            probes is True and loops is True for probes, loops in frame_calls
-        ), f"default did not draw both sensor families: {frame_calls}"
+        assert all(probes is True and loops is True for probes, loops in frame_calls), (
+            f"default did not draw both sensor families: {frame_calls}"
+        )
 
 
 class TestMcpToolForwardsFlags:
@@ -135,9 +135,7 @@ class TestMcpToolForwardsFlags:
 
         provider = mcp_mod.PlotProvider()
         out = asyncio.run(
-            provider.animate_pulse(
-                "imas:hdf5?path=fake", show_probes=False, show_flux_loops=False
-            )
+            provider.animate_pulse("imas:hdf5?path=fake", show_probes=False, show_flux_loops=False)
         )
 
         assert captured["geom"] is sentinel_geom

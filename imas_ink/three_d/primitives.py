@@ -148,9 +148,7 @@ def _planar_frame(
     return normals, binormals
 
 
-def _rmf_frame(
-    centerline_xyz: np.ndarray, tangents: np.ndarray
-) -> tuple[np.ndarray, np.ndarray]:
+def _rmf_frame(centerline_xyz: np.ndarray, tangents: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
     """Rotation-Minimizing Frame via double-reflection parallel transport.
 
     Wang et al., "Computation of Rotation Minimizing Frames",
@@ -186,11 +184,7 @@ def _rmf_frame(
             t_ref = t_prev - (2.0 / c1) * np.dot(v1, t_prev) * v1
             v2 = t_cur - t_ref
             c2 = float(np.dot(v2, v2))
-            n_cur = (
-                n_ref
-                if c2 < 1e-18
-                else n_ref - (2.0 / c2) * np.dot(v2, n_ref) * v2
-            )
+            n_cur = n_ref if c2 < 1e-18 else n_ref - (2.0 / c2) * np.dot(v2, n_ref) * v2
         n_cur = n_cur - np.dot(n_cur, t_cur) * t_cur
         nrm = np.linalg.norm(n_cur)
         if nrm < 1e-12:
@@ -317,9 +311,7 @@ def sweep_section_along_path(
     elif frame in ("rmf", "frenet"):
         normals, binormals = _rmf_frame(centerline_xyz, tangents)
     else:
-        raise ValueError(
-            f"Unknown frame {frame!r}; expected 'planar', 'rmf', or 'frenet'"
-        )
+        raise ValueError(f"Unknown frame {frame!r}; expected 'planar', 'rmf', or 'frenet'")
 
     # Place section at each point along the centerline
     all_points = np.zeros((n_path * n_sec, 3))
@@ -336,9 +328,7 @@ def sweep_section_along_path(
         end_dist = np.linalg.norm(centerline_xyz[-1] - centerline_xyz[0])
         seg_lengths = np.linalg.norm(np.diff(centerline_xyz, axis=0), axis=1)
         total_length = seg_lengths.sum()
-        is_closed = end_dist < 1e-6 or (
-            total_length > 0 and end_dist / total_length < 1e-4
-        )
+        is_closed = end_dist < 1e-6 or (total_length > 0 and end_dist / total_length < 1e-4)
     else:
         is_closed = closed_path
 
