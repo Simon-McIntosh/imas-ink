@@ -22,7 +22,7 @@
   <title>Geometry Figure Vessel Units | imas-ink</title>
   <link rel="stylesheet" href="/_shared/foundation.css">
   <link rel="stylesheet" href="/_shared/dashboard.css">
-<meta name="plan-version" content="25">
+<meta name="plan-version" content="26">
 <meta name="plan-modified" content="2026-10-06">
 <meta name="plan-section-declarations" content="{&quot;s1&quot;:&quot;done&quot;,&quot;s2&quot;:&quot;done&quot;,&quot;s3&quot;:&quot;done&quot;,&quot;s4&quot;:&quot;done&quot;,&quot;s5&quot;:&quot;done&quot;}">
 <meta name="plan-commits" content="03d9593,94bd8f3,3dc98af,aca351d,f1eadd8,db2ee9f,2c5cfec,16fd030">
@@ -116,6 +116,9 @@
 </div>
 <div class="r-comment" data-section="s4" data-id="c-run-r-20261006T122316803773-review-of-ink-one-skin" data-who="reckon-build" data-when="2026-10-06T12:27:27.930Z">
     <div class="r-comment-body"><p>independent review of run r-20261006T121701896251-ink-one-skin (head 420b205, base 78ce779): goal met, all 6 dimensions scored, added_failure_count 0 with no added ids, no follow-on finding. The annular branch of imas_ink/extract.py now emits one VesselShell per filled outline; reproduced here that base returns 0 shells for a one-skin unit and head returns that one closed shell while a both-filled unit still returns two.</p></div>
+</div>
+<div class="r-comment" data-section="s5" data-id="c-run-r-20261006T154936183044-ink-animate-sensor-flags" data-who="reckon-build" data-when="2026-10-06T15:56:36.566Z">
+    <div class="r-comment-body"><p>animate_pulse and the MCP animate_pulse tool now both carry and forward show_probes and show_flux_loops to equilibrium_figure_mpl, defaulting True as the figure does; gate tests/unit/test_animate_sensor_flags.py + tests/unit/test_vessel_units.py + tests/test_smoke.py 20 passed EXIT=0, negative control 1 failed EXIT=1.</p></div>
 </div>
 </section>
 </main>
