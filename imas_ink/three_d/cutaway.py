@@ -199,9 +199,7 @@ def capped_clip(
         return CappedMesh(full=empty, cap=empty, name=name)
 
     # 4. Geometric cap extraction
-    cap = cap_face_of(
-        clipped, plane, eps_plane=eps_plane, eps_angle_deg=eps_angle_deg
-    )
+    cap = cap_face_of(clipped, plane, eps_plane=eps_plane, eps_angle_deg=eps_angle_deg)
 
     return CappedMesh(full=clipped, cap=cap, name=name)
 
@@ -245,9 +243,7 @@ def capped_clip_multiblock(
     for block_name, mesh in blocks.items():
         if mesh.n_points == 0:
             empty = pv.PolyData()
-            results[block_name] = CappedMesh(
-                full=empty, cap=empty, name=block_name
-            )
+            results[block_name] = CappedMesh(full=empty, cap=empty, name=block_name)
             continue
 
         # Check if the block is entirely on the removed side
@@ -256,14 +252,10 @@ def capped_clip_multiblock(
         if np.all(signed_dists < 0):
             # Entirely on the removed side (-normal side)
             empty = pv.PolyData()
-            results[block_name] = CappedMesh(
-                full=empty, cap=empty, name=block_name
-            )
+            results[block_name] = CappedMesh(full=empty, cap=empty, name=block_name)
             continue
 
-        results[block_name] = capped_clip(
-            mesh, plane, name=block_name, **kwargs
-        )
+        results[block_name] = capped_clip(mesh, plane, name=block_name, **kwargs)
 
     return results
 
@@ -315,9 +307,7 @@ def auto_camera(
     if view not in ("poloidal_rhs",):
         _stubs = {"iso", "poloidal_lhs", "toroidal_top"}
         if view in _stubs:
-            raise NotImplementedError(
-                f"View preset {view!r} is not yet implemented"
-            )
+            raise NotImplementedError(f"View preset {view!r} is not yet implemented")
         raise ValueError(f"Unknown view preset {view!r}")
 
     _xmin, xmax, _ymin, _ymax, zmin, zmax = mesh_bounds

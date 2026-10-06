@@ -186,9 +186,7 @@ def _segments_to_polydata(
             pts_3d[:, 1] = 0.0  # on plane
             pts_3d[:, 2] = seg[:, 1]  # Z → z
         else:
-            raise NotImplementedError(
-                f"plane_normal={plane_normal!r} is not yet supported"
-            )
+            raise NotImplementedError(f"plane_normal={plane_normal!r} is not yet supported")
 
         n_pts = pts_3d.shape[0]
         # Build line cell: [n_pts, 0, 1, 2, ..., n_pts-1]
@@ -344,9 +342,7 @@ def build_flux_overlay(
         if levels is not None:
             resolved_levels = np.asarray(levels, dtype=float)
         else:
-            resolved_levels = make_levels(
-                slice_2d.psi_axis, slice_2d.psi_boundary, n=n_levels
-            )
+            resolved_levels = make_levels(slice_2d.psi_axis, slice_2d.psi_boundary, n=n_levels)
 
     return FluxOverlay(
         field=field,

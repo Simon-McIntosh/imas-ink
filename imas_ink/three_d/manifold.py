@@ -17,9 +17,7 @@ class MeshNotManifoldError(Exception):
     def __init__(self, *, name: str, n_open_edges: int):
         self.name = name
         self.n_open_edges = n_open_edges
-        super().__init__(
-            f"Mesh {name!r} has {n_open_edges} open edge(s) after repair"
-        )
+        super().__init__(f"Mesh {name!r} has {n_open_edges} open edge(s) after repair")
 
 
 def ensure_closed_manifold(
@@ -73,11 +71,7 @@ def ensure_closed_manifold(
     if boundary.n_cells > 0:
         if max_hole_size is None:
             bnd = result.bounds
-            diag = (
-                (bnd[1] - bnd[0]) ** 2
-                + (bnd[3] - bnd[2]) ** 2
-                + (bnd[5] - bnd[4]) ** 2
-            ) ** 0.5
+            diag = ((bnd[1] - bnd[0]) ** 2 + (bnd[3] - bnd[2]) ** 2 + (bnd[5] - bnd[4]) ** 2) ** 0.5
             # Factor of 2 gives ample margin for endcap-sized holes.
             max_hole_size = diag * 2.0
 

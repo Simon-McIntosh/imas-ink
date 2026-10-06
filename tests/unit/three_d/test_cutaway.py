@@ -52,9 +52,9 @@ class TestCappedClipTorus:
             pts = np.asarray(cell.points, dtype=float)
             # Vertex distance from y=0 plane
             dists = np.abs(pts @ normal)
-            assert np.all(
-                dists < eps_plane * 10
-            ), f"Cell {cell_id} has vertices off-plane: max dist={dists.max()}"
+            assert np.all(dists < eps_plane * 10), (
+                f"Cell {cell_id} has vertices off-plane: max dist={dists.max()}"
+            )
 
             # Face normal should be along ±y
             if pts.shape[0] >= 3:
@@ -65,9 +65,9 @@ class TestCappedClipTorus:
                 if fn_len > 1e-30:
                     fn /= fn_len
                     cos_angle = abs(float(np.dot(fn, normal)))
-                    assert cos_angle > np.cos(
-                        np.radians(5.0)
-                    ), f"Cell {cell_id} normal not aligned with plane: cos={cos_angle}"
+                    assert cos_angle > np.cos(np.radians(5.0)), (
+                        f"Cell {cell_id} normal not aligned with plane: cos={cos_angle}"
+                    )
 
 
 @pytest.mark.render
@@ -93,9 +93,7 @@ class TestCappedClipMultiblock:
         )
 
         plane = ClipPlane(origin=(0.0, 0.0, 0.0), normal=(0.0, 1.0, 0.0))
-        results = capped_clip_multiblock(
-            {"kept": kept_box, "removed": removed_box}, plane
-        )
+        results = capped_clip_multiblock({"kept": kept_box, "removed": removed_box}, plane)
 
         assert "kept" in results
         assert "removed" in results

@@ -181,9 +181,7 @@ def extract_slice_2d(eq_ids, time_index: int = 0) -> EquilibriumSlice2D:
         r_axis = float("nan")
         z_axis = float("nan")
 
-    o_point = (
-        None if np.isnan(r_axis) or np.isnan(z_axis) else (r_axis, z_axis)
-    )
+    o_point = None if np.isnan(r_axis) or np.isnan(z_axis) else (r_axis, z_axis)
 
     # -- time ----------------------------------------------------------------
     try:

@@ -229,7 +229,9 @@ class PlotProvider:
 
         geom = extract_geometry(wall, pf, magnetics)
         fig, _ax = geometry_figure_mpl(
-            geom, show_probes=show_probes, show_flux_loops=show_flux_loops,
+            geom,
+            show_probes=show_probes,
+            show_flux_loops=show_flux_loops,
         )
         png_bytes = render_to_bytes(fig)
         return base64.b64encode(png_bytes).decode("ascii")
@@ -609,4 +611,3 @@ def _register_repl(mcp) -> None:
     @mcp.tool(description=repl_description)
     def repl(code: str, namespace: str = "default", reset: bool = False) -> str:
         return _repl(code, namespace=namespace, reset=reset)
-

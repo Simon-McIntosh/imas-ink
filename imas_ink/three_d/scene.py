@@ -18,12 +18,12 @@ if TYPE_CHECKING:
 # for FW, slate/gunmetal for TF and vessel.  Slightly desaturated from
 # pure CAD tints so the rendered diffuse surfaces don't read as toy-like.
 _COLORS = {
-    "pf": "#a87a4a",          # muted bronze (PF coils)
-    "cs": "#7a5638",          # darker bronze (central solenoid stack)
-    "tf": "#6b7480",          # slate (TF case)
-    "vessel": "#4a4d52",      # dark gunmetal (VV)
+    "pf": "#a87a4a",  # muted bronze (PF coils)
+    "cs": "#7a5638",  # darker bronze (central solenoid stack)
+    "tf": "#6b7480",  # slate (TF case)
+    "vessel": "#4a4d52",  # dark gunmetal (VV)
     "first_wall": "#a89a78",  # warm tungsten (FW)
-    "wall": "#9aa0a6",        # legacy fallback
+    "wall": "#9aa0a6",  # legacy fallback
 }
 
 # Camera presets: (position, focal_point, viewup).
@@ -301,12 +301,7 @@ def _build_cutaway_geometry(
     if wall_ids is not None:
         vessel_shells = extract_vessel_shells(wall_ids)
 
-    if (
-        synthesize_missing_vessel
-        and not vessel_shells
-        and first_wall is not None
-        and show_vessel
-    ):
+    if synthesize_missing_vessel and not vessel_shells and first_wall is not None and show_vessel:
         synth = synthesize_vessel_shell(first_wall)
         vessel_shells = [synth]
 
@@ -545,9 +540,7 @@ def render_cutaway_with_flux(
         if block_name.startswith("TF"):
             smooth = False
 
-        pl.add_mesh(
-            mesh, color=color, opacity=opacity, smooth_shading=smooth, **_matte
-        )
+        pl.add_mesh(mesh, color=color, opacity=opacity, smooth_shading=smooth, **_matte)
 
     # -- Add flux overlay -----------------------------------------------
     if overlay is not None:
@@ -559,9 +552,7 @@ def render_cutaway_with_flux(
         if overlay.field is not None:
             cap_with_field = cap.copy(deep=True)
             cap_with_field.point_data["psi"] = overlay.field
-            cap_offset = offset_along_normal(
-                cap_with_field, normal_vec, epsilon=5e-4
-            )
+            cap_offset = offset_along_normal(cap_with_field, normal_vec, epsilon=5e-4)
             pl.add_mesh(
                 cap_offset,
                 scalars="psi",
@@ -608,9 +599,7 @@ def render_cutaway_with_flux(
     if show_title and slice_2d is not None:
         title_parts = [f"t = {slice_2d.time:.3f} s"]
         if not np.isnan(slice_2d.psi_axis) and not np.isnan(slice_2d.psi_boundary):
-            title_parts.append(
-                f"ψ ∈ [{slice_2d.psi_boundary:.2f}, {slice_2d.psi_axis:.2f}] Wb/rad"
-            )
+            title_parts.append(f"ψ ∈ [{slice_2d.psi_boundary:.2f}, {slice_2d.psi_axis:.2f}] Wb/rad")
         pl.add_text(
             "  ".join(title_parts),
             position="upper_left",

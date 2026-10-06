@@ -15,9 +15,7 @@ class TestEnsureClosedManifold:
         from imas_ink.three_d.manifold import ensure_closed_manifold
         from imas_ink.three_d.primitives import sweep_section_along_path
 
-        section = np.array(
-            [[-0.2, -0.1], [0.2, -0.1], [0.2, 0.1], [-0.2, 0.1]]
-        )
+        section = np.array([[-0.2, -0.1], [0.2, -0.1], [0.2, 0.1], [-0.2, 0.1]])
         path = np.array([[0, 0, 0], [3, 0, 0], [6, 0, 1]], dtype=float)
         mesh = sweep_section_along_path(section, path, frame="frenet")
 
@@ -38,13 +36,9 @@ class TestEnsureClosedManifold:
         from imas_ink.three_d.manifold import ensure_closed_manifold
         from imas_ink.three_d.primitives import sweep_section_along_path
 
-        section = np.array(
-            [[-0.1, -0.1], [0.1, -0.1], [0.1, 0.1], [-0.1, 0.1]]
-        )
+        section = np.array([[-0.1, -0.1], [0.1, -0.1], [0.1, 0.1], [-0.1, 0.1]])
         theta = np.linspace(0, 2 * np.pi, 33)
-        path = np.column_stack(
-            [3.0 * np.cos(theta), 3.0 * np.sin(theta), np.zeros_like(theta)]
-        )
+        path = np.column_stack([3.0 * np.cos(theta), 3.0 * np.sin(theta), np.zeros_like(theta)])
         mesh = sweep_section_along_path(section, path, frame="frenet")
 
         repaired = ensure_closed_manifold(mesh, name="ring")
@@ -102,12 +96,8 @@ class TestSweptOpenPathNowCapped:
         """Open-path sweep has zero open edges WITHOUT ensure_closed_manifold."""
         from imas_ink.three_d.primitives import sweep_section_along_path
 
-        section = np.array(
-            [[-0.3, -0.2], [0.3, -0.2], [0.3, 0.2], [-0.3, 0.2]]
-        )
-        path = np.array(
-            [[0, 0, 0], [2, 0, 0], [4, 0, 0.5], [6, 0, 1]], dtype=float
-        )
+        section = np.array([[-0.3, -0.2], [0.3, -0.2], [0.3, 0.2], [-0.3, 0.2]])
+        path = np.array([[0, 0, 0], [2, 0, 0], [4, 0, 0.5], [6, 0, 1]], dtype=float)
         mesh = sweep_section_along_path(section, path, frame="planar")
 
         # Triangulate + clean for edge extraction (matching manifold pipeline)
