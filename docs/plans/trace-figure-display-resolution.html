@@ -22,7 +22,7 @@
   <title>Trace Figure Display Resolution | imas-ink</title>
   <link rel="stylesheet" href="/_shared/foundation.css">
   <link rel="stylesheet" href="/_shared/dashboard.css">
-<meta name="plan-version" content="1">
+<meta name="plan-version" content="2">
 <meta name="plan-modified" content="2026-10-06">
 </head>
 <body>
@@ -45,24 +45,29 @@
     <p>
       <code>_render_timeseries_mpl</code> (<code>imas_ink/mpl.py</code>) and <code>_render_timeseries_alt</code>
       (<code>imas_ink/alt.py</code>) plot every sample of a <code>TimeSeries</code>. A figure is read at a few
-      thousand horizontal pixels, so a longer series adds file size and nothing a reader can see. This
-      section adds one <code>InkStyle</code> constant, <code>trace_max_points</code> (default 4000), and draws a
-      series longer than it through a min/max envelope: the samples are split into
-      <code>trace_max_points / 2</code> consecutive equal-count bins, and each bin contributes its minimum
-      and maximum sample in time order, so the global extremes, every spike and the width of a noise band
-      survive while the drawn path has at most <code>trace_max_points</code> vertices. A series at or below
-      the limit is drawn exactly as today. The envelope is one private function in a private module,
-      <code>imas_ink/_decimate.py</code>, because both renderers need it and neither may import the
-      other's plotting library; it adds no public name, and <code>trace_max_points</code> retires nothing,
-      because no style field bounds a trace's resolution today.
+      thousand horizontal pixels, so a longer series adds file size and nothing a reader can see. The two
+      backends get the bound from different owners. Matplotlib already simplifies a path to display
+      resolution when the figure is drawn, through <code>rcParams["path.simplify_threshold"]</code>: measured
+      on a 300,000-sample line it gives about 8,900 vertices (232&nbsp;KB of SVG) at the default 0.111 and
+      about 1,050 (37&nbsp;KB) at 1.0. Because the threshold is read when the figure is saved, the owner is
+      imas-ink's save function, <code>render_to_bytes</code> (<code>imas_ink/io.py</code>), which saves under
+      an <code>rc_context</code> setting <code>path.simplify</code> and a new <code>InkStyle</code> constant,
+      <code>path_simplify_threshold</code> (default 1.0); no new matplotlib code path is added. Altair has no
+      such simplification, so <code>_render_timeseries_alt</code> draws a series longer than a second
+      constant, <code>trace_max_points</code> (default 4000), through a min/max envelope: the samples are
+      split into <code>trace_max_points / 2</code> consecutive equal-count bins, each contributing its minimum
+      and maximum in time order, so the extremes, spikes and noise-band width survive. The envelope is one
+      private function in a private module, <code>imas_ink/_decimate.py</code>. The two constants retire
+      nothing, because no style field bounds a figure's path resolution today, and the section adds no
+      other public name.
     </p>
     <p>
       Done-when: a test in <code>tests/unit/test_trace_resolution.py</code> renders a 300,000-sample
-      <code>TimeSeries</code> through <code>time_trace_figure_mpl</code> and asserts the drawn line has at
-      most <code>trace_max_points</code> vertices and still reaches the series' global minimum and maximum,
-      asserts a series shorter than the limit is drawn with all its samples, and asserts the altair renderer
-      emits at most <code>trace_max_points</code> points for the long series; it fails when the envelope is
-      bypassed. <code>uv run --no-sync pytest -p no:cacheprovider tests/unit</code> adds no failure against
+      <code>TimeSeries</code> through <code>time_trace_figure_mpl</code> and <code>render_to_bytes(...,
+      format="svg")</code> and asserts the SVG is under 100&nbsp;KB, asserts the altair renderer emits at most
+      <code>trace_max_points</code> points for that series and still reaches its global minimum and maximum,
+      and asserts a series shorter than the limit is drawn in altair with all its samples; it fails when
+      <code>render_to_bytes</code> ignores <code>path_simplify_threshold</code>. <code>uv run --no-sync pytest -p no:cacheprovider tests/unit</code> adds no failure against
       the base revision, and <code>uv run --no-sync ruff check imas_ink tests</code> adds no finding against
       it (the base carries 55).
     </p>
@@ -76,8 +81,9 @@
       keyword, so this section extends that mechanism rather than clearing labels after drawing:
       <code>_render_timeseries_mpl</code> gains a second private keyword, <code>label_time</code> (default
       true), that alone controls the <code>Time [s]</code> x-label, and <code>time_trace_figure_mpl</code>
-      passes <code>label_time=False</code> for every panel but the bottom one; a single trace drawn through
-      <code>render_mpl</code> keeps its label. The altair stack the MCP server builds in
+      passes <code>label_time=False</code> for every panel but the bottom one by calling the private renderer
+      directly, as it already does for a panel's later series, so the exported <code>render_mpl</code> gains
+      no keyword and a single trace drawn through it keeps its label. The altair stack the MCP server builds in
       <code>imas_ink/server/mcp.py</code> repeats its time title too, but it is a served application outside
       the matplotlib figures this plan serves and is left unchanged. It adds no public name.
     </p>
