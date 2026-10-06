@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="docs-project" content="imas-ink">
+  <meta name="reckon-type" content="evidence">
+  <meta name="plan-slug" content="geometry-figure-vessel-units-landed">
+  <meta name="plan-title" content="Geometry Figure Vessel Units — landed record">
+  <meta name="plan-summary" content="Closure synthesis for Geometry Figure Vessel Units: 0 committed run(s), 0 section-anchored comment(s), and 0 landed commit(s).">
+  <meta name="plan-evidence-for" content="geometry-figure-vessel-units">
+  <meta name="plan-verdict" content="qualified">
+  <title>Geometry Figure Vessel Units — landed record | imas-ink</title>
+  <link rel="stylesheet" href="/_shared/foundation.css">
+  <link rel="stylesheet" href="/_shared/dashboard.css">
+</head>
+<body>
+ <main class="plan-doc">
+  <h1>Geometry Figure Vessel Units — landed record</h1>
+  <p>Closure synthesis for Geometry Figure Vessel Units: 0 committed run(s), 0 section-anchored comment(s), and 0 landed commit(s).</p>
+
+
+   <section id="s1">
+    <h2>§1 — vessel skins in the 2D geometry figure landed</h2>
+    <p>Node <code>ink-vessel-units</code> landed at <code>03d9593</code>, merged in <code>94bd8f3</code>. <code>WallOutline2D</code> and <code>VesselShell</code> moved to <code>_types.py</code>, <code>extract_vessel_shells</code> to <code>extract.py</code> and <code>_offset_polygon</code> to <code>geometry.py</code>, with <code>three_d/walls.py</code> importing them and its dead <code>_safe_float</code> removed; the extractor reads an annular unit's <code>outline_inner</code> and <code>outline_outer</code> from the <code>description_2d</code> entry <code>_select_description_2d</code> chose; <code>MachineGeometry.vessel_shells</code> feeds the viewport and both wall renderers. Gate: <code>pytest tests/unit</code> 393 passed against the base's 387, with the base's own 1 failure and 4 errors in <code>test_scene_cutaway</code> unchanged and none added; the 6 new tests in <code>tests/unit/test_vessel_units.py</code> pass and 4 turn red when the extractor ignores the skins; ruff findings unchanged at the base's 55. Independent review at <code>03d9593</code>: goal 19, evidence 16, scope 20, durability 18, fit 18, reuse 19; one follow-on, a unit with only one skin filled, folded as §4.</p>
+  </section>
+
+</main>
+</body>
+</html>

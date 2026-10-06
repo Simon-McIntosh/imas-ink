@@ -10,7 +10,7 @@
   <meta name="plan-summary" content="Draw a wall&#x27;s vessel skins, compose two machine states, and put two traces on one panel, so imas-ambix&#x27;s JT-60SA figures need no drawing of their own">
   <meta name="plan-status" content="draft">
   <meta name="plan-roi" content="mid">
-  <meta name="plan-effort-hours" content="3.5">
+  <meta name="plan-effort-hours" content="4.0">
   <meta name="plan-capability-version" content="1.0">
   <meta name="plan-capability-class" content="general">
   <meta name="plan-capability-reasoning" content="standard">
@@ -22,9 +22,10 @@
   <title>Geometry Figure Vessel Units | imas-ink</title>
   <link rel="stylesheet" href="/_shared/foundation.css">
   <link rel="stylesheet" href="/_shared/dashboard.css">
-<meta name="plan-version" content="9">
+<meta name="plan-version" content="11">
 <meta name="plan-modified" content="2026-10-06">
-<meta name="plan-section-declarations" content="{&quot;s1&quot;:&quot;implementable&quot;,&quot;s2&quot;:&quot;implementable&quot;,&quot;s3&quot;:&quot;implementable&quot;}">
+<meta name="plan-section-declarations" content="{&quot;s1&quot;:&quot;done&quot;,&quot;s2&quot;:&quot;implementable&quot;,&quot;s3&quot;:&quot;implementable&quot;,&quot;s4&quot;:&quot;implementable&quot;}">
+<meta name="plan-commits" content="03d9593,94bd8f3">
 </head>
 <body>
   <main class="plan-doc">
@@ -41,77 +42,12 @@
       </p>
     </header>
 
+    <section class="section-landed">
+  <header><span class="badge badge-shipped">&#10003; landed 2026-10-06</span>
     <h2 id="s1">§1 — Vessel skins in the 2D geometry figure</h2>
-    <section data-reckon="section" data-id="s1" data-effort-hours="1.5" data-capability-version="1.0" data-capability-class="general" data-capability-reasoning="standard" data-capability-verification="strict" data-capability-risk="low" data-status="implementable" data-links=""></section>
-    <p>
-      imas-ink already owns vessel extraction: <code>extract_vessel_shells</code>
-      (<code>imas_ink/three_d/walls.py</code>) iterates <code>wall.description_2d[0].vessel.unit</code> and
-      returns one <code>VesselShell</code> per unit, from an annular unit's <code>centreline</code> (with
-      <code>thickness</code> offsetting it into a band) or from a plain <code>outline</code>. It does not
-      read an annular unit's <code>outline_inner</code> and <code>outline_outer</code>, which is how the
-      JT-60SA description writes its vessel: two closed 51-point skins, the same in both operating
-      phases. This section extends that one owner rather than adding a second extractor: when an annular
-      unit's <code>outline_inner</code> and <code>outline_outer</code> are filled,
-      <code>extract_vessel_shells</code> returns one <code>VesselShell</code> for each, inner then outer,
-      ahead of the centreline path, and leaves the centreline and outline paths unchanged. It also takes
-      the <code>description_2d</code> entry to read, so <code>extract_geometry</code> passes the entry
-      <code>_select_description_2d</code> (<code>imas_ink/extract.py</code>) chose for the limiter units
-      and the vessel and the limiter always come from the same entry; called without one it keeps
-      reading index 0, as the 3D path does today. The existing <code>unit.outline</code> fallback reads a
-      field the Data Dictionary places on <code>unit.element[*].outline</code>; correcting it is outside
-      this plan, which neither relies on nor changes that branch.
-    </p>
-    <p>
-      The 2D figure must not load the 3D stack, and importing anything under <code>imas_ink.three_d</code>
-      loads that subpackage, which <code>imas_ink/__init__.py</code> keeps out of the eager import graph.
-      So the vessel types and extractor move into core modules by role: <code>WallOutline2D</code> and
-      <code>VesselShell</code> into <code>imas_ink/_types.py</code> beside <code>MachineGeometry</code>;
-      <code>extract_vessel_shells</code>, which reads IDSs, into <code>imas_ink/extract.py</code>; and the
-      pure-numpy <code>_offset_polygon</code> it uses into <code>imas_ink/geometry.py</code> beside
-      <code>close_polygon</code> and <code>points_in_polygon</code>. The moved extractor reads
-      <code>thickness</code> through the shared sentinel guard <code>safe_float</code>
-      (<code>imas_ink/_sentinel.py</code>), and <code>walls.py</code>'s private <code>_safe_float</code>,
-      whose only caller was that extractor, is deleted (a separate copy in
-      <code>three_d/coilset.py</code> is outside this plan). <code>three_d/walls.py</code> imports the
-      types, the extractor and <code>_offset_polygon</code> (still used by
-      <code>synthesize_vessel_shell</code>) from their new homes, and the lazy name map in
-      <code>imas_ink/__init__.py</code> points <code>VesselShell</code>, <code>WallOutline2D</code> and
-      <code>extract_vessel_shells</code> at <code>_types.py</code> and <code>extract.py</code>, so top-level
-      access no longer loads <code>three_d</code>, the 3D path and its public names are unchanged, and
-      each piece keeps one owner.
-    </p>
-    <p>
-      The 2D pipeline then carries those shells. <code>extract_geometry</code>
-      (<code>imas_ink/extract.py</code>) fills one new field on <code>MachineGeometry</code>
-      (<code>imas_ink/_types.py</code>), typed with the existing <code>VesselShell</code>, from
-      <code>extract_vessel_shells</code>. Drawing goes through the component dispatch that owns 2D
-      geometry, not a call of its own: the <code>WallOutline</code> component
-      (<code>imas_ink/components.py</code>) gains the vessel shells beside its <code>wall_units</code>, and
-      <code>_render_wall_mpl</code> (<code>imas_ink/mpl.py</code>) and <code>_render_wall_alt</code>
-      (<code>imas_ink/alt.py</code>) draw them as unfilled lines in the wall's ink style. The altair
-      renderer today plots only <code>wall_r</code>/<code>wall_z</code> and drops every limiter unit past
-      the first, so it first gains the same loop over <code>wall_units</code> the matplotlib renderer
-      already has, and the vessel shells join that loop in both, so
-      <code>geometry_figure_mpl</code> and <code>equilibrium_chart_alt</code> both show the vessel by
-      passing the shells to the <code>WallOutline</code> they already build, and the viewport covers the
-      shells. The vessel is drawn with the wall's existing <code>wall_color</code> and
-      <code>wall_linewidth</code>; no style constant is added. The 2D geometry has no vessel
-      representation today, so the field retires nothing; it is the one public addition and reuses the
-      type the 3D path already exports.
-    </p>
-    <p>
-      Done-when: a new test, <code>tests/unit/test_vessel_units.py</code>, builds a <code>wall</code> IDS with
-      one limiter unit and one vessel unit whose annular <code>outline_inner</code> and
-      <code>outline_outer</code> are filled, and asserts that <code>extract_vessel_shells</code> returns two
-      closed shells, that a geometry whose richest <code>description_2d</code> entry is not index 0 takes its
-      vessel from that entry, and that <code>geometry_figure_mpl</code> adds both shells' lines to the axes
-      through <code>render_mpl</code>, with <code>_render_wall_alt</code> emitting a mark for every limiter unit and both shells, and that
-      importing <code>imas_ink.extract</code> and <code>imas_ink.figures</code> leaves
-      <code>imas_ink.three_d</code> out of <code>sys.modules</code>; it fails
-      when <code>extract_vessel_shells</code> ignores those outlines. <code>uv run --no-sync pytest -p
-      no:cacheprovider tests/unit</code> adds no failure against the base revision, and <code>uv run
-      --no-sync ruff check imas_ink tests</code> exits 0.
-    </p>
+<section data-reckon="section" data-id="s1" data-effort-hours="1.5" data-capability-version="1.0" data-capability-class="general" data-capability-reasoning="standard" data-capability-verification="strict" data-capability-risk="low" data-status="done" data-links=""></section></header>
+  <p class="landed-summary">Vessel skins drawn in the 2D figure through the relocated <code>extract_vessel_shells</code> and <code>WallOutline</code> (merge <code>94bd8f3</code>); 6 new tests, none added to the base's failures; review 19/16/20/18/18/19. <a href="s1">full record</a></p>
+</section>
 
     <h2 id="s2">§2 — Compose two machine states into one figure</h2>
 <section data-reckon="section" data-id="s2" data-effort-hours="1.0" data-capability-version="1.0" data-capability-class="general" data-capability-reasoning="standard" data-capability-verification="strict" data-capability-risk="low" data-status="implementable" data-links=""></section>
@@ -139,7 +75,7 @@
       <code>wall_linestyle="dashed"</code> and asserts its wall and vessel lines are dashed; the
       existing geometry-figure tests pass unchanged; <code>uv run --no-sync pytest -p no:cacheprovider
       tests/unit</code> adds no failure against the base revision, and <code>uv run --no-sync ruff check
-      imas_ink tests</code> exits 0.
+      imas_ink tests</code> adds no finding against it (the base carries 55).
     </p>
 
     <h2 id="s3">§3 — Two traces on one panel</h2>
@@ -174,7 +110,25 @@
       dashed and in the first line's colour, that the panel's y-label is the first series' and no legend
       was added, and that a single-series panel still draws one line; the existing trace-figure tests pass; <code>uv run --no-sync pytest -p no:cacheprovider
       tests/unit</code> adds no failure against the base revision, and <code>uv run --no-sync ruff check
-      imas_ink tests</code> exits 0.
+      imas_ink tests</code> adds no finding against it (the base carries 55).
+    </p>
+
+    <h2 id="s4">§4 — An annular vessel unit with one skin</h2>
+<section data-reckon="section" data-id="s4" data-effort-hours="0.5" data-capability-version="1.0" data-capability-class="general" data-capability-reasoning="standard" data-capability-verification="strict" data-capability-risk="low" data-status="implementable" data-links=""></section>
+<p>
+      <code>extract_vessel_shells</code> (<code>imas_ink/extract.py</code>) returns shells from an annular
+      unit only when both <code>outline_inner</code> and <code>outline_outer</code> are filled, so a unit
+      with just one of them, which the <code>wall</code> IDS permits, falls through to the centreline and
+      outline paths and its filled skin is silently dropped. This section makes the annular branch
+      return one <code>VesselShell</code> for each skin that is filled, inner then outer, so a one-skin unit
+      draws that skin; a unit with both behaves exactly as now. It adds no public name.
+    </p>
+    <p>
+      Done-when: a test in <code>tests/unit/test_vessel_units.py</code> builds an annular vessel unit
+      with only <code>outline_outer</code> filled and asserts <code>extract_vessel_shells</code> returns
+      that one closed shell, and the existing vessel tests pass; <code>uv run --no-sync pytest -p
+      no:cacheprovider tests/unit</code> adds no failure against the base revision, and <code>uv run
+      --no-sync ruff check imas_ink tests</code> adds no finding against it.
     </p>
 
     <section data-reckon="followups" id="followups" class="r-followups">
