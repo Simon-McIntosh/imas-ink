@@ -22,7 +22,7 @@
   <title>Geometry Figure Vessel Units | imas-ink</title>
   <link rel="stylesheet" href="/_shared/foundation.css">
   <link rel="stylesheet" href="/_shared/dashboard.css">
-<meta name="plan-version" content="5">
+<meta name="plan-version" content="6">
 <meta name="plan-modified" content="2026-10-06">
 <meta name="plan-section-declarations" content="{&quot;s1&quot;:&quot;implementable&quot;,&quot;s2&quot;:&quot;implementable&quot;,&quot;s3&quot;:&quot;implementable&quot;}">
 </head>
@@ -64,10 +64,16 @@
     <p>
       The 2D figure must not load the 3D stack, and importing anything under <code>imas_ink.three_d</code>
       loads that subpackage, which <code>imas_ink/__init__.py</code> keeps out of the eager import graph.
-      So <code>WallOutline2D</code>, <code>VesselShell</code> and <code>extract_vessel_shells</code> move
-      from <code>imas_ink/three_d/walls.py</code> into the core <code>imas_ink/geometry.py</code>, which
-      already holds the 2D geometry helpers, and <code>three_d/walls.py</code> imports them from there, so
-      the 3D path and its public names are unchanged and the extractor keeps one owner.
+      So the vessel types and extractor move into core modules by role: <code>WallOutline2D</code> and
+      <code>VesselShell</code> into <code>imas_ink/_types.py</code> beside <code>MachineGeometry</code>, and
+      <code>extract_vessel_shells</code> with the <code>_offset_polygon</code> it needs into
+      <code>imas_ink/extract.py</code>, which already reads IDSs (<code>imas_ink/geometry.py</code> keeps no
+      IMAS objects, as its docstring states). The moved extractor reads <code>thickness</code> through
+      the shared sentinel guard <code>safe_float</code> (<code>imas_ink/_sentinel.py</code>) rather than
+      <code>walls.py</code>'s private copy, which stays for its 3D callers. <code>three_d/walls.py</code>
+      imports the types, the extractor and <code>_offset_polygon</code> (still used by
+      <code>synthesize_vessel_shell</code>) from their new homes, so the 3D path and its public names are
+      unchanged and each piece keeps one owner.
     </p>
     <p>
       The 2D pipeline then carries those shells. <code>extract_geometry</code>
@@ -144,10 +150,14 @@
       <code>render_mpl</code>, and adds one <code>InkStyle</code> constant, <code>trace_linestyle</code>
       (default solid), which <code>_render_timeseries_mpl</code> and <code>_render_timeseries_alt</code>
       (<code>imas_ink/alt.py</code>) apply; it retires nothing, because no style field sets a trace's
-      line style today. The panel's first series is drawn exactly as a single series is today, and owns
-      the panel's y-label, units and time label; each later series is drawn as a line only, in the first
-      series' colour and its own style's <code>trace_linestyle</code>, with no label and no legend, so
-      the panel's labelling never changes with the number of series. A caller marks the second series
+      line style today. <code>_render_timeseries_mpl</code> gains two keyword arguments,
+      <code>color</code> (default none, meaning the colour cycle as today) and <code>label_axes</code>
+      (default true), and <code>time_trace_figure_mpl</code>'s panel loop uses them: the panel's first
+      series is drawn exactly as a single series is today and owns the panel's y-label, units and time
+      label; each later series is drawn with <code>color</code> set to the first line's colour and
+      <code>label_axes=False</code>, so it adds a line in its own style's <code>trace_linestyle</code> and
+      sets no label and no legend, and the panel's labelling never changes with the number of series.
+      <code>render_mpl</code> passes the keywords through for a <code>TimeSeries</code>. A caller marks the second series
       with <code>replace(DEFAULT_STYLE, trace_linestyle=DEFAULT_STYLE.ref_lcfs_linestyle)</code>. A panel
       given as a single <code>TimeSeries</code> is drawn exactly as today.
     </p>
