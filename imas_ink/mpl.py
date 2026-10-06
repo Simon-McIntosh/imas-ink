@@ -552,6 +552,7 @@ def _render_timeseries_mpl(
     *,
     color: str | None = None,
     label_axes: bool = True,
+    label_x: bool = True,
 ) -> None:
     """Render a time series line plot.
 
@@ -559,6 +560,8 @@ def _render_timeseries_mpl(
     single series is drawn).  *label_axes* controls whether the panel's labels
     are written: a second series sharing a panel passes ``False`` so it adds
     only its line and leaves the panel's labelling to the first series.
+    *label_x* independently controls the x-axis label: a stacked panel sharing
+    its time axis passes ``False`` so only the bottom panel is labelled.
     """
     s = ts.style
     ax.plot(
@@ -574,20 +577,31 @@ def _render_timeseries_mpl(
     ylabel = f"{ts.ylabel} [{ts.units}]" if ts.units else ts.ylabel
     if ylabel:
         ax.set_ylabel(ylabel)
-    ax.set_xlabel("Time [s]")
+    if label_x:
+        ax.set_xlabel("Time [s]")
     if ts.label:
         ax.legend(fontsize=s.label_fontsize)
     ax.tick_params(labelsize=s.label_fontsize)
 
 
-def _render_radialprofile_mpl(ax: Axes, rp: RadialProfile) -> None:
-    """Render a 1D radial profile."""
+def _render_radialprofile_mpl(
+    ax: Axes,
+    rp: RadialProfile,
+    *,
+    label_x: bool = True,
+) -> None:
+    """Render a 1D radial profile.
+
+    *label_x* controls whether the axes' x-label is written: a stacked panel
+    sharing its x-axis passes ``False`` so only the bottom panel is labelled.
+    """
     s = rp.style
     ax.plot(rp.psi_norm, rp.values, linewidth=s.trace_linewidth, label=rp.label or None)
     ylabel = f"{rp.ylabel} [{rp.units}]" if rp.units else rp.ylabel
     if ylabel:
         ax.set_ylabel(ylabel)
-    ax.set_xlabel("ψ_norm")
+    if label_x:
+        ax.set_xlabel("ψ_norm")
     if rp.label:
         ax.legend(fontsize=s.label_fontsize)
     ax.tick_params(labelsize=s.label_fontsize)

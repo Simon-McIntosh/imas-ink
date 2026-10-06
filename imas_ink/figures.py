@@ -40,7 +40,7 @@ from .components import (
 )
 from .contours import ContourExtractor
 from .geometry import classify_flux_segments, mask_pfr, split_by_polygon_membership
-from .mpl import _render_timeseries_mpl, render_mpl
+from .mpl import _render_radialprofile_mpl, _render_timeseries_mpl, render_mpl
 from .style import DEFAULT_STYLE, InkStyle
 
 if TYPE_CHECKING:
@@ -89,15 +89,17 @@ def time_trace_figure_mpl(
     fig, axes = plt.subplots(n, 1, figsize=figsize, sharex=True, squeeze=False)
     axes = axes.ravel()
 
+    bottom = axes[-1]
     for ax_i, panel in zip(axes, traces, strict=False):
+        label_x = ax_i is bottom
         if isinstance(panel, (list, tuple)):
             series = list(panel)
-            render_mpl(ax_i, series[0])
+            _render_timeseries_mpl(ax_i, series[0], label_x=label_x)
             first_color = ax_i.lines[-1].get_color()
             for later in series[1:]:
                 _render_timeseries_mpl(ax_i, later, color=first_color, label_axes=False)
         else:
-            render_mpl(ax_i, panel)
+            _render_timeseries_mpl(ax_i, panel, label_x=label_x)
 
     fig.tight_layout()
     return fig, list(axes)
@@ -139,8 +141,9 @@ def radial_profile_figure_mpl(
     fig, axes = plt.subplots(n, 1, figsize=figsize, sharex=True, squeeze=False)
     axes = axes.ravel()
 
+    bottom = axes[-1]
     for ax_i, rp in zip(axes, profiles, strict=False):
-        render_mpl(ax_i, rp)
+        _render_radialprofile_mpl(ax_i, rp, label_x=ax_i is bottom)
 
     fig.tight_layout()
     return fig, list(axes)
