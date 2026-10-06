@@ -10,7 +10,7 @@ import io
 from pathlib import Path
 from typing import TYPE_CHECKING
 
-from .style import DEFAULT_STYLE
+from .style import DEFAULT_STYLE, InkStyle
 
 if TYPE_CHECKING:
     import matplotlib.figure
@@ -20,6 +20,7 @@ def render_to_bytes(
     fig: matplotlib.figure.Figure,
     dpi: int | None = None,
     format: str = "png",
+    style: InkStyle | None = None,
 ) -> bytes:
     """Render a matplotlib figure to raw image bytes.
 
@@ -31,6 +32,11 @@ def render_to_bytes(
         Dots-per-inch. Defaults to :attr:`InkStyle.figure_dpi` (120).
     format : str
         Image format (``'png'``, ``'svg'``, ``'pdf'``).
+    style : InkStyle, optional
+        Visual style. Defaults to :data:`DEFAULT_STYLE`.  Its
+        :attr:`InkStyle.path_simplify_threshold` bounds the drawn path
+        resolution: a trace sampled finer than the figure's pixels keeps its
+        shape but loses the vertices no reader can see.
 
     Returns
     -------
@@ -39,10 +45,18 @@ def render_to_bytes(
     """
     import matplotlib.pyplot as plt
 
+    if style is None:
+        style = DEFAULT_STYLE
     if dpi is None:
-        dpi = DEFAULT_STYLE.figure_dpi
+        dpi = style.figure_dpi
     buf = io.BytesIO()
-    fig.savefig(buf, format=format, dpi=dpi, bbox_inches="tight")
+    with plt.rc_context(
+        {
+            "path.simplify": True,
+            "path.simplify_threshold": style.path_simplify_threshold,
+        }
+    ):
+        fig.savefig(buf, format=format, dpi=dpi, bbox_inches="tight")
     plt.close(fig)
     buf.seek(0)
     return buf.read()

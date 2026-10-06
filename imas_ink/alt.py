@@ -17,6 +17,7 @@ from typing import TYPE_CHECKING
 
 import numpy as np
 
+from ._decimate import _minmax_envelope
 from .components import (
     CoilRects,
     FluxContours,
@@ -374,7 +375,11 @@ def _render_timeseries_alt(ts: TimeSeries) -> alt.LayerChart:
 
     style = ts.style
     ylabel = f"{ts.ylabel} [{ts.units}]" if ts.units else ts.ylabel
-    df = pd.DataFrame({"time": ts.time, "value": ts.values})
+    # Altair draws every row, and its transformer refuses a chart of more than
+    # a few thousand rows, so a series longer than the style's bound is drawn
+    # through a min/max envelope; a shorter one is drawn unchanged.
+    time, values = _minmax_envelope(ts.time, ts.values, style.trace_max_points)
+    df = pd.DataFrame({"time": time, "value": values})
 
     nearest = alt.selection_point(
         nearest=True,

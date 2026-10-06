@@ -1,0 +1,42 @@
+<section data-reckon="evidence-fragment" id="ink-trace-resolution">
+  <h2 id="ink-trace-resolution-heading">Draw long traces at display resolution</h2>
+
+  <p id="ink-trace-resolution-landing">
+    A trace sampled far finer than the figure's pixel width added file size and
+    no visible detail: a 300,000-sample line rendered to a 324 KB SVG, and the
+    altair renderer refused the same series outright at its data-transformer row
+    ceiling. <code>InkStyle</code> (<code>imas_ink/style.py</code>) gains
+    <code>path_simplify_threshold</code> (default <code>1.0</code>) and
+    <code>trace_max_points</code> (default <code>4000</code>).
+    <code>render_to_bytes</code> (<code>imas_ink/io.py</code>) now saves inside a
+    matplotlib <code>rc_context</code> setting <code>path.simplify</code> True and
+    <code>path.simplify_threshold</code> from the style, adding no other
+    matplotlib code path; a caller may pass a style, defaulting to
+    <code>DEFAULT_STYLE</code>. Altair has no equivalent simplification, so
+    <code>_render_timeseries_alt</code> (<code>imas_ink/alt.py</code>) draws a
+    series longer than <code>trace_max_points</code> through a min/max envelope in
+    <code>imas_ink/_decimate.py</code> (<code>_minmax_envelope</code>): the samples
+    are split into <code>trace_max_points / 2</code> consecutive equal-count bins,
+    each contributing its minimum and maximum in time order, so extremes and
+    noise-band width survive while the emitted point count stays within the row
+    ceiling; a series at or below the bound is drawn unchanged. Measure
+    <code>tests/unit/test_trace_resolution.py</code> — three tests, all passing:
+    a 300,000-sample <code>TimeSeries</code> through
+    <code>time_trace_figure_mpl</code> and
+    <code>render_to_bytes(format="svg")</code> yields a 32,819-byte SVG (under the
+    100 KB bound); the same series through <code>_render_timeseries_alt</code>
+    emits 4,000 points (≤ <code>trace_max_points</code>) and still reaches the
+    series' global minimum and maximum; a 500-sample series is drawn with all 500
+    samples. Negative control — with <code>render_to_bytes</code> ignoring
+    <code>path_simplify_threshold</code> (matplotlib's default 0.111) the SVG is
+    324,979 bytes and <code>test_long_trace_svg_is_bounded</code> fails
+    (<code>negative-control.log</code>, EXIT=1). Gate
+    <code>uv run --no-sync pytest -p no:cacheprovider tests/unit</code>: head 405
+    passed / 1 failed / 4 errors / 6 skipped, base (596ad0f) 402 passed / 1 failed /
+    4 errors / 6 skipped — the three extra passes are the new tests and the five
+    failure ids are identical (<code>three_d/test_scene_cutaway.py</code>), so no
+    failure is added.
+    <code>uv run --no-sync ruff check imas_ink tests</code>: 55 findings, identical
+    to the base's 55 (delta zero).
+  </p>
+</section>

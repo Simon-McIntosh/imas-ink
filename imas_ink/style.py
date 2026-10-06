@@ -163,6 +163,17 @@ class InkStyle:
     trace_linewidth: float = 1.2
     trace_markersize: float = 3.0
     trace_linestyle: str = "solid"
+    # Path simplification tolerance used when a matplotlib figure is drawn.
+    # Raised above matplotlib's 0.111 default so a trace sampled far finer
+    # than the figure's horizontal resolution loses vertices no reader can
+    # see (the drawn curve is unchanged at display resolution).
+    path_simplify_threshold: float = 1.0
+    # Most samples one trace contributes to a figure.  Matplotlib reduces a
+    # long line to display resolution when it is drawn; Altair does not, and
+    # its data transformer refuses more than a few thousand rows, so a series
+    # longer than this bound is drawn through a min/max envelope holding at
+    # most this many points.  Kept below Altair's row ceiling.
+    trace_max_points: int = 4000
 
     # Altair
     altair_width: int = 500
