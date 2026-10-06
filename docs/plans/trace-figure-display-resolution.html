@@ -4,24 +4,26 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="docs-project"   content="imas-ink">
-  <meta name="reckon-type"    content="plan">
-  <meta name="plan-slug"      content="trace-figure-display-resolution">
-  <meta name="plan-title"     content="Trace Figure Display Resolution">
-  <meta name="plan-summary"   content="Draw long time traces at display resolution and label a stacked trace figure's time axis once, so trace SVGs stay small and uncluttered">
-  <meta name="plan-status"    content="draft">
-  <meta name="plan-roi"       content="mid">
+  <meta name="reckon-type" content="plan">
+  <meta name="plan-slug" content="trace-figure-display-resolution">
+  <meta name="plan-title" content="Trace Figure Display Resolution">
+  <meta name="plan-summary" content="Draw long time traces at display resolution and label a stacked trace figure&#x27;s time axis once, so trace SVGs stay small and uncluttered">
+  <meta name="plan-status" content="draft">
+  <meta name="plan-roi" content="mid">
   <meta name="plan-effort-hours" content="1.5">
   <meta name="plan-capability-version" content="1.0">
   <meta name="plan-capability-class" content="general">
   <meta name="plan-capability-reasoning" content="standard">
   <meta name="plan-capability-verification" content="strict">
   <meta name="plan-capability-risk" content="low">
-  <meta name="plan-owner"     content="Simon McIntosh">
-  <meta name="plan-tags"      content="figures">
-  <meta name="plan-informs"   content="imas-ambix:jt60sa-geometry-and-signal-figures">
+  <meta name="plan-owner" content="Simon McIntosh">
+  <meta name="plan-tags" content="figures">
+  <meta name="plan-informs" content="imas-ambix:jt60sa-geometry-and-signal-figures">
   <title>Trace Figure Display Resolution | imas-ink</title>
   <link rel="stylesheet" href="/_shared/foundation.css">
   <link rel="stylesheet" href="/_shared/dashboard.css">
+<meta name="plan-version" content="1">
+<meta name="plan-modified" content="2026-10-06">
 </head>
 <body>
   <main class="plan-doc">
@@ -65,14 +67,19 @@
       it (the base carries 55).
     </p>
 
-    <h2 id="s2">§2 — Label a stacked trace figure's time axis once</h2>
+    <h2 id="s2">§2 — Label the matplotlib trace stack's time axis once</h2>
     <section data-reckon="section" data-id="s2" data-effort-hours="0.5" data-capability-version="1.0" data-capability-class="general" data-capability-reasoning="standard" data-capability-verification="strict" data-capability-risk="low" data-status="implementable" data-links=""></section>
     <p>
       <code>_render_timeseries_mpl</code> sets <code>Time [s]</code> as the x-label of every axes it draws,
       so <code>time_trace_figure_mpl</code>, whose panels share one time axis, repeats the label under every
-      panel. This section has <code>time_trace_figure_mpl</code> clear the x-label of every panel but the
-      bottom one after drawing, leaving the renderer unchanged so a single trace drawn through
-      <code>render_mpl</code> keeps its label. It adds no public name.
+      panel. The renderer already owns panel-label suppression through its private <code>label_axes</code>
+      keyword, so this section extends that mechanism rather than clearing labels after drawing:
+      <code>_render_timeseries_mpl</code> gains a second private keyword, <code>label_time</code> (default
+      true), that alone controls the <code>Time [s]</code> x-label, and <code>time_trace_figure_mpl</code>
+      passes <code>label_time=False</code> for every panel but the bottom one; a single trace drawn through
+      <code>render_mpl</code> keeps its label. The altair stack the MCP server builds in
+      <code>imas_ink/server/mcp.py</code> repeats its time title too, but it is a served application outside
+      the matplotlib figures this plan serves and is left unchanged. It adds no public name.
     </p>
     <p>
       Done-when: a test in <code>tests/unit/test_trace_resolution.py</code> builds a three-panel trace figure
@@ -83,13 +90,13 @@
     </p>
 
     <section data-reckon="followups" id="followups" class="r-followups">
-      <h2><span class="sec">§</span> Followups</h2>
-      <article class="r-fu" data-id="f-tfdr-001" data-status="open" data-capability-version="1.0" data-capability-class="general" data-written-by="reckon-create" data-written-at="2026-10-06" data-recommends-skill="/reckon-build trace-figure-display-resolution §1" data-resolved-at="" data-resolved-by="">
-        <h4 class="r-fu-title">Decimate long traces, then label the shared time axis once</h4>
-        <div class="r-fu-body"><p>Two sequential nodes; imas-ambix's JT-60SA signal figures re-render once both land.</p></div>
-        <pre class="r-fu-prompt">/reckon-build trace-figure-display-resolution §1</pre>
-      </article>
-    </section>
+<h2><span class="sec">§</span> Followups</h2>
+<article class="r-fu" data-id="f-tfdr-001" data-status="open" data-capability-version="1.0" data-capability-class="general" data-written-by="reckon-create" data-written-at="2026-10-06" data-recommends-skill="/reckon-build trace-figure-display-resolution §1" data-resolved-at="" data-resolved-by="">
+    <h4 class="r-fu-title">Decimate long traces, then label the shared time axis once</h4>
+    <div class="r-fu-body"><p>Two sequential nodes; imas-ambix's JT-60SA signal figures re-render once both land.</p></div>
+    <pre class="r-fu-prompt">/reckon-build trace-figure-display-resolution §1</pre>
+    </article>
+</section>
   </main>
 </body>
 </html>
