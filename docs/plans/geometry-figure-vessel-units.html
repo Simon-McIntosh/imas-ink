@@ -22,7 +22,7 @@
   <title>Geometry Figure Vessel Units | imas-ink</title>
   <link rel="stylesheet" href="/_shared/foundation.css">
   <link rel="stylesheet" href="/_shared/dashboard.css">
-<meta name="plan-version" content="13">
+<meta name="plan-version" content="14">
 <meta name="plan-modified" content="2026-10-06">
 <meta name="plan-section-declarations" content="{&quot;s1&quot;:&quot;done&quot;,&quot;s2&quot;:&quot;done&quot;,&quot;s3&quot;:&quot;implementable&quot;,&quot;s4&quot;:&quot;implementable&quot;}">
 <meta name="plan-commits" content="03d9593,94bd8f3,3dc98af,aca351d">
@@ -126,6 +126,9 @@
 </div>
 <div class="r-comment" data-section="s2" data-id="c-run-r-20261006T114715285709-ink-compose-phases" data-who="reckon-build" data-when="2026-10-06T11:56:43.933Z">
     <div class="r-comment-body"><p>ink-compose-phases — geometry_figure_mpl takes an optional ax and draws into it (returning its figure, creating none; unchanged without it), InkStyle gains wall_linestyle (default solid) applied by _render_wall_mpl and _render_wall_alt to limiter outlines and vessel shells, and 4 new tests pass with the full unit gate adding no failure against base (head 397 passed / 1 failed / 4 errors vs base 393 / 1 / 4, same five three_d ids) and ruff 55 = base 55.</p></div>
+</div>
+<div class="r-comment" data-section="s2" data-id="c-run-r-20261006T115709167755-review-of-ink-compose-phases" data-who="reckon-build" data-when="2026-10-06T12:01:45.930Z">
+    <div class="r-comment-body"><p>review-of-ink-compose-phases — recorded a parsed independent review of run r-20261006T114715285709-ink-compose-phases (head 3dc98af, base 5fad354): goal_fidelity 20, evidence 19, scope_discipline 20, durability 18, fit 19, reuse 19 (total 115), added_failure_count 0 with no added ids, one follow-on finding (the altair WALL_STROKE_DASH map silently falls back to solid for matplotlib shorthand linestyle names such as &quot;--&quot;/&quot;:&quot; so the two renderers diverge outside the four mapped names).</p></div>
 </div>
 </section>
 </main>
