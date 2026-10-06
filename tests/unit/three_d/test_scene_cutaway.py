@@ -1,4 +1,4 @@
-"""Tests for render_cutaway_with_flux — the Phase 7 composer."""
+"""Tests for render_cutaway_with_flux — the cutaway-with-flux composer."""
 
 from __future__ import annotations
 
@@ -88,7 +88,7 @@ def _make_first_wall():
 
 @pytest.fixture
 def mock_build_static():
-    """Patch _build_cutaway_static to return synthetic geometry."""
+    """Patch _build_cutaway_geometry to return synthetic geometry."""
     capped = _make_capped_mesh("first_wall")
     fw = _make_first_wall()
 
@@ -97,7 +97,7 @@ def mock_build_static():
         return blocks, fw
 
     with patch(
-        "imas_ink.three_d.scene._build_cutaway_static",
+        "imas_ink.three_d.scene._build_cutaway_geometry",
         side_effect=_fake_build,
     ) as m:
         yield m
@@ -193,7 +193,7 @@ class TestRenderCutawaySynthetic:
         assert outfile.stat().st_size > 1024
 
     def test_build_static_called_once(self, mock_imas_entry, mock_build_static, tmp_path):
-        """_build_cutaway_static is called exactly once per render."""
+        """_build_cutaway_geometry is called exactly once per render."""
         from imas_ink.three_d.scene import render_cutaway_with_flux
 
         outfile = tmp_path / "count.png"
@@ -212,14 +212,14 @@ class TestRenderCutawaySynthetic:
         mock_build_static.assert_called_once()
 
     def test_no_wall_renders_without_overlay(self, mock_imas_entry, tmp_path):
-        """When _build_cutaway_static returns no first_wall, overlay is skipped."""
+        """When _build_cutaway_geometry returns no first_wall, overlay is skipped."""
         from imas_ink.three_d.scene import render_cutaway_with_flux
 
         def _no_wall_build(**kwargs):
             return {}, None
 
         with patch(
-            "imas_ink.three_d.scene._build_cutaway_static",
+            "imas_ink.three_d.scene._build_cutaway_geometry",
             side_effect=_no_wall_build,
         ):
             outfile = tmp_path / "no_wall.png"
