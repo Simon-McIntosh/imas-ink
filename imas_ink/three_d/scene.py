@@ -554,6 +554,7 @@ def render_cutaway_with_flux(
 
     # -- Add flux overlay -----------------------------------------------
     if overlay is not None:
+        fw_capped = clipped_blocks.get("first_wall")
         cap = fw_capped.cap
         normal_vec = clip_plane.normal
 
