@@ -23,7 +23,7 @@
   <title>imas-ink Suite Green | imas-ink</title>
   <link rel="stylesheet" href="/_shared/foundation.css">
   <link rel="stylesheet" href="/_shared/dashboard.css">
-<meta name="plan-version" content="11">
+<meta name="plan-version" content="12">
 <meta name="plan-modified" content="2026-10-06">
 </head>
 <body>
@@ -85,6 +85,9 @@
 </div>
 <div class="r-comment" data-section="s2" data-id="c-run-r-20261006T171549762429-review-of-ink-lint-sweep" data-who="reckon-build" data-when="2026-10-06T17:24:30.821Z">
     <div class="r-comment-body"><p>Reviewed r-20261006T165928994809-ink-lint-sweep at head 54e491b against base 1564fc72; the behaviour-neutral ruff sweep and the separated B017 assertion are correct, in scope, and guarded; parsed record scores 19/20/20/20/20/20 (119/120) with no findings and added_failure_count 0; the orchestrator owns promotion and merge.</p></div>
+</div>
+<div class="r-comment" data-section="s3" data-id="c-run-r-20261006T172709090844-ink-ruff-config-format" data-who="reckon-build" data-when="2026-10-06T17:33:56.856Z">
+    <div class="r-comment-body"><p>.ruff.toml is deleted in its own commit (a5196af) leaving pyproject.toml the single ruff config — ruff check --show-settings imas_ink/__init__.py now names pyproject.toml and lists the tests/** B011/SIM117 and examples/** E402 ignores; a style(format): commit (8034d2a) reformats the 19 files ruff format --no-sync named; measure: uv run --no-sync ruff check . and ruff format --check . both exit 0 and the suite is unchanged at 418 passed / 6 skipped / 0 failed.</p></div>
 </div>
 </section>
 </main>
