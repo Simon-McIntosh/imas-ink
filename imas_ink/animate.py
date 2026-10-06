@@ -16,6 +16,8 @@ def animate_pulse(
     duration_s: float = 10.0,
     dpi: int = 90,
     mask_pfr_flag: bool = True,
+    show_probes: bool = True,
+    show_flux_loops: bool = True,
 ) -> bytes:
     """Render a full-pulse GIF animation of poloidal cross-sections.
 
@@ -38,6 +40,12 @@ def animate_pulse(
         DPI for each frame.
     mask_pfr_flag : bool
         Whether to apply PFR masking.
+    show_probes : bool
+        Whether to render magnetic probe markers on each frame. Passed
+        through to :func:`equilibrium_figure_mpl`.
+    show_flux_loops : bool
+        Whether to render flux loop markers on each frame. Passed through
+        to :func:`equilibrium_figure_mpl`.
 
     Returns
     -------
@@ -83,6 +91,8 @@ def animate_pulse(
             style=style,
             figsize=figsize,
             mask_pfr_flag=mask_pfr_flag,
+            show_probes=show_probes,
+            show_flux_loops=show_flux_loops,
         )
         fig.set_dpi(dpi)
 

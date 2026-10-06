@@ -353,6 +353,8 @@ class PlotProvider:
         uri: str,
         duration_s: float = 10.0,
         n_levels: int = 6,
+        show_probes: bool = True,
+        show_flux_loops: bool = True,
     ) -> str:
         """Render a full-pulse GIF animation. Returns base64-encoded GIF.
 
@@ -364,6 +366,10 @@ class PlotProvider:
             Total GIF duration in seconds.
         n_levels : int
             Number of interior flux surface contours.
+        show_probes : bool
+            Whether to show magnetic probe markers on each frame.
+        show_flux_loops : bool
+            Whether to show flux loop position markers on each frame.
 
         Returns
         -------
@@ -387,7 +393,14 @@ class PlotProvider:
         style = (
             InkStyle(flux_n_levels=n_levels) if n_levels != DEFAULT_STYLE.flux_n_levels else None
         )
-        gif_bytes = _animate(eq, geom, style=style, duration_s=duration_s)
+        gif_bytes = _animate(
+            eq,
+            geom,
+            style=style,
+            duration_s=duration_s,
+            show_probes=show_probes,
+            show_flux_loops=show_flux_loops,
+        )
         return base64.b64encode(gif_bytes).decode("ascii")
 
     async def plot_radial_profiles(
