@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="docs-project" content="imas-ink">
+  <meta name="reckon-type" content="evidence">
+  <meta name="plan-slug" content="trace-figure-display-resolution-landed">
+  <meta name="plan-title" content="Trace Figure Display Resolution — landed record">
+  <meta name="plan-summary" content="Closure synthesis for Trace Figure Display Resolution: 0 committed run(s), 0 section-anchored comment(s), and 0 landed commit(s).">
+  <meta name="plan-evidence-for" content="trace-figure-display-resolution">
+  <meta name="plan-verdict" content="qualified">
+  <title>Trace Figure Display Resolution — landed record | imas-ink</title>
+  <link rel="stylesheet" href="/_shared/foundation.css">
+  <link rel="stylesheet" href="/_shared/dashboard.css">
+</head>
+<body>
+ <main class="plan-doc">
+  <h1>Trace Figure Display Resolution — landed record</h1>
+  <p>Closure synthesis for Trace Figure Display Resolution: 0 committed run(s), 0 section-anchored comment(s), and 0 landed commit(s).</p>
+
+
+   <section id="s1">
+    <h2>§1 — long traces drawn at display resolution</h2>
+    <p><code>InkStyle</code> gained <code>path_simplify_threshold</code> (1.0) and <code>trace_max_points</code> (4000). <code>render_to_bytes</code> saves under an <code>rc_context</code> that sets <code>path.simplify</code> and the style's threshold. It also takes an optional <code>style</code> argument, so a non-default threshold reaches the save. <code>_render_timeseries_alt</code> draws a series longer than <code>trace_max_points</code> through <code>_minmax_envelope</code> in the private module <code>imas_ink/_decimate.py</code>.</p><p><code>tests/unit/test_trace_resolution.py</code> has three tests, all passing. A 300,000-sample trace saves to an SVG under 100 KB: the reviewer measured 51,648 bytes, stable across runs. The worker's first figure of 32,819 bytes did not reproduce and was corrected in the fragment. The altair renderer emits 4,000 points and reaches the series' global extremes, and a 500-sample series is drawn whole. Negative control: when <code>render_to_bytes</code> ignores the threshold, the SVG is 324,979 bytes and the size test fails.</p><p><code>tests/unit</code> gave 405 passed against 402 at base 596ad0f. Both have the same 1 failure and 4 errors, all in <code>test_scene_cutaway</code> and all pre-existing. Ruff reported 55 findings at base and at head. The review (run <code>r-20261006T131719915776-review-of-ink-trace-resolution</code>) scored durability, fit, goal fidelity, reuse and scope 20 each, and evidence 19.</p>
+  </section>
+
+</main>
+</body>
+</html>

@@ -22,8 +22,9 @@
   <title>Trace Figure Display Resolution | imas-ink</title>
   <link rel="stylesheet" href="/_shared/foundation.css">
   <link rel="stylesheet" href="/_shared/dashboard.css">
-<meta name="plan-version" content="3">
+<meta name="plan-version" content="4">
 <meta name="plan-modified" content="2026-10-06">
+<meta name="plan-section-declarations" content="{&quot;s1&quot;:&quot;done&quot;}">
 </head>
 <body>
   <main class="plan-doc">
@@ -40,39 +41,12 @@
       </p>
     </header>
 
+    <section class="section-landed">
+  <header><span class="badge badge-shipped">&#10003; landed 2026-10-06</span>
     <h2 id="s1">§1 — Draw long traces through a min/max envelope</h2>
-    <section data-reckon="section" data-id="s1" data-effort-hours="1.0" data-capability-version="1.0" data-capability-class="general" data-capability-reasoning="standard" data-capability-verification="strict" data-capability-risk="low" data-status="implementable" data-links=""></section>
-    <p>
-      <code>_render_timeseries_mpl</code> (<code>imas_ink/mpl.py</code>) and <code>_render_timeseries_alt</code>
-      (<code>imas_ink/alt.py</code>) plot every sample of a <code>TimeSeries</code>. A figure is read at a few
-      thousand horizontal pixels, so a longer series adds file size and nothing a reader can see. The two
-      backends get the bound from different owners. Matplotlib already simplifies a path to display
-      resolution when the figure is drawn, through <code>rcParams["path.simplify_threshold"]</code>: measured
-      on a 300,000-sample line it gives about 8,900 vertices (232&nbsp;KB of SVG) at the default 0.111 and
-      about 1,050 (37&nbsp;KB) at 1.0. Because the threshold is read when the figure is saved, the owner is
-      imas-ink's save function, <code>render_to_bytes</code> (<code>imas_ink/io.py</code>), which saves under
-      an <code>rc_context</code> setting <code>path.simplify</code> and a new <code>InkStyle</code> constant,
-      <code>path_simplify_threshold</code> (default 1.0); no new matplotlib code path is added. Altair has no
-      such simplification, and its default data transformer refuses a chart of more than 5,000 rows
-      (<code>MaxRowsError</code>), so a long series cannot be drawn in altair at all today;
-      <code>_render_timeseries_alt</code> therefore draws a series longer than a second constant,
-      <code>trace_max_points</code> (default 4000, below that limit), through a min/max envelope: the samples are
-      split into <code>trace_max_points / 2</code> consecutive equal-count bins, each contributing its minimum
-      and maximum in time order, so the extremes, spikes and noise-band width survive. The envelope is one
-      private function in a private module, <code>imas_ink/_decimate.py</code>. The two constants retire
-      nothing, because no style field bounds a figure's path resolution today, and the section adds no
-      other public name.
-    </p>
-    <p>
-      Done-when: a test in <code>tests/unit/test_trace_resolution.py</code> renders a 300,000-sample
-      <code>TimeSeries</code> through <code>time_trace_figure_mpl</code> and <code>render_to_bytes(...,
-      format="svg")</code> and asserts the SVG is under 100&nbsp;KB, asserts the altair renderer emits at most
-      <code>trace_max_points</code> points for that series and still reaches its global minimum and maximum,
-      and asserts a series shorter than the limit is drawn in altair with all its samples; it fails when
-      <code>render_to_bytes</code> ignores <code>path_simplify_threshold</code>. <code>uv run --no-sync pytest -p no:cacheprovider tests/unit</code> adds no failure against
-      the base revision, and <code>uv run --no-sync ruff check imas_ink tests</code> adds no finding against
-      it (the base carries 55).
-    </p>
+<section data-reckon="section" data-id="s1" data-effort-hours="1.0" data-capability-version="1.0" data-capability-class="general" data-capability-reasoning="standard" data-capability-verification="strict" data-capability-risk="low" data-status="done" data-links=""></section></header>
+  <p class="landed-summary">Landed <code>imas_ink/_decimate.py</code>, plus <code>InkStyle.path_simplify_threshold</code> (1.0) and <code>trace_max_points</code> (4000). <code>render_to_bytes</code> now saves under path simplification, and altair draws a long series through a min/max envelope. A 300,000-sample trace saves to a 51.6 KB SVG, against 325 KB at matplotlib's default threshold. The altair envelope holds 4,000 points and keeps the global minimum and maximum. Review scored 119/120. <a href="s1">full record</a></p>
+</section>
 
     <h2 id="s2">§2 — Label a stacked matplotlib figure's shared x-axis once</h2>
     <section data-reckon="section" data-id="s2" data-effort-hours="0.5" data-capability-version="1.0" data-capability-class="general" data-capability-reasoning="standard" data-capability-verification="strict" data-capability-risk="low" data-status="implementable" data-links=""></section>

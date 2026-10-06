@@ -23,8 +23,9 @@
     <code>tests/unit/test_trace_resolution.py</code> — three tests, all passing:
     a 300,000-sample <code>TimeSeries</code> through
     <code>time_trace_figure_mpl</code> and
-    <code>render_to_bytes(format="svg")</code> yields a 32,819-byte SVG (under the
-    100 KB bound); the same series through <code>_render_timeseries_alt</code>
+    <code>render_to_bytes(format="svg")</code> yields an SVG under the 100 KB bound
+    (51,648 bytes, stable across runs, as measured by the independent review; the
+    32,819 bytes the worker first quoted did not reproduce); the same series through <code>_render_timeseries_alt</code>
     emits 4,000 points (≤ <code>trace_max_points</code>) and still reaches the
     series' global minimum and maximum; a 500-sample series is drawn with all 500
     samples. Negative control — with <code>render_to_bytes</code> ignoring
