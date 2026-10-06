@@ -22,7 +22,7 @@
   <title>Geometry Figure Vessel Units | imas-ink</title>
   <link rel="stylesheet" href="/_shared/foundation.css">
   <link rel="stylesheet" href="/_shared/dashboard.css">
-<meta name="plan-version" content="3">
+<meta name="plan-version" content="4">
 <meta name="plan-modified" content="2026-10-06">
 <meta name="plan-section-declarations" content="{&quot;s1&quot;:&quot;implementable&quot;,&quot;s2&quot;:&quot;implementable&quot;,&quot;s3&quot;:&quot;implementable&quot;}">
 </head>
@@ -69,7 +69,10 @@
       geometry, not a call of its own: the <code>WallOutline</code> component
       (<code>imas_ink/components.py</code>) gains the vessel shells beside its <code>wall_units</code>, and
       <code>_render_wall_mpl</code> (<code>imas_ink/mpl.py</code>) and <code>_render_wall_alt</code>
-      (<code>imas_ink/alt.py</code>) draw them as unfilled lines in the wall's ink style, so
+      (<code>imas_ink/alt.py</code>) draw them as unfilled lines in the wall's ink style. The altair
+      renderer today plots only <code>wall_r</code>/<code>wall_z</code> and drops every limiter unit past
+      the first, so it first gains the same loop over <code>wall_units</code> the matplotlib renderer
+      already has, and the vessel shells join that loop in both, so
       <code>geometry_figure_mpl</code> and <code>equilibrium_chart_alt</code> both show the vessel by
       passing the shells to the <code>WallOutline</code> they already build, and the viewport covers the
       shells. A new <code>InkStyle</code> constant is
@@ -83,7 +86,7 @@
       <code>outline_outer</code> are filled, and asserts that <code>extract_vessel_shells</code> returns two
       closed shells, that a geometry whose richest <code>description_2d</code> entry is not index 0 takes its
       vessel from that entry, and that <code>geometry_figure_mpl</code> adds both shells' lines to the axes
-      through <code>render_mpl</code>, with <code>_render_wall_alt</code> emitting a mark for them too; it fails
+      through <code>render_mpl</code>, with <code>_render_wall_alt</code> emitting a mark for every limiter unit and both shells; it fails
       when <code>extract_vessel_shells</code> ignores those outlines. <code>uv run --no-sync pytest -p
       no:cacheprovider tests/unit</code> adds no failure against the base revision, and <code>uv run
       --no-sync ruff check imas_ink tests</code> exits 0.
@@ -104,7 +107,9 @@
       so a caller draws a reference state with <code>replace(DEFAULT_STYLE,
       wall_linestyle=DEFAULT_STYLE.ref_lcfs_linestyle)</code>, reusing the dashed reference vocabulary
       the style already carries rather than a new one. Nothing else changes: called without
-      <code>ax</code>, the figure is drawn exactly as today.
+      <code>ax</code>, the figure is drawn exactly as today. <code>wall_linestyle</code> retires nothing,
+      because no style field sets the wall's line style today; it is this section's one public
+      addition beside the <code>ax</code> argument.
     </p>
     <p>
       Done-when: a test in <code>tests/unit/test_vessel_units.py</code> draws two geometries into two
@@ -126,9 +131,11 @@
       JT-60SA signal figures need exactly that: each processed flux-loop channel against the raw
       channel of the same index. This section lets <code>time_trace_figure_mpl</code> take a panel as
       either one <code>TimeSeries</code> or a list of them drawn on the same axes through
-      <code>render_mpl</code>, and adds one <code>InkStyle</code> constant, <code>trace_linestyle</code>
-      (default solid), which <code>_render_timeseries_mpl</code> and <code>_render_timeseries_alt</code>
-      (<code>imas_ink/alt.py</code>) apply together with the style's trace colour, so a caller marks the
+      <code>render_mpl</code>, and adds two <code>InkStyle</code> constants, <code>trace_color</code> (the ink black the wall
+      uses) and <code>trace_linestyle</code> (default solid), which <code>_render_timeseries_mpl</code> and
+      <code>_render_timeseries_alt</code> (<code>imas_ink/alt.py</code>) apply; today neither renderer
+      passes a colour, so traces take matplotlib's cycle and Altair's default, and the two constants
+      retire nothing because no style field sets a trace's colour or line style. A caller marks the
       second series with <code>replace(DEFAULT_STYLE, trace_linestyle=DEFAULT_STYLE.ref_lcfs_linestyle)</code>.
       A panel given as a single <code>TimeSeries</code> is drawn exactly as today, apart from taking the
       style's trace colour rather than the cycle's.
@@ -136,7 +143,7 @@
     <p>
       Done-when: a test in <code>tests/unit/test_vessel_units.py</code> builds a figure whose one panel
       holds two <code>TimeSeries</code>, asserts both lines are on that panel's axes with the second
-      dashed and both in the style's trace colour, and asserts a single-series panel still draws one
+      dashed and both in <code>trace_color</code>, and asserts a single-series panel still draws one
       line; the existing trace-figure tests pass; <code>uv run --no-sync pytest -p no:cacheprovider
       tests/unit</code> adds no failure against the base revision, and <code>uv run --no-sync ruff check
       imas_ink tests</code> exits 0.
