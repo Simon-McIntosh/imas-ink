@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="docs-project"   content="imas-ink">
+  <meta name="reckon-type"    content="plan">
+  <meta name="plan-slug"      content="trace-figure-display-resolution">
+  <meta name="plan-title"     content="Trace Figure Display Resolution">
+  <meta name="plan-summary"   content="Draw long time traces at display resolution and label a stacked trace figure's time axis once, so trace SVGs stay small and uncluttered">
+  <meta name="plan-status"    content="draft">
+  <meta name="plan-roi"       content="mid">
+  <meta name="plan-effort-hours" content="1.5">
+  <meta name="plan-capability-version" content="1.0">
+  <meta name="plan-capability-class" content="general">
+  <meta name="plan-capability-reasoning" content="standard">
+  <meta name="plan-capability-verification" content="strict">
+  <meta name="plan-capability-risk" content="low">
+  <meta name="plan-owner"     content="Simon McIntosh">
+  <meta name="plan-tags"      content="figures">
+  <meta name="plan-informs"   content="imas-ambix:jt60sa-geometry-and-signal-figures">
+  <title>Trace Figure Display Resolution | imas-ink</title>
+  <link rel="stylesheet" href="/_shared/foundation.css">
+  <link rel="stylesheet" href="/_shared/dashboard.css">
+</head>
+<body>
+  <main class="plan-doc">
+    <header>
+      <p class="eyebrow">Traces drawn at the resolution they are read</p>
+      <h1>Trace Figure Display Resolution</h1>
+      <p class="lead">
+        imas-ambix's JT-60SA signal figures, rendered through <code>time_trace_figure_mpl</code>, came out
+        at 1.7&ndash;3.4&nbsp;MB per SVG because every one of up to 310,077 cached samples per trace is written
+        as a path vertex, and every panel of the stack repeats the time-axis label. The lead ruled on
+        2026-10-06 that any drawing the figures lack is added to imas-ink (imas-ambix plan
+        <code>jt60sa-geometry-and-signal-figures</code>, decision <code>figure-owner</code>) and that one SVG
+        per figure suffices; this plan makes those SVGs small and uncluttered at the renderer.
+      </p>
+    </header>
+
+    <h2 id="s1">§1 — Draw long traces through a min/max envelope</h2>
+    <section data-reckon="section" data-id="s1" data-effort-hours="1.0" data-capability-version="1.0" data-capability-class="general" data-capability-reasoning="standard" data-capability-verification="strict" data-capability-risk="low" data-status="implementable" data-links=""></section>
+    <p>
+      <code>_render_timeseries_mpl</code> (<code>imas_ink/mpl.py</code>) and <code>_render_timeseries_alt</code>
+      (<code>imas_ink/alt.py</code>) plot every sample of a <code>TimeSeries</code>. A figure is read at a few
+      thousand horizontal pixels, so a longer series adds file size and nothing a reader can see. This
+      section adds one <code>InkStyle</code> constant, <code>trace_max_points</code> (default 4000), and draws a
+      series longer than it through a min/max envelope: the samples are split into
+      <code>trace_max_points / 2</code> consecutive equal-count bins, and each bin contributes its minimum
+      and maximum sample in time order, so the global extremes, every spike and the width of a noise band
+      survive while the drawn path has at most <code>trace_max_points</code> vertices. A series at or below
+      the limit is drawn exactly as today. The envelope is one private function in a private module,
+      <code>imas_ink/_decimate.py</code>, because both renderers need it and neither may import the
+      other's plotting library; it adds no public name, and <code>trace_max_points</code> retires nothing,
+      because no style field bounds a trace's resolution today.
+    </p>
+    <p>
+      Done-when: a test in <code>tests/unit/test_trace_resolution.py</code> renders a 300,000-sample
+      <code>TimeSeries</code> through <code>time_trace_figure_mpl</code> and asserts the drawn line has at
+      most <code>trace_max_points</code> vertices and still reaches the series' global minimum and maximum,
+      asserts a series shorter than the limit is drawn with all its samples, and asserts the altair renderer
+      emits at most <code>trace_max_points</code> points for the long series; it fails when the envelope is
+      bypassed. <code>uv run --no-sync pytest -p no:cacheprovider tests/unit</code> adds no failure against
+      the base revision, and <code>uv run --no-sync ruff check imas_ink tests</code> adds no finding against
+      it (the base carries 55).
+    </p>
+
+    <h2 id="s2">§2 — Label a stacked trace figure's time axis once</h2>
+    <section data-reckon="section" data-id="s2" data-effort-hours="0.5" data-capability-version="1.0" data-capability-class="general" data-capability-reasoning="standard" data-capability-verification="strict" data-capability-risk="low" data-status="implementable" data-links=""></section>
+    <p>
+      <code>_render_timeseries_mpl</code> sets <code>Time [s]</code> as the x-label of every axes it draws,
+      so <code>time_trace_figure_mpl</code>, whose panels share one time axis, repeats the label under every
+      panel. This section has <code>time_trace_figure_mpl</code> clear the x-label of every panel but the
+      bottom one after drawing, leaving the renderer unchanged so a single trace drawn through
+      <code>render_mpl</code> keeps its label. It adds no public name.
+    </p>
+    <p>
+      Done-when: a test in <code>tests/unit/test_trace_resolution.py</code> builds a three-panel trace figure
+      and asserts only the bottom axes carries the <code>Time [s]</code> x-label, and that a single series
+      drawn through <code>render_mpl</code> still carries it; <code>uv run --no-sync pytest -p
+      no:cacheprovider tests/unit</code> adds no failure against the base revision, and <code>uv run
+      --no-sync ruff check imas_ink tests</code> adds no finding against it.
+    </p>
+
+    <section data-reckon="followups" id="followups" class="r-followups">
+      <h2><span class="sec">§</span> Followups</h2>
+      <article class="r-fu" data-id="f-tfdr-001" data-status="open" data-capability-version="1.0" data-capability-class="general" data-written-by="reckon-create" data-written-at="2026-10-06" data-recommends-skill="/reckon-build trace-figure-display-resolution §1" data-resolved-at="" data-resolved-by="">
+        <h4 class="r-fu-title">Decimate long traces, then label the shared time axis once</h4>
+        <div class="r-fu-body"><p>Two sequential nodes; imas-ambix's JT-60SA signal figures re-render once both land.</p></div>
+        <pre class="r-fu-prompt">/reckon-build trace-figure-display-resolution §1</pre>
+      </article>
+    </section>
+  </main>
+</body>
+</html>
