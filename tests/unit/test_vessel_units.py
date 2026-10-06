@@ -81,6 +81,37 @@ def _make_two_desc_wall_ids():
     return _ns(description_2d=[desc0, desc1])
 
 
+def _make_one_skin_vessel_unit(*, skin: str):
+    """An annular vessel unit carrying only one of its two outlines.
+
+    The wall IDS permits a unit with just one filled annular outline; the
+    unfilled outline carries the EMPTY sentinel (a zero-length array).
+    """
+    empty = np.array([])
+    r_in, z_in = _closed_ellipse(4.0, 1.0)
+    r_out, z_out = _closed_ellipse(6.0, 1.0)
+    if skin == "outer":
+        inner, outer = _ns(r=empty, z=empty), _ns(r=r_out, z=z_out)
+    else:
+        inner, outer = _ns(r=r_in, z=z_in), _ns(r=empty, z=empty)
+    return _ns(
+        annular=_ns(
+            outline_inner=inner,
+            outline_outer=outer,
+            centreline=_ns(r=empty, z=empty),
+        )
+    )
+
+
+def _make_one_skin_wall_ids(skin: str):
+    """One description_2d with a single annular vessel unit carrying one skin."""
+    desc = _ns(
+        limiter=_ns(unit=[_make_limiter_unit()], type=_ns(index=1)),
+        vessel=_ns(unit=[_make_one_skin_vessel_unit(skin=skin)]),
+    )
+    return _ns(description_2d=[desc])
+
+
 # ---------------------------------------------------------------------------
 # Extraction
 # ---------------------------------------------------------------------------
@@ -109,6 +140,30 @@ class TestExtractVesselShells:
         assert len(geom.vessel_shells) == 2, (
             "vessel must be read from the selected (index 1) entry, not index 0"
         )
+
+
+class TestAnnularOneSkin:
+    def test_outer_only_returns_that_one_closed_shell(self):
+        from imas_ink.extract import extract_vessel_shells
+
+        shells = extract_vessel_shells(_make_one_skin_wall_ids("outer"))
+
+        assert len(shells) == 1, f"expected the one filled outer skin, got {len(shells)}"
+        shell = shells[0]
+        assert shell.name == "vessel_0_outer"
+        assert shell.is_closed is True
+        assert shell.r.max() > 6.9, f"outer skin (r≈7) not returned: {shell.r.max()}"
+
+    def test_inner_only_returns_that_one_closed_shell(self):
+        from imas_ink.extract import extract_vessel_shells
+
+        shells = extract_vessel_shells(_make_one_skin_wall_ids("inner"))
+
+        assert len(shells) == 1, f"expected the one filled inner skin, got {len(shells)}"
+        shell = shells[0]
+        assert shell.name == "vessel_0_inner"
+        assert shell.is_closed is True
+        assert shell.r.max() < 5.1, f"inner skin (r≈5) not returned: {shell.r.max()}"
 
 
 # ---------------------------------------------------------------------------
