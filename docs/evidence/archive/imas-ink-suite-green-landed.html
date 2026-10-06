@@ -25,6 +25,11 @@
     <p>Run <code>r-20261006T164407940956-ink-scene-cutaway-repair</code>, merged at <code>1564fc7</code> (commit <code>89c2f75</code>). <code>render_cutaway_with_flux</code> takes the first-wall cap from <code>clipped_blocks</code> before drawing the overlay, as <code>_build_cutaway_overlay</code> does, so the dangling <code>fw_capped</code> read is gone. The five <code>TestRenderCutawaySynthetic</code> tests patch <code>_build_cutaway_geometry</code>. Before the repair: 1 failed, 4 errors. After: <code>tests/unit/three_d/</code> 64 passed, the whole suite 418 passed, 6 skipped, 0 failed, 0 errors, and <code>ruff --select F821</code> is clean. Negative control: restoring the dangling read turns the four overlay-drawing tests red with <code>NameError</code> at <code>scene.py:557</code>. Independent review: 119/120, no added failures.</p>
   </section>
 
+  <section id="s2">
+    <h2>§2 — the ruff backlog cleared</h2>
+    <p>Run <code>r-20261006T165928994809-ink-lint-sweep</code>, merged at <code>ef929ab</code>. The <code>style(lint)</code> commit <code>37cab9d</code> clears all 55 findings across 19 files (+83/−92), and <code>ruff check imas_ink tests</code> exits 0. The one finding whose fix changes behaviour is the separate commit <code>89ff7ec</code>, which pins the frozen-slice test to <code>dataclasses.FrozenInstanceError</code> rather than a bare <code>Exception</code>. <code>imas_ink/__init__.py</code>'s deliberate re-exports went into <code>__all__</code>, each already an importable package attribute. The mathematical minus and times signs in docstrings became their ASCII forms, because <code>.ruff.toml</code>, not <code>pyproject.toml</code>, holds the settings ruff reads. The suite was 418 passed, 6 skipped before and after. Negative control: reverting the sweep returns the 55 findings. Independent review: 119/120, no added failures.</p>
+  </section>
+
 </main>
 </body>
 </html>

@@ -19,11 +19,11 @@
   <meta name="plan-owner" content="Simon McIntosh">
   <meta name="plan-tags" content="test-suite">
   <meta name="plan-standalone" content="It repairs imas-ink&#x27;s own test suite and lint backlog; no plan waits on it and it waits on none.">
-  <meta name="plan-section-declarations" content="{&quot;s1&quot;:&quot;done&quot;,&quot;s2&quot;:&quot;implementable&quot;,&quot;s3&quot;:&quot;implementable&quot;}">
+  <meta name="plan-section-declarations" content="{&quot;s1&quot;:&quot;done&quot;,&quot;s2&quot;:&quot;done&quot;,&quot;s3&quot;:&quot;implementable&quot;}">
   <title>imas-ink Suite Green | imas-ink</title>
   <link rel="stylesheet" href="/_shared/foundation.css">
   <link rel="stylesheet" href="/_shared/dashboard.css">
-<meta name="plan-version" content="6">
+<meta name="plan-version" content="8">
 <meta name="plan-modified" content="2026-10-06">
 </head>
 <body>
@@ -48,41 +48,18 @@
   <p class="landed-summary"><code>render_cutaway_with_flux</code> reads the first-wall cap from <code>clipped_blocks</code>, and the cutaway tests patch <code>_build_cutaway_geometry</code>; merged at <code>1564fc7</code>, whole suite 418 passed with 0 failures and 0 errors, review 119/120. <a href="s1">full record</a></p>
 </section>
 
+    <section class="section-landed">
+  <header><span class="badge badge-shipped">&#10003; landed 2026-10-06</span>
     <h2 id="s2">§2 — Clear the ruff backlog in one behaviour-neutral commit</h2>
-<section data-reckon="section" data-id="s2" data-effort-hours="1.0" data-capability-version="1.0" data-capability-class="general" data-capability-reasoning="standard" data-capability-verification="strict" data-capability-risk="low" data-status="implementable" data-links=""></section>
-    <p>
-      <code>ruff check imas_ink tests</code> reports 56 findings, most of them under
-      <code>imas_ink/three_d/</code>, <code>tests/unit/ink/</code> and <code>tests/unit/three_d/</code>,
-      with 8 in <code>imas_ink/__init__.py</code>. §1 removes one, the F821, because it is the
-      composer's defect. The sweep owns the other 55. By rule: 15 F401 unused imports, 6 I001,
-      6 RUF059, 5 RUF002, 4 RUF003, 4 SIM108, 3 E402, 3 RUF015, 2 RUF001, 2 SIM105, and one each of
-      B017, F841, RUF022, RUF100 and W292. The sweep lands as one <code>style(lint)</code> commit that
-      changes nothing else, after §1, because both sections touch <code>imas_ink/three_d/scene.py</code>
-      and <code>tests/unit/three_d/test_scene_cutaway.py</code>.
-    </p>
-    <p>
-      Each finding is resolved by what it means, never by a blanket <code>noqa</code>. An F401 in
-      <code>imas_ink/__init__.py</code> that is a deliberate re-export goes into <code>__all__</code>
-      rather than being deleted. The B017 assertion on a bare <code>Exception</code> is read as a
-      possible defect: if its fix changes behaviour, it leaves the sweep, lands as its own commit with
-      a test, and the manifest names it. An ambiguous-unicode
-      finding (RUF001, RUF002, RUF003) that is deliberate notation, such as a Greek symbol in a
-      docstring, is kept and allowed through <code>allowed-confusables</code> in
-      <code>pyproject.toml</code>; one that is a typing slip, such as an en dash for a minus sign, is
-      replaced.
-    </p>
-    <p>
-      Done-when: <code>uv run --no-sync ruff check imas_ink tests</code> exits 0, and the whole suite
-      reports the same result after the sweep as before it: no failure and no error once §1 has
-      landed. The sweep commit touches only files ruff flagged, plus <code>pyproject.toml</code> when
-      a confusable is allowed.
-    </p>
+<section data-reckon="section" data-id="s2" data-effort-hours="1.0" data-capability-version="1.0" data-capability-class="general" data-capability-reasoning="standard" data-capability-verification="strict" data-capability-risk="low" data-status="done" data-links=""></section></header>
+  <p class="landed-summary">One <code>style(lint)</code> commit (<code>37cab9d</code>) clears the 55 ruff findings with the suite unchanged at 418 passed; the B017 fix is its own commit (<code>89ff7ec</code>). Merged at <code>ef929ab</code>, review 119/120. <a href="s2">full record</a></p>
+</section>
 
     
 
-    <h2 id="s3">§3 — One ruff configuration, so its settings take effect</h2>
+    <h2 id="s3">§3 — One ruff configuration, and CI's lint job green</h2>
 <section data-reckon="section" data-id="s3" data-effort-hours="0.25" data-capability-version="1.0" data-capability-class="general" data-capability-reasoning="standard" data-capability-verification="strict" data-capability-risk="low" data-status="implementable" data-links=""></section>
-<p>imas-ink carries ruff's configuration twice. <code>.ruff.toml</code> and <code>pyproject.toml</code>'s <code>[tool.ruff]</code> agree on line length, target version, the selected rules and the E501 ignore. Only <code>pyproject.toml</code> also declares per-file ignores: B011 and SIM117 under <code>tests/**</code>, and E402 under <code>examples/**</code>. Ruff reads <code>.ruff.toml</code> in preference to <code>pyproject.toml</code>, so those ignores never apply, and any later edit to <code>pyproject.toml</code>'s ruff section is silently ignored. The lint sweep surfaced this when an <code>allowed-confusables</code> setting could not be placed where the plan said. The section deletes <code>.ruff.toml</code> and keeps <code>pyproject.toml</code> as the one configuration. This only relaxes what the project already declared it wanted relaxed, and changes no source file.</p><p>Done-when: <code>.ruff.toml</code> is gone, <code>ruff check --show-settings imas_ink/__init__.py</code> names <code>pyproject.toml</code> as the settings path and lists the <code>tests/**</code> per-file ignores, <code>uv run --no-sync ruff check imas_ink tests</code> exits 0, and the whole suite is unchanged at 418 passed with no failure or error.</p>
+<p>imas-ink carries ruff's configuration twice. <code>.ruff.toml</code> and <code>pyproject.toml</code>'s <code>[tool.ruff]</code> agree on line length, target version, the selected rules and the E501 ignore. Only <code>pyproject.toml</code> also declares per-file ignores: B011 and SIM117 under <code>tests/**</code>, and E402 under <code>examples/**</code>. Ruff reads <code>.ruff.toml</code> in preference to <code>pyproject.toml</code>, so those ignores never apply, and any later edit to <code>pyproject.toml</code>'s ruff section is silently ignored. The lint sweep surfaced this when an <code>allowed-confusables</code> setting could not be placed where the plan said. The section deletes <code>.ruff.toml</code> and keeps <code>pyproject.toml</code> as the one configuration. That only relaxes what the project already declared it wanted relaxed.</p><p>§2's gate, <code>ruff check imas_ink tests</code>, is narrower than the gate that decides green. CI's lint job (<code>.github/workflows/ci.yml</code>) runs <code>ruff check .</code> and then <code>ruff format --check .</code>. Measured at <code>ef929ab</code>, after §2's merge: <code>ruff check .</code> exits 0, and <code>ruff format --check .</code> would reformat 19 files under <code>imas_ink/</code> and <code>tests/</code>. So the section also formats those files, as one <code>style(format)</code> commit that changes nothing else, separate from the configuration commit. §2 has landed, so this section runs after it.</p><p>Done-when: <code>.ruff.toml</code> is gone, and <code>ruff check --show-settings imas_ink/__init__.py</code> names <code>pyproject.toml</code> as the settings path and lists the <code>tests/**</code> per-file ignores. CI's two lint commands, <code>uv run --no-sync ruff check .</code> and <code>uv run --no-sync ruff format --check .</code>, both exit 0. The whole suite is unchanged at 418 passed with no failure or error. The format commit's subject begins <code>style(format):</code> and touches only the files <code>ruff format --check .</code> named.</p>
 
     <section data-reckon="followups" id="followups" class="r-followups">
 <h2><span class="sec">§</span> Followups</h2>
