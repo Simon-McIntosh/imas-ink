@@ -287,7 +287,7 @@ class TestWallOutlineAlt:
         alt = pytest.importorskip("altair")  # noqa: F841
         from dataclasses import replace
 
-        from imas_ink.alt import WALL_STROKE_DASH, render_alt
+        from imas_ink.alt import STROKE_DASH, render_alt
         from imas_ink.components import WallOutline
         from imas_ink.style import DEFAULT_STYLE
 
@@ -295,7 +295,108 @@ class TestWallOutlineAlt:
         style = replace(DEFAULT_STYLE, wall_linestyle="dashed")
         wall = WallOutline(wall_r=r_lim, wall_z=z_lim, wall_units=[(r_lim, z_lim)], style=style)
         spec = render_alt(wall).to_dict()
-        assert spec["mark"]["strokeDash"] == WALL_STROKE_DASH["dashed"]
+        assert spec["mark"]["strokeDash"] == STROKE_DASH["dashed"]
+
+
+# ---------------------------------------------------------------------------
+# A panel may hold several TimeSeries drawn on shared axes
+# ---------------------------------------------------------------------------
+
+
+class TestTracePanels:
+    def _ts(self, values, *, label="", ylabel="", units="", style=None):
+        from imas_ink.components import TimeSeries
+        from imas_ink.style import DEFAULT_STYLE
+
+        t = np.linspace(0.0, 1.0, 11)
+        return TimeSeries(
+            t,
+            np.asarray(values, dtype=float),
+            label=label,
+            ylabel=ylabel,
+            units=units,
+            style=style if style is not None else DEFAULT_STYLE)
+
+    def test_panel_list_draws_second_in_first_colour_and_style(self):
+        import matplotlib
+        matplotlib.use("Agg")
+        from dataclasses import replace
+
+        import matplotlib.pyplot as plt
+
+        from imas_ink.figures import time_trace_figure_mpl
+        from imas_ink.style import DEFAULT_STYLE
+
+        first_style = replace(DEFAULT_STYLE, trace_linestyle="solid")
+        second_style = replace(DEFAULT_STYLE, trace_linestyle="dashed")
+        first = self._ts([1.0] * 11, ylabel="Ip", units="MA", style=first_style)
+        second = self._ts([2.0] * 11, label="raw", ylabel="other", style=second_style)
+
+        fig, axes = time_trace_figure_mpl([[first, second]])
+        try:
+            ax = axes[0]
+            assert len(ax.lines) == 2, f"expected 2 lines on the panel, got {len(ax.lines)}"
+            first_line, second_line = ax.lines
+            assert second_line.get_linestyle() in ("--", "dashed"), (
+                f"second series not dashed: {second_line.get_linestyle()!r}"
+            )
+            assert second_line.get_color() == first_line.get_color(), (
+                f"second line colour {second_line.get_color()!r} != "
+                f"first {first_line.get_color()!r}"
+            )
+            assert ax.get_ylabel() == "Ip [MA]", (
+                f"panel y-label is the second series', not the first: {ax.get_ylabel()!r}"
+            )
+            assert ax.get_legend() is None, "later series added a legend"
+        finally:
+            plt.close(fig)
+
+    def test_single_series_panel_draws_one_line(self):
+        import matplotlib
+        matplotlib.use("Agg")
+
+        import matplotlib.pyplot as plt
+
+        from imas_ink.figures import time_trace_figure_mpl
+
+        fig, axes = time_trace_figure_mpl([self._ts([1.0] * 11, ylabel="Ip")])
+        try:
+            assert len(axes[0].lines) == 1, (
+                f"single-series panel drew {len(axes[0].lines)} lines"
+            )
+        finally:
+            plt.close(fig)
+
+
+class TestStrokeDashShorthand:
+    def test_wall_and_trace_dash_map_shorthand(self):
+        alt = pytest.importorskip("altair")  # noqa: F841
+        from dataclasses import replace
+
+        from imas_ink.alt import STROKE_DASH, render_alt
+        from imas_ink.components import TimeSeries, WallOutline
+        from imas_ink.style import DEFAULT_STYLE
+
+        # Matplotlib shorthand "for each" resolves to the same pattern the
+        # named form does, in both backends.
+        assert STROKE_DASH["--"] == STROKE_DASH["dashed"]
+        assert STROKE_DASH["-"] == STROKE_DASH["solid"]
+        assert STROKE_DASH[":"] == STROKE_DASH["dotted"]
+        assert STROKE_DASH["-."] == STROKE_DASH["dashdot"]
+
+        style = replace(DEFAULT_STYLE, wall_linestyle="--", trace_linestyle="--")
+        r_lim, z_lim = _closed_ellipse(5.0, 1.0)
+        wall = WallOutline(wall_r=r_lim, wall_z=z_lim, wall_units=[(r_lim, z_lim)], style=style)
+        wall_spec = render_alt(wall).to_dict()
+        assert wall_spec["mark"]["strokeDash"] == STROKE_DASH["dashed"]
+
+        t = np.linspace(0.0, 1.0, 11)
+        ts = TimeSeries(t, t, style=style)
+        trace_spec = render_alt(ts).to_dict()
+        line_mark = trace_spec["layer"][0]["mark"]
+        assert line_mark["strokeDash"] == STROKE_DASH["dashed"], (
+            f"trace mark strokeDash {line_mark.get('strokeDash')!r}"
+        )
 
 
 # ---------------------------------------------------------------------------
