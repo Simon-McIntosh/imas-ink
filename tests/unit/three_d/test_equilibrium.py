@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import dataclasses
 from pathlib import Path
 
 import numpy as np
@@ -130,7 +131,7 @@ class TestExtractSlice2DSynthetic:
         assert slice_2d.boundary_z.size == 5
 
     def test_dataclass_is_frozen(self, slice_2d):
-        with pytest.raises(Exception):
+        with pytest.raises(dataclasses.FrozenInstanceError):
             slice_2d.time = 99.0  # type: ignore[misc]
 
     def test_returns_equilbrium_slice_2d_type(self, slice_2d):
