@@ -22,7 +22,7 @@
   <title>Geometry Figure Vessel Units | imas-ink</title>
   <link rel="stylesheet" href="/_shared/foundation.css">
   <link rel="stylesheet" href="/_shared/dashboard.css">
-<meta name="plan-version" content="15">
+<meta name="plan-version" content="16">
 <meta name="plan-modified" content="2026-10-06">
 <meta name="plan-section-declarations" content="{&quot;s1&quot;:&quot;done&quot;,&quot;s2&quot;:&quot;done&quot;,&quot;s3&quot;:&quot;implementable&quot;,&quot;s4&quot;:&quot;implementable&quot;}">
 <meta name="plan-commits" content="03d9593,94bd8f3,3dc98af,aca351d">
@@ -132,6 +132,9 @@
 </div>
 <div class="r-comment" data-section="s3" data-id="c-20261006T1203-waiver" data-who="reckon-build" data-when="2026-10-06T12:03:00Z">
     <div class="r-comment-body">node ink-trace-panels dispatched with --allow-unreviewed-plan: the only change since the answered v11 design review was the landing collapse of the finished §2 (record-keeping); §3's text is exactly as reviewed. The node also carries §2's review follow-on: the altair dash map accepts matplotlib's shorthand line styles.</div>
+</div>
+<div class="r-comment" data-section="s3" data-id="c-run-r-20261006T120241373754-ink-trace-panels" data-who="reckon-build" data-when="2026-10-06T12:12:17.557Z">
+    <div class="r-comment-body"><p>ink-trace-panels — time_trace_figure_mpl now takes each panel as one TimeSeries or a list of them and draws later series in the first line&#x27;s colour with label_axes=False, InkStyle gains trace_linestyle applied by both renderers, and the altair stroke-dash map accepts matplotlib shorthand forms; measure: tests/unit/test_vessel_units.py 13 passed, unit suite 400 passed vs base 397 with identical 5 failure ids, ruff 55 == base 55.</p></div>
 </div>
 </section>
 </main>
