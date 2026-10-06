@@ -30,6 +30,11 @@
     <p>Run <code>r-20261006T165928994809-ink-lint-sweep</code>, merged at <code>ef929ab</code>. The <code>style(lint)</code> commit <code>37cab9d</code> clears all 55 findings across 19 files (+83/−92), and <code>ruff check imas_ink tests</code> exits 0. The one finding whose fix changes behaviour is the separate commit <code>89ff7ec</code>, which pins the frozen-slice test to <code>dataclasses.FrozenInstanceError</code> rather than a bare <code>Exception</code>. <code>imas_ink/__init__.py</code>'s deliberate re-exports went into <code>__all__</code>, each already an importable package attribute. The mathematical minus and times signs in docstrings became their ASCII forms, because <code>.ruff.toml</code>, not <code>pyproject.toml</code>, holds the settings ruff reads. The suite was 418 passed, 6 skipped before and after. Negative control: reverting the sweep returns the 55 findings. Independent review: 119/120, no added failures.</p>
   </section>
 
+  <section id="s3">
+    <h2>§3 — one ruff configuration, and CI&#x27;s lint job green</h2>
+    <p>Run <code>r-20261006T172709090844-ink-ruff-config-format</code>, merged at <code>f2cee77</code>. Commit <code>a5196af</code> deletes <code>.ruff.toml</code>. <code>ruff check --show-settings</code> now names <code>pyproject.toml</code> and applies its per-file ignores: B011 and SIM117 under <code>tests/**</code>, E402 under <code>examples/**</code>. The <code>style(format)</code> commit <code>8034d2a</code> formats exactly the 19 files <code>ruff format --check .</code> named (+125/−166). At the merged head, CI's two lint commands both pass: <code>ruff check .</code> reports "All checks passed!", and <code>ruff format --check .</code> reports 69 files already formatted. The suite is unchanged at 418 passed, 6 skipped. Negative control: restoring the 19 files' pre-format content makes <code>ruff format --check .</code> exit 1, naming all of them. Independent review: 119/120, no added failures.</p>
+  </section>
+
 </main>
 </body>
 </html>
