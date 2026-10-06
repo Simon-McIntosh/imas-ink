@@ -46,6 +46,10 @@ class InkStyle:
     # Wall
     wall_color: str = "#000000"
     wall_linewidth: float = 1.0
+    # Line style for the limiter outlines and vacuum-vessel shells.  A caller
+    # draws a reference machine state over a primary one by replacing this with
+    # the dashed reference vocabulary (e.g. ``ref_lcfs_linestyle``).
+    wall_linestyle: str = "solid"
 
     # Coils
     coil_edgecolor: str = "#888888"

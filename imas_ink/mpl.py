@@ -374,6 +374,7 @@ def _render_wall_mpl(ax: Axes, wall: WallOutline) -> None:
                 z_u,
                 color=s.wall_color,
                 linewidth=s.wall_linewidth,
+                linestyle=s.wall_linestyle,
                 zorder=s.zorder_wall,
             )
     else:
@@ -382,6 +383,7 @@ def _render_wall_mpl(ax: Axes, wall: WallOutline) -> None:
             wall.wall_z,
             color=s.wall_color,
             linewidth=s.wall_linewidth,
+            linestyle=s.wall_linestyle,
             zorder=s.zorder_wall,
         )
     for shell in getattr(wall, "vessel_shells", None) or []:
@@ -390,6 +392,7 @@ def _render_wall_mpl(ax: Axes, wall: WallOutline) -> None:
             shell.z,
             color=s.wall_color,
             linewidth=s.wall_linewidth,
+            linestyle=s.wall_linestyle,
             zorder=s.zorder_wall,
         )
 

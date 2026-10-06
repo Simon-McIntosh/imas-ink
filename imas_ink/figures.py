@@ -141,6 +141,7 @@ def geometry_figure_mpl(
     figsize: tuple[float, float] = (6, 7),
     show_probes: bool = True,
     show_flux_loops: bool = True,
+    ax: Axes | None = None,
 ) -> tuple[matplotlib.figure.Figure, Axes]:
     """Build a poloidal cross-section showing only machine geometry.
 
@@ -160,6 +161,11 @@ def geometry_figure_mpl(
         If *True* and probe positions are available, render probe markers.
     show_flux_loops : bool
         If *True* and flux loop positions are available, render loop markers.
+    ax : matplotlib.axes.Axes, optional
+        Axes to draw into.  When given, no figure is created: the geometry is
+        drawn onto *ax* and *ax*'s own figure is returned, so a caller can
+        compose several machine states on axes it lays out itself.  When
+        ``None`` (default) a new figure is created as before.
 
     Returns
     -------
@@ -174,7 +180,10 @@ def geometry_figure_mpl(
     if style is None:
         style = DEFAULT_STYLE
 
-    fig, ax = plt.subplots(figsize=figsize, facecolor=style.figure_facecolor)
+    if ax is None:
+        fig, ax = plt.subplots(figsize=figsize, facecolor=style.figure_facecolor)
+    else:
+        fig = ax.get_figure()
 
     # --- geometry components ---
     coils = CoilRects(geom.coil_rects, style=style)

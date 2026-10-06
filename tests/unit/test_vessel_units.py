@@ -59,6 +59,15 @@ def _make_pf_ids():
     return _ns(coil=[])
 
 
+def _make_single_limiter_wall_ids():
+    """One description_2d with a single limiter unit and no vessel."""
+    desc = _ns(
+        limiter=_ns(unit=[_make_limiter_unit()], type=_ns(index=1)),
+        vessel=_ns(unit=[]),
+    )
+    return _ns(description_2d=[desc])
+
+
 def _make_two_desc_wall_ids():
     """desc[0] untyped (index 0 sentinel) missing vessel; desc[1] typed with vessel.
 
@@ -153,6 +162,99 @@ class TestGeometryFigureDrawsShells:
 
 
 # ---------------------------------------------------------------------------
+# Composing two machine states on caller-owned axes
+# ---------------------------------------------------------------------------
+
+class TestGeometryFigureComposesIntoAxes:
+    def _geom_with_vessel(self):
+        from imas_ink.extract import extract_geometry
+
+        return extract_geometry(_make_two_desc_wall_ids(), _make_pf_ids())
+
+    def _geom_limiter_only(self):
+        from imas_ink.extract import extract_geometry
+
+        return extract_geometry(_make_single_limiter_wall_ids(), _make_pf_ids())
+
+    def test_two_geometries_share_one_figure_via_ax(self):
+        import matplotlib
+        matplotlib.use("Agg")
+        import matplotlib.pyplot as plt
+
+        from imas_ink.figures import geometry_figure_mpl
+
+        fig, (ax0, ax1) = plt.subplots(1, 2)
+        n_before = len(plt.get_fignums())
+        try:
+            fig0, ret0 = geometry_figure_mpl(self._geom_limiter_only(), ax=ax0)
+            fig1, ret1 = geometry_figure_mpl(self._geom_with_vessel(), ax=ax1)
+
+            # No figure was created: the figure count is unchanged and each
+            # call returned the caller's own figure and axes.
+            assert len(plt.get_fignums()) == n_before, "geometry_figure_mpl created a figure"
+            assert fig0 is fig and fig1 is fig
+            assert ret0 is ax0 and ret1 is ax1
+
+            # Each axes holds its own geometry's wall lines: one limiter unit
+            # for ax0, one limiter unit plus two vessel shells for ax1.
+            assert len(ax0.lines) == 1, f"ax0: expected 1 wall line, got {len(ax0.lines)}"
+            assert len(ax1.lines) == 3, f"ax1: expected 3 wall lines, got {len(ax1.lines)}"
+        finally:
+            plt.close(fig)
+
+
+# ---------------------------------------------------------------------------
+# Wall / vessel line style follows InkStyle.wall_linestyle
+# ---------------------------------------------------------------------------
+
+class TestWallLinestyle:
+    def _geom(self):
+        from imas_ink.extract import extract_geometry
+
+        return extract_geometry(_make_two_desc_wall_ids(), _make_pf_ids())
+
+    def test_dashed_wall_and_vessel_lines(self):
+        import matplotlib
+        matplotlib.use("Agg")
+        from dataclasses import replace
+
+        import matplotlib.pyplot as plt
+
+        from imas_ink.figures import geometry_figure_mpl
+        from imas_ink.style import DEFAULT_STYLE
+
+        style = replace(DEFAULT_STYLE, wall_linestyle="dashed")
+        fig, ax = geometry_figure_mpl(self._geom(), style=style)
+        try:
+            assert len(ax.lines) == 3
+            for line in ax.lines:
+                assert line.get_linestyle() in ("--", "dashed"), (
+                    f"wall line not dashed: {line.get_linestyle()!r}"
+                )
+        finally:
+            plt.close(fig)
+
+    def test_default_wall_lines_are_solid(self):
+        # Control: the default style draws solid, so the dashed assertion in
+        # the sibling test measures the style field, not a fixed pattern.
+        import matplotlib
+        matplotlib.use("Agg")
+        import matplotlib.pyplot as plt
+
+        from imas_ink.figures import geometry_figure_mpl
+
+        fig, ax = geometry_figure_mpl(self._geom())
+        try:
+            assert len(ax.lines) == 3
+            for line in ax.lines:
+                assert line.get_linestyle() in ("-", "solid"), (
+                    f"wall line not solid: {line.get_linestyle()!r}"
+                )
+        finally:
+            plt.close(fig)
+
+
+# ---------------------------------------------------------------------------
 # Altair renderer emits a mark per limiter unit and per shell
 # ---------------------------------------------------------------------------
 
@@ -180,6 +282,20 @@ class TestWallOutlineAlt:
         chart = render_alt(wall)
         seg_ids = set(chart.data["seg_id"].tolist())
         assert len(seg_ids) == 3, f"expected 3 segments, got {seg_ids}"
+
+    def test_alt_wall_dash_follows_style(self):
+        alt = pytest.importorskip("altair")  # noqa: F841
+        from dataclasses import replace
+
+        from imas_ink.alt import WALL_STROKE_DASH, render_alt
+        from imas_ink.components import WallOutline
+        from imas_ink.style import DEFAULT_STYLE
+
+        r_lim, z_lim = _closed_ellipse(5.0, 1.0)
+        style = replace(DEFAULT_STYLE, wall_linestyle="dashed")
+        wall = WallOutline(wall_r=r_lim, wall_z=z_lim, wall_units=[(r_lim, z_lim)], style=style)
+        spec = render_alt(wall).to_dict()
+        assert spec["mark"]["strokeDash"] == WALL_STROKE_DASH["dashed"]
 
 
 # ---------------------------------------------------------------------------
