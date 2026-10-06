@@ -22,7 +22,7 @@
   <title>Geometry Figure Vessel Units | imas-ink</title>
   <link rel="stylesheet" href="/_shared/foundation.css">
   <link rel="stylesheet" href="/_shared/dashboard.css">
-<meta name="plan-version" content="11">
+<meta name="plan-version" content="12">
 <meta name="plan-modified" content="2026-10-06">
 <meta name="plan-section-declarations" content="{&quot;s1&quot;:&quot;done&quot;,&quot;s2&quot;:&quot;implementable&quot;,&quot;s3&quot;:&quot;implementable&quot;,&quot;s4&quot;:&quot;implementable&quot;}">
 <meta name="plan-commits" content="03d9593,94bd8f3">
@@ -145,6 +145,9 @@
 </div>
 <div class="r-comment" data-section="s1" data-id="c-run-r-20261006T113305690245-review-of-ink-vessel-units" data-who="reckon-build" data-when="2026-10-06T11:38:16.067Z">
     <div class="r-comment-body"><p>Reviewed ink-vessel-units (r-20261006T112102473187) at head 03d9593 against base 5eb401b: goal met, 6/6 dimensions scored (goal_fidelity 19, evidence 16, scope_discipline 20, durability 18, fit 18, reuse 19; total 110), added_failure_count 0, one follow-on finding (annular branch requires both outline_inner and outline_outer filled).</p></div>
+</div>
+<div class="r-comment" data-section="s2" data-id="c-run-r-20261006T114715285709-ink-compose-phases" data-who="reckon-build" data-when="2026-10-06T11:56:43.933Z">
+    <div class="r-comment-body"><p>ink-compose-phases — geometry_figure_mpl takes an optional ax and draws into it (returning its figure, creating none; unchanged without it), InkStyle gains wall_linestyle (default solid) applied by _render_wall_mpl and _render_wall_alt to limiter outlines and vessel shells, and 4 new tests pass with the full unit gate adding no failure against base (head 397 passed / 1 failed / 4 errors vs base 393 / 1 / 4, same five three_d ids) and ruff 55 = base 55.</p></div>
 </div>
 </section>
 </main>
