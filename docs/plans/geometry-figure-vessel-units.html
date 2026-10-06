@@ -7,10 +7,10 @@
   <meta name="reckon-type" content="plan">
   <meta name="plan-slug" content="geometry-figure-vessel-units">
   <meta name="plan-title" content="Geometry Figure Vessel Units">
-  <meta name="plan-summary" content="Draw a wall&#x27;s annular vacuum-vessel skins in the 2D geometry figure through the existing extract_vessel_shells owner">
+  <meta name="plan-summary" content="Draw a wall&#x27;s vessel skins, compose two machine states, and put two traces on one panel, so imas-ambix&#x27;s JT-60SA figures need no drawing of their own">
   <meta name="plan-status" content="draft">
   <meta name="plan-roi" content="mid">
-  <meta name="plan-effort-hours" content="2.5">
+  <meta name="plan-effort-hours" content="3.5">
   <meta name="plan-capability-version" content="1.0">
   <meta name="plan-capability-class" content="general">
   <meta name="plan-capability-reasoning" content="standard">
@@ -22,9 +22,9 @@
   <title>Geometry Figure Vessel Units | imas-ink</title>
   <link rel="stylesheet" href="/_shared/foundation.css">
   <link rel="stylesheet" href="/_shared/dashboard.css">
-<meta name="plan-version" content="1">
+<meta name="plan-version" content="3">
 <meta name="plan-modified" content="2026-10-06">
-<meta name="plan-section-declarations" content="{&quot;s1&quot;:&quot;implementable&quot;,&quot;s2&quot;:&quot;implementable&quot;}">
+<meta name="plan-section-declarations" content="{&quot;s1&quot;:&quot;implementable&quot;,&quot;s2&quot;:&quot;implementable&quot;,&quot;s3&quot;:&quot;implementable&quot;}">
 </head>
 <body>
   <main class="plan-doc">
@@ -53,15 +53,26 @@
       phases. This section extends that one owner rather than adding a second extractor: when an annular
       unit's <code>outline_inner</code> and <code>outline_outer</code> are filled,
       <code>extract_vessel_shells</code> returns one <code>VesselShell</code> for each, inner then outer,
-      ahead of the centreline path, and leaves the centreline and outline paths unchanged.
+      ahead of the centreline path, and leaves the centreline and outline paths unchanged. It also takes
+      the <code>description_2d</code> entry to read, so <code>extract_geometry</code> passes the entry
+      <code>_select_description_2d</code> (<code>imas_ink/extract.py</code>) chose for the limiter units
+      and the vessel and the limiter always come from the same entry; called without one it keeps
+      reading index 0, as the 3D path does today. The existing <code>unit.outline</code> fallback reads a
+      field the Data Dictionary places on <code>unit.element[*].outline</code>; correcting it is outside
+      this plan, which neither relies on nor changes that branch.
     </p>
     <p>
       The 2D pipeline then carries those shells. <code>extract_geometry</code>
       (<code>imas_ink/extract.py</code>) fills one new field on <code>MachineGeometry</code>
       (<code>imas_ink/_types.py</code>), typed with the existing <code>VesselShell</code>, from
-      <code>extract_vessel_shells</code>; <code>geometry_figure_mpl</code>
-      (<code>imas_ink/figures.py</code>) draws each shell as an unfilled line in the existing ink style
-      beside the limiter units, and the viewport covers the shells. A new <code>InkStyle</code> constant is
+      <code>extract_vessel_shells</code>. Drawing goes through the component dispatch that owns 2D
+      geometry, not a call of its own: the <code>WallOutline</code> component
+      (<code>imas_ink/components.py</code>) gains the vessel shells beside its <code>wall_units</code>, and
+      <code>_render_wall_mpl</code> (<code>imas_ink/mpl.py</code>) and <code>_render_wall_alt</code>
+      (<code>imas_ink/alt.py</code>) draw them as unfilled lines in the wall's ink style, so
+      <code>geometry_figure_mpl</code> and <code>equilibrium_chart_alt</code> both show the vessel by
+      passing the shells to the <code>WallOutline</code> they already build, and the viewport covers the
+      shells. A new <code>InkStyle</code> constant is
       added only if the vessel needs a weight distinct from the wall. The 2D geometry has no vessel
       representation today, so the field retires nothing; it is the one public addition and reuses the
       type the 3D path already exports.
@@ -70,7 +81,9 @@
       Done-when: a new test, <code>tests/unit/test_vessel_units.py</code>, builds a <code>wall</code> IDS with
       one limiter unit and one vessel unit whose annular <code>outline_inner</code> and
       <code>outline_outer</code> are filled, and asserts that <code>extract_vessel_shells</code> returns two
-      closed shells and that <code>geometry_figure_mpl</code> adds both shells' lines to the axes; it fails
+      closed shells, that a geometry whose richest <code>description_2d</code> entry is not index 0 takes its
+      vessel from that entry, and that <code>geometry_figure_mpl</code> adds both shells' lines to the axes
+      through <code>render_mpl</code>, with <code>_render_wall_alt</code> emitting a mark for them too; it fails
       when <code>extract_vessel_shells</code> ignores those outlines. <code>uv run --no-sync pytest -p
       no:cacheprovider tests/unit</code> adds no failure against the base revision, and <code>uv run
       --no-sync ruff check imas_ink tests</code> exits 0.
@@ -86,7 +99,8 @@
       viewport, and the two phases' wall and vessel overlaid on one panel. This section adds an optional
       <code>ax</code> argument to <code>geometry_figure_mpl</code>, which draws into the given axes and
       returns its figure instead of creating one, and one <code>InkStyle</code> constant,
-      <code>wall_linestyle</code> (default solid), applied to the limiter outline and the vessel shells,
+      <code>wall_linestyle</code> (default solid), applied by <code>_render_wall_mpl</code> and
+      <code>_render_wall_alt</code> to the limiter outline and the vessel shells,
       so a caller draws a reference state with <code>replace(DEFAULT_STYLE,
       wall_linestyle=DEFAULT_STYLE.ref_lcfs_linestyle)</code>, reusing the dashed reference vocabulary
       the style already carries rather than a new one. Nothing else changes: called without
@@ -98,6 +112,32 @@
       lines and no second figure was created, and draws one geometry with
       <code>wall_linestyle="dashed"</code> and asserts its wall and vessel lines are dashed; the
       existing geometry-figure tests pass unchanged; <code>uv run --no-sync pytest -p no:cacheprovider
+      tests/unit</code> adds no failure against the base revision, and <code>uv run --no-sync ruff check
+      imas_ink tests</code> exits 0.
+    </p>
+
+    <h2 id="s3">§3 — Two traces on one panel</h2>
+<section data-reckon="section" data-id="s3" data-effort-hours="1.0" data-capability-version="1.0" data-capability-class="general" data-capability-reasoning="standard" data-capability-verification="strict" data-capability-risk="low" data-status="implementable" data-links=""></section>
+<p>
+      <code>time_trace_figure_mpl</code> (<code>imas_ink/figures.py</code>) draws exactly one
+      <code>TimeSeries</code> per panel, and <code>_render_timeseries_mpl</code>
+      (<code>imas_ink/mpl.py</code>) plots it in matplotlib's default colour cycle with no line-style
+      control, so a caller cannot compare two channels on shared axes in the ink style. imas-ambix's
+      JT-60SA signal figures need exactly that: each processed flux-loop channel against the raw
+      channel of the same index. This section lets <code>time_trace_figure_mpl</code> take a panel as
+      either one <code>TimeSeries</code> or a list of them drawn on the same axes through
+      <code>render_mpl</code>, and adds one <code>InkStyle</code> constant, <code>trace_linestyle</code>
+      (default solid), which <code>_render_timeseries_mpl</code> and <code>_render_timeseries_alt</code>
+      (<code>imas_ink/alt.py</code>) apply together with the style's trace colour, so a caller marks the
+      second series with <code>replace(DEFAULT_STYLE, trace_linestyle=DEFAULT_STYLE.ref_lcfs_linestyle)</code>.
+      A panel given as a single <code>TimeSeries</code> is drawn exactly as today, apart from taking the
+      style's trace colour rather than the cycle's.
+    </p>
+    <p>
+      Done-when: a test in <code>tests/unit/test_vessel_units.py</code> builds a figure whose one panel
+      holds two <code>TimeSeries</code>, asserts both lines are on that panel's axes with the second
+      dashed and both in the style's trace colour, and asserts a single-series panel still draws one
+      line; the existing trace-figure tests pass; <code>uv run --no-sync pytest -p no:cacheprovider
       tests/unit</code> adds no failure against the base revision, and <code>uv run --no-sync ruff check
       imas_ink tests</code> exits 0.
     </p>
