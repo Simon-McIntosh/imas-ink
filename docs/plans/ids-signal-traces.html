@@ -46,9 +46,21 @@
       <code>imas_ink/extract.py</code> gains one public function, <code>extract_signal_traces(ids, path)</code>,
       beside <code>extract_time_traces</code>, and exports it from <code>imas_ink</code>. It returns a list of
       <code>TimeSeries</code>, one per filled signal the path names. Here <code>path</code> is a data-dictionary
-      path, relative to the IDS, to a signal node that carries <code>data</code>, and through any struct array on
-      the way. Examples: <code>coil/current</code> in <code>pf_active</code>, <code>ip</code> and
-      <code>flux_loop/flux</code> in <code>magnetics</code>.
+      path, relative to the IDS, to a signal node that carries <code>data</code>, such as <code>coil/current</code>
+      in <code>pf_active</code>, or <code>ip</code> and <code>flux_loop/flux</code> in <code>magnetics</code>.
+    </p>
+    <p>
+      The path is unindexed, the same form imas-python's <code>IDSMetadata.path</code> gives for a node (it returns
+      <code>coil/current/data</code> for a coil's current data). That is the data dictionary's own grammar, the one
+      the imas-dd tools use, and it names a quantity rather than one instance of it. The function returns one series
+      for every element of every struct array the path passes through. So <code>coil/current</code> yields every fed
+      coil, and <code>ip</code>, itself a struct array in <code>magnetics</code>, yields every filled entry.
+    </p>
+    <p>
+      An instance path, as <code>imas.util.get_full_path</code> renders it (<code>coil[0]/current</code>), is not a
+      second accepted form. A path holding <code>[</code> raises <code>ValueError</code> naming the unindexed form,
+      so a path copied from that helper fails loudly instead of returning a different set of series. To draw one
+      element, the caller selects the series from the list by its y-label.
     </p>
     <p>
       The function reads everything it returns from the IDS:
@@ -90,6 +102,7 @@
       <li>A <code>magnetics</code> under homogeneous time 0 takes each flux loop's own <code>flux.time</code>, with
         unit <code>Wb</code>.</li>
       <li>Homogeneous time 2 raises <code>ValueError</code>.</li>
+      <li>The indexed path <code>coil[0]/current</code> raises <code>ValueError</code>.</li>
       <li>No returned series carries a label.</li>
     </ul>
     <p>
