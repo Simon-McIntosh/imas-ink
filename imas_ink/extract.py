@@ -785,13 +785,12 @@ def _is_struct_array(obj) -> bool:
 
     A data-dictionary path component that is a struct array names a class of
     instances rather than one of them, so the signal reader enumerates every
-    element.  Duck-typed around the imas-python type so a mock IDS is simply
-    not a struct array.
+    element.  A mock IDS node is not an instance, so it reads as a scalar
+    struct.  imas is imported here rather than at module level, like the rest
+    of the package, so importing imas_ink stays light.
     """
-    try:
-        from imas.ids_structure import IDSStructArray
-    except Exception:  # imas not importable — treat as a scalar struct
-        return False
+    from imas.ids_struct_array import IDSStructArray
+
     return isinstance(obj, IDSStructArray)
 
 
