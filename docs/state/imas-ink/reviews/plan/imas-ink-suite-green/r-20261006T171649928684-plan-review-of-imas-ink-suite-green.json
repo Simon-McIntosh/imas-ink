@@ -1,0 +1,55 @@
+{
+  "absent_items": [],
+  "completed_at": "2026-10-06T17:21:16.735Z",
+  "dispatched_at": "2026-10-06T17:16:53Z",
+  "findings": [
+    {
+      "anchor": "imas_ink/__init__.py:56,58,87,88,89,90,91",
+      "id": "interface_budget-1",
+      "reason": "the week's public-definition budget is 0, so the section must either justify each name as intended API or delete the imports, and the ambiguity changes what gets deleted.",
+      "text": "\u00a72's rule \"an F401 that is a deliberate re-export goes into `__all__`\" adds seven new public definitions (`FluxLoops`, `MagneticProbes` at :56,:87\u2026 :58; `equilibrium_chart_alt`, `equilibrium_figure_mpl`, `geometry_figure_mpl`, `radial_profile_figure_mpl`, `time_trace_figure_mpl` at :87\u2013:91), none of which is currently in `__all__`, and the section says neither what it retires nor why nothing can be; the choice is also under-specified (dead import vs. intentional API) and inconsistent with the sibling component classes that already sit in `__all__`",
+      "type": "interface_budget",
+      "would_change": true
+    },
+    {
+      "anchor": ".ruff.toml:1",
+      "id": "duplicate_owner-1",
+      "reason": "the two sections must be explicitly ordered (config deletion before the sweep, \u00a73's gate measured after \u00a72) or merged, and without that the plan's own exit-0 gates are unreachable as sequenced.",
+      "text": "`.ruff.toml` is the ruff config the tool actually reads (the plan states this in \u00a73), so \u00a72's instruction to place `allowed-confusables` in `pyproject.toml` writes to a file that is inert until \u00a73 deletes `.ruff.toml`; the plan states no order between \u00a72 and \u00a73, and as written neither order satisfies both done-whens (with `.ruff.toml` present, any kept RUF001/002/003 confusable keeps `ruff check` non-zero for \u00a72; with `.ruff.toml` deleted before \u00a72's fixes, \u00a73's own done-when `ruff check` exits 0 fails on the remaining 55)",
+      "type": "duplicate_owner",
+      "would_change": true
+    },
+    {
+      "anchor": ".github/workflows/ci.yml:27,30",
+      "id": "reuse_search-1",
+      "reason": "the plan should either fold `ruff format` into \u00a72 (or its own commit) or declare it explicitly out of scope and widen the gate to `ruff check .` for CI parity; leaving it unstated makes the headline claim false.",
+      "text": "the plan's goal is \"return the suite and the lint gate to green\", but the lint job that owns that gate runs `ruff check .` (line 27) and `ruff format --check .` (line 30); the plan's \u00a72/\u00a73 gates run only `ruff check imas_ink tests` and the plan never mentions `ruff format`, so the CI lint job stays red after the plan lands (measured: `ruff format --check .` would reformat 18 files, e.g. imas_ink/three_d/scene.py, imas_ink/three_d/walls.py, tests/unit/three_d/test_scene_cutaway.py)",
+      "type": "reuse_search",
+      "would_change": true
+    }
+  ],
+  "plan_fingerprint": "6569c14fc54afb5409c1f1574f88625a0cb97cf6d324cba9d470dc6be9db0ba5",
+  "plan_slug": "imas-ink-suite-green",
+  "plan_version": 6,
+  "project": "imas-ink",
+  "responses": {},
+  "review_run_id": "r-20261006T171649928684-plan-review-of-imas-ink-suite-green",
+  "reviewed_blob_sha": "6ddac7a47fc03a1f3a7e9b8b9a1f51ae88387a4d",
+  "rubric": "design",
+  "rubric_items": {
+    "deep_module": "pass \u2014 no new module is proposed; the work is edits to existing files under ruff's existing rules, so there is no interface-vs-behaviour surface to judge.",
+    "duplicate_owner": "a finding \u2014 `.ruff.toml` is the effective ruff-config owner while `pyproject.toml` is not, yet \u00a72 places `allowed-confusables` in `pyproject.toml` and the plan states no order between \u00a72 and \u00a73, so the owning file is never named on the \u00a72 path.",
+    "interface_budget": "a finding \u2014 public_definitions 0, cli_options 0, mcp_views 0, refusal_families 0; \u00a72 adds up to seven names to `imas_ink/__init__.py`'s `__all__` (public definitions) without naming what it retires or states why nothing can be.",
+    "reuse_search": "a finding \u2014 the plan defines its lint gate as `ruff check imas_ink tests`, but the gate that actually owns \"green\" in this repo is `.github/workflows/ci.yml`, which also runs `ruff format --check .` (measured: 18 files unformatted), so the plan does not survey the mechanism that decides the claim it makes.",
+    "thin_wrapper": "pass \u2014 no wrapper or layer is added; \u00a72 resolves existing findings in place and \u00a73 deletes a duplicate config rather than wrapping it."
+  },
+  "section_digests": {
+    "_document": "7855076cd5063f161991ddbbce2d16a6ffde794ec436ba1f7343143983cdc43a",
+    "s1": "e748c7a8e7bf02f615ef0e01401370d888710d0173f56f7e81eaad3642a2b197",
+    "s2": "e6a4992f7895a177a0f8d40ce238f1f35bd27d733207a08c31ab4f678ecced51",
+    "s3": "04d96730db665ae2c2a14a7fcf43fe22e07a7bd363d4fa9cfe4f787b277e7807"
+  },
+  "status": "ready",
+  "times_source": "run-record",
+  "timestamp": "2026-10-06T17:27:09.161774+00:00"
+}

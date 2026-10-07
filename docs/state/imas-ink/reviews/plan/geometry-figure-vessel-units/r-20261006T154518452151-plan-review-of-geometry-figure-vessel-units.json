@@ -1,0 +1,58 @@
+{
+  "absent_items": [],
+  "completed_at": "2026-10-06T15:48:47.586Z",
+  "dispatched_at": "2026-10-06T15:45:20Z",
+  "findings": [
+    {
+      "anchor": "imas_ink/server/mcp.py:188",
+      "id": "reuse_search-1",
+      "reason": "the mechanism the plan means exists and already carries the flags, so the implementer still threads them through `animate_pulse`; only the citation is off and no design decision turns on it.",
+      "text": "\u00a75 describes the sibling MCP tool as `geometry_figure`; no such tool is registered (`mcp.tool()` registers `plot_geometry` at imas_ink/server/mcp.py:113, and `geometry_figure_mpl` is the Python function in imas_ink/figures.py:152), so the plan cites the existing prior-art owner by a name that does not resolve",
+      "type": "reuse_search",
+      "would_change": false
+    }
+  ],
+  "plan_fingerprint": "1aad149325af10f1403b137235dd6984d983c52f43a8ca3bf80e32f4158d291e",
+  "plan_slug": "geometry-figure-vessel-units",
+  "plan_version": 24,
+  "project": "imas-ink",
+  "response_events": [
+    {
+      "action": "declined",
+      "by": "",
+      "finding": "reuse_search-1",
+      "reason": "citation-only, as the review states: the registered sibling tool is plot_geometry, which already carries both flags. The node's done-when names plot_geometry, and collapsing section 5 on landing replaces the text that carries the wrong name",
+      "when": "2026-10-06T15:49:27.017941+00:00"
+    }
+  ],
+  "responses": {
+    "reuse_search-1": {
+      "action": "declined",
+      "by": "",
+      "reason": "citation-only, as the review states: the registered sibling tool is plot_geometry, which already carries both flags. The node's done-when names plot_geometry, and collapsing section 5 on landing replaces the text that carries the wrong name",
+      "when": "2026-10-06T15:49:27.017941+00:00"
+    }
+  },
+  "review_path": "/home/ITER/mcintos/.config/reckon/crew/reviews/imas-ink/plan-geometry-figure-vessel-units.v24.json",
+  "review_run_id": "r-20261006T154518452151-plan-review-of-geometry-figure-vessel-units",
+  "reviewed_blob_sha": "4205edafca946b0f39b30e1722d78169f40b1cf9",
+  "rubric": "design",
+  "rubric_items": {
+    "deep_module": "pass \u2014 \u00a75 adds no module (it threads two existing keywords through the existing deep driver `animate_pulse` at imas_ink/animate.py:11 into `equilibrium_figure_mpl`), and the landed \u00a71\u2013\u00a74 extend the existing modules extract.py, figures.py and style.py rather than spreading shallow wrappers.",
+    "duplicate_owner": "pass \u2014 \u00a75 duplicates no shared mechanism; it extends the owner `equilibrium_figure_mpl` and aligns the MCP surface (`plot_geometry` already carries the two flags at imas_ink/server/mcp.py:188\u2013193) rather than forking a second sensor-visibility path.",
+    "interface_budget": "pass \u2014 supplied counts public_definitions 0, cli_options 0, mcp_views 0, refusal_families 0; \u00a75 adds two optional keywords to the existing exported `animate_pulse` and two to the existing `animate_pulse` MCP tool, adding no new definition or view, and its own text states why nothing is retired or merged (sensor visibility is a capability the animation lacks and the figure already owns).",
+    "reuse_search": "a finding \u2014 \u00a75 correctly cites `equilibrium_figure_mpl` (imas_ink/figures.py:323) as the existing owner of `show_probes`/`show_flux_loops`, but names its sibling MCP tool `geometry_figure` when the registered tool is `plot_geometry`.",
+    "thin_wrapper": "pass \u2014 \u00a75 states why the existing machinery cannot simply be extended instead: sensor visibility is a capability the animation entry point lacks and `equilibrium_figure_mpl` already owns, so the honest change is to thread the flags through `animate_pulse`, not to add a parallel renderer."
+  },
+  "section_digests": {
+    "_document": "5747cdb0bbf0fc4519544ff876ea19be2a9985b2bfbbf00cc72960054b20e717",
+    "s1": "885edaf89b232e542c4e1df36f64f0b87ae2e7a6a87f0b11a27345ae9d047cf9",
+    "s2": "ede17583d4a9ed56464911987cb57df543fc803dc716c04a8392e26189bb61bf",
+    "s3": "a0fb9d204749a65e7fa4541d5822c2ba83a5600b1634e7d266bfccdd614a62b3",
+    "s4": "0761cdd3530485ff2ba710657112e32b2d9b8578636225e2ebc439e8d04b4019",
+    "s5": "3b3773a182e503e7b58e87e1c1a2d0ce27a531f233ef2635079ae8ea9db6b31f"
+  },
+  "status": "ready",
+  "times_source": "run-record",
+  "timestamp": "2026-10-06T15:49:22.100283+00:00"
+}

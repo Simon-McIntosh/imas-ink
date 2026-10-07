@@ -1,0 +1,45 @@
+{
+  "absent_items": [],
+  "completed_at": "2026-10-06T13:06:01.836Z",
+  "dispatched_at": "2026-10-06T13:01:32Z",
+  "findings": [
+    {
+      "anchor": "/home/ITER/mcintos/Code/imas-ink/docs/plans/trace-figure-display-resolution.html:57",
+      "id": "reuse_search-1",
+      "reason": "the plan must name the alternative transformer and say why the envelope (an imas-ink helper) is the owner rather than a data transformer, or adopt the transformer; an unsearched altair mechanism is the plan's own reuse_search gap, and its premise (\"cannot be drawn at all\") is falsified by `disable_max_rows()`.",
+      "text": "\u00a71 adds a bespoke min/max envelope to `_render_timeseries_alt` on the premise that \"a long series cannot be drawn in altair at all today\", but altair ships two data-transformer mechanisms for exactly this, neither cited or rejected: `alt.data_transformers.disable_max_rows()` (which lets a 300,000-row series render \u2014 the same series that raises `MaxRowsError` at 5,000 rows, reproduced) and the `vegafusion` transformer named verbatim in that error message and registered in the installed altair (`alt.data_transformers.names()` \u2192 `['csv','default','json','vegafusion']`; package absent here).",
+      "type": "reuse_search",
+      "would_change": true
+    }
+  ],
+  "plan_fingerprint": "c2d3405c2e788a63a6bd64af1bca15155adc6e2d025e42744e806a599ecfe983",
+  "plan_slug": "trace-figure-display-resolution",
+  "plan_version": 3,
+  "project": "imas-ink",
+  "responses": {
+    "reuse_search-1": {
+      "action": "declined",
+      "by": "reckon-build coordinator 1caa45fb",
+      "reason": "alt.data_transformers.disable_max_rows() lets the chart render by embedding every one of the 300,000 samples in the chart spec, which is the file-size problem this plan exists to fix; the vegafusion transformer adds a dependency and a server-side compute step for what a 4,000-point min/max envelope does locally, so the envelope stays",
+      "when": "2026-10-06T13:06:58.844861+00:00"
+    }
+  },
+  "review_run_id": "r-20261006T130128824461-plan-review-of-trace-figure-display-resolution",
+  "reviewed_blob_sha": "c69e869a1c95d867fbc2e066cbe2027bd1951d6e",
+  "rubric": "design",
+  "rubric_items": {
+    "deep_module": "pass \u2014 \u00a71's envelope hides binning plus time-ordered min/max selection behind one private function in `imas_ink/_decimate.py`, and \u00a72 hides label suppression behind the existing private renderer keyword rather than spreading wrappers over the same machinery.",
+    "duplicate_owner": "pass \u2014 the two new constants land in `imas_ink/style.py` (`InkStyle`), the module the project declares as the single source of visual constants, and the altair-side helper has no existing owner in imas-ink to extend.",
+    "interface_budget": "pass \u2014 public_definitions 0, cli_options 0, mcp_views 0, refusal_families 0; \u00a71 adds two `InkStyle` constants and states in its own text that nothing bounds a figure's path resolution today so they retire nothing, and \u00a72 adds no public name.",
+    "reuse_search": "a finding \u2014 the plan reuses matplotlib's own `path.simplify_threshold` and extends the existing `label_axes` mechanism, but proposes a bespoke min/max envelope in `imas_ink/_decimate.py` without citing altair's own row-limit machinery (`alt.data_transformers.disable_max_rows()` / the `vegafusion` transformer), which its own `MaxRowsError` names.",
+    "thin_wrapper": "pass \u2014 \u00a72 extends the existing `label_axes` suppression path (and calls the private renderers directly, as `time_trace_figure_mpl` already does) rather than clearing labels after drawing; \u00a71 routes the matplotlib bound through matplotlib's own simplifier instead of wrapping it."
+  },
+  "section_digests": {
+    "_document": "d5af5cb3fe8c61df3ded004265989188b3060bfad50125ee173a35f7c837b924",
+    "s1": "95e0c9d668c66eef7140b51a5ec0fcdf30d0270941197da5d8e9e14b6323fd7b",
+    "s2": "c868c51005df634f03813ea5b68ea7f5bd15fe416cc91058ec4de698b29967c9"
+  },
+  "status": "ready",
+  "times_source": "run-record",
+  "timestamp": "2026-10-06T13:06:58.843385+00:00"
+}

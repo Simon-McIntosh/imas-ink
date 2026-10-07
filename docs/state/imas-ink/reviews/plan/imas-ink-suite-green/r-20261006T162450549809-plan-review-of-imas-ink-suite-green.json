@@ -1,0 +1,46 @@
+{
+  "absent_items": [],
+  "completed_at": "2026-10-06T16:34:06.021Z",
+  "dispatched_at": "2026-10-06T16:24:56Z",
+  "findings": [
+    {
+      "anchor": "imas_ink/three_d/scene.py:557",
+      "id": "reuse_search-1",
+      "reason": "\u00a71 must own the scene.py:557 fix as a prerequisite to its own green done-when, and \u00a72's hedge that the F821 \"may be a defect\" must be reconciled, since the F821 cannot remain in the lint sweep once \u00a71 has repaired it (its by-rule count and the \"touches only files ruff flagged\" scope both shift).",
+      "text": "\u00a71 says patching `_build_cutaway_geometry` makes the suite green, but `render_cutaway_with_flux` still reads `fw_capped` (line 557) which commit `f22fcc0` moved into `_build_cutaway_overlay`'s scope, so every repaired test that reaches the overlay branch dies with `NameError: name 'fw_capped' is not defined`; reproduced with the prescribed repair applied in a scratch copy: 4 failed, 1 passed. `render_cutaway_with_flux`'s own body was edited by `f22fcc0` \u2014 the diff removes its local `fw_capped = clipped_blocks.get(\"first_wall\")` \u2014 so the plan's account that the composer \"calls both\" omits the dangling reference it left behind.",
+      "type": "reuse_search",
+      "would_change": true
+    },
+    {
+      "anchor": "imas-ink-suite-green \u00a72",
+      "id": "reuse_search-2",
+      "reason": "the file count is descriptive only; the sweep is driven by the rule list, which matches, so no section changes.",
+      "text": "the section states \"56 findings across 20 files\"; the measured backlog is 56 findings across 19 files (`uv run --no-sync ruff check imas_ink tests`), the by-rule distribution being exact (15 F401, 6 I001, 6 RUF059, 5 RUF002, 4 RUF003, 4 SIM108, 3 E402, 3 RUF015, 2 RUF001, 2 SIM105, one each B017/F821/F841/RUF022/RUF100/W292)",
+      "type": "reuse_search",
+      "would_change": false
+    }
+  ],
+  "plan_fingerprint": "3abeca93252dbe2482ff35c4c2e04bd1b645f6ca4c032c52696ad8427142dbf5",
+  "plan_slug": "imas-ink-suite-green",
+  "plan_version": 1,
+  "project": "imas-ink",
+  "responses": {},
+  "review_run_id": "r-20261006T162450549809-plan-review-of-imas-ink-suite-green",
+  "reviewed_blob_sha": "1c65a762b30d9815b39ee88303e2a25ea8e224fb",
+  "rubric": "design",
+  "rubric_items": {
+    "deep_module": "pass \u2014 the plan introduces no module; the complexity it touches already lives behind `_build_cutaway_geometry` / `_build_cutaway_overlay` and is unchanged.",
+    "duplicate_owner": "pass \u2014 no shared infrastructure is duplicated; the plan reuses the existing scene builders and test infrastructure rather than forking them.",
+    "interface_budget": "pass \u2014 supplied counts are public_definitions 0, cli_options 0, mcp_views 0, refusal_families 0; the plan adds no public definition, CLI option, MCP view or refusal family, so no section owes a retirement or merge.",
+    "reuse_search": "a finding \u2014 the plan names `_build_cutaway_geometry` and `_build_cutaway_overlay` but read `render_cutaway_with_flux` only at the two call sites, missing that its own body still references `fw_capped` (scene.py:557), which the same commit `f22fcc0` moved out of its scope.",
+    "thin_wrapper": "pass \u2014 no wrapper is added over existing machinery; the plan re-points existing test patch targets and makes no parallel mechanism."
+  },
+  "section_digests": {
+    "_document": "36daeeb0e630e86780730ea885539e32c83a6cc7a0c296587f2aa95e52892dbc",
+    "s1": "8c74c5e4de4e35d36d5613b704914d1c08a9d427e7227b4ab48f657799a82926",
+    "s2": "451439873c43b6079a5e6b3b3870a7fb81f0162715c8eb68c8af71c5927c41ac"
+  },
+  "status": "ready",
+  "times_source": "run-record",
+  "timestamp": "2026-10-06T16:44:07.992263+00:00"
+}

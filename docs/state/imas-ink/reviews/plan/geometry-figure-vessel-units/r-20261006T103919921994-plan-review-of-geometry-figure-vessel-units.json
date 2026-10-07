@@ -1,0 +1,86 @@
+{
+  "absent_items": [],
+  "completed_at": "2026-10-06T10:44:23.674Z",
+  "dispatched_at": "2026-10-06T10:39:24Z",
+  "findings": [
+    {
+      "anchor": "imas_ink/extract.py:470",
+      "id": "reuse_search-1",
+      "reason": "the plan must thread the selected `desc_2d` (or the selection) into vessel extraction, or state why the index cannot differ for its inputs.",
+      "text": "`extract_geometry` picks its wall data from `_select_description_2d(wall_ids)` (extract.py:322, returns `descs[best_idx]`, which is not necessarily `[0]`), but the function the plan fills the new field from, `extract_vessel_shells`, hardcodes `wall_ids.description_2d[0]` (walls.py:175); on a machine whose richest `description_2d` is not index 0 (the WEST `desc[1]` mobile case the selector exists for), the vessel field would describe a different `description_2d` than `wall_units`",
+      "type": "reuse_search",
+      "would_change": true
+    },
+    {
+      "anchor": "imas_ink/mpl.py:87",
+      "id": "reuse_search-2",
+      "reason": "naming the render owner decides where the draw lives and whether the altair geometry path is in scope.",
+      "text": "the plan describes `geometry_figure_mpl` drawing each shell as a line without citing the rendering owner it must extend: components are dataclasses in `imas_ink/components.py` (e.g. `WallOutline`, components.py:138) dispatched by `render_mpl` (mpl.py:87) and `render_alt` (alt.py:91); the 2D geometry draw sites are a census of two, `geometry_figure_mpl` (figures.py:181) and `equilibrium_chart_alt` (figures.py:702), the latter building its own `WallOutline` and using the altair registry, so a draw added only in `geometry_figure_mpl` reaches neither the altair path nor any future component-level addition",
+      "type": "reuse_search",
+      "would_change": true
+    },
+    {
+      "anchor": "imas_ink/mpl.py:360",
+      "id": "duplicate_owner-1",
+      "reason": "naming `imas_ink/mpl.py` as the owner makes the change an extension of one dispatch pair rather than a second plot call that drifts from it.",
+      "text": "an inline draw of `VesselShell.r/.z` in `geometry_figure_mpl` reproduces `_render_wall_mpl` (mpl.py:360), which already plots a list of `(r, z)` units with `InkStyle.wall_color/wall_linewidth`; the vessel shells are `WallOutline2D` instances (walls.py:27/42) with exactly that `r`/`z` shape, so the honest change is to extend the `render_mpl`/`render_alt` dispatch pair rather than fork the plotting",
+      "type": "duplicate_owner",
+      "would_change": true
+    },
+    {
+      "anchor": "imas_ink/three_d/walls.py:208",
+      "id": "reuse_search-3",
+      "reason": "JT-60SA writes `annular.outline_inner/outline_outer`, the path the plan adds, so the dead fallback does not affect the target figures.",
+      "text": "the plan states the extractor falls back to \"a plain `outline`\" and leaves that path unchanged, but the DD defines the vessel polygon at `wall/description_2d/vessel/unit/element/outline`, not `unit.outline`, so the fallback reads an attribute that does not exist and is unreachable; the plan preserves a dead branch and should either correct it to `element.outline` or record that it is out of scope",
+      "type": "reuse_search",
+      "would_change": false
+    }
+  ],
+  "plan_fingerprint": "300cb2a16881017c2f57ae24e40362178a9940a059cb7d5cfbd37af8d4083f92",
+  "plan_slug": "geometry-figure-vessel-units",
+  "plan_version": 0,
+  "project": "imas-ink",
+  "responses": {
+    "duplicate_owner-1": {
+      "action": "acted",
+      "by": "reckon-build coordinator 1caa45fb",
+      "reason": "plan v3 \u00a71 extends _render_wall_mpl/_render_wall_alt rather than adding an inline plot in geometry_figure_mpl",
+      "when": "2026-10-06T10:45:53.348682+00:00"
+    },
+    "reuse_search-1": {
+      "action": "acted",
+      "by": "reckon-build coordinator 1caa45fb",
+      "reason": "plan v3 \u00a71: extract_vessel_shells takes the description_2d entry, and extract_geometry passes the one _select_description_2d chose, so vessel and limiter come from the same entry",
+      "when": "2026-10-06T10:45:53.345951+00:00"
+    },
+    "reuse_search-2": {
+      "action": "acted",
+      "by": "reckon-build coordinator 1caa45fb",
+      "reason": "plan v3 \u00a71 draws through the component dispatch: WallOutline gains the vessel shells and _render_wall_mpl and _render_wall_alt draw them, reaching geometry_figure_mpl and equilibrium_chart_alt",
+      "when": "2026-10-06T10:45:53.347394+00:00"
+    },
+    "reuse_search-3": {
+      "action": "declined",
+      "by": "reckon-build coordinator 1caa45fb",
+      "reason": "the reviewer marks it not plan-changing: the unit.outline fallback is a pre-existing branch this plan neither relies on nor changes; plan v3 \u00a71 records that the Data Dictionary places the polygon on unit.element[*].outline and leaves the correction out of scope",
+      "when": "2026-10-06T10:45:53.349657+00:00"
+    }
+  },
+  "review_run_id": "r-20261006T103919921994-plan-review-of-geometry-figure-vessel-units",
+  "reviewed_blob_sha": "94d2bb43d1ff6bfcdc567cf146e444845b29feab",
+  "rubric": "design",
+  "rubric_items": {
+    "deep_module": "pass \u2014 extraction stays behind the existing `extract_vessel_shells` with one new typed field on `MachineGeometry`; the plan adds no family of small wrappers.",
+    "duplicate_owner": "a finding \u2014 the plan draws vessel shells inside `geometry_figure_mpl` (figures.py:181), a parallel render path to the component + `render_mpl` dispatch (mpl.py:87) that owns 2D geometry drawing; owner to extend is `imas_ink/mpl.py`.",
+    "interface_budget": "pass \u2014 public_definitions 0, cli_options 0, mcp_views 0, refusal_families 0; the section names its one public addition (`MachineGeometry` vessel field) and states it retires nothing.",
+    "reuse_search": "a finding \u2014 the plan reuses the extraction owner `extract_vessel_shells` (walls.py:151) but not the description_2d selector `_select_description_2d` (extract.py:322), and cites no search of the 2D rendering machinery (`render_mpl` mpl.py:87 / `render_alt` alt.py:91).",
+    "thin_wrapper": "pass \u2014 no wrapper or re-export is proposed; the change extends an existing owner rather than layering over it."
+  },
+  "section_digests": {
+    "_document": "2baa5c4ae522ac8bf0c0b94e1ddf91db44404ff14b1b473a2e3f959f73678798",
+    "s1": "13c41b90ccfa81376213693a992a19542495549ec595c8f7cedb34ebe8557511"
+  },
+  "status": "ready",
+  "times_source": "run-record",
+  "timestamp": "2026-10-06T10:45:34.331325+00:00"
+}

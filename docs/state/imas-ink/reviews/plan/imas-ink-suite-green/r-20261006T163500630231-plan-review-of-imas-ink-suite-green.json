@@ -1,0 +1,29 @@
+{
+  "absent_items": [],
+  "completed_at": "2026-10-06T16:43:42.008Z",
+  "dispatched_at": "2026-10-06T16:35:03Z",
+  "findings": [],
+  "plan_fingerprint": "48b5f372c60423902a08fd58f1d5a69dcc3b483ef29f270886f5587aa2128f2d",
+  "plan_slug": "imas-ink-suite-green",
+  "plan_version": 2,
+  "project": "imas-ink",
+  "responses": {},
+  "review_run_id": "r-20261006T163500630231-plan-review-of-imas-ink-suite-green",
+  "reviewed_blob_sha": "8338be40f00071726f8da17fd36e5b0a29c5df34",
+  "rubric": "design",
+  "rubric_items": {
+    "deep_module": "pass \u2014 no module is added or restructured; \u00a71 restores the call site of two already-deep helpers and \u00a72 is a lint sweep, so there is no new interface to weigh against hidden behaviour.",
+    "duplicate_owner": "pass \u2014 the plan re-implements no shared infrastructure; the only repeated element is the one-line `clipped_blocks[\"first_wall\"]` cap fetch, which the plan deliberately mirrors from `scene.py:340` because `FluxOverlay` (`flux_projection.py:31`) does not carry the cap and the alternative would change that public dataclass.",
+    "interface_budget": "pass \u2014 public_definitions 0, cli_options 0, mcp_views 0, refusal_families 0; the plan adds no CLI option, MCP view or refusal family, and \u00a72's `__all__` handling at `imas_ink/__init__.py:191` reclassifies seven names (FluxLoops, MagneticProbes, and five `figures` builders) that \u00a72 already declares deliberate re-exports and that are already importable module attributes, so no new public definition is created.",
+    "reuse_search": "pass \u2014 the plan cites the existing split (`_build_cutaway_geometry` / `_build_cutaway_overlay`, `scene.py:246`/`:324`) and its `scene.py:557` fix reuses the first-wall-cap lookup pattern that `_build_cutaway_overlay` already uses at `scene.py:340`, rather than introducing new machinery; \u00a72 extends the existing `[tool.ruff.lint]` table (`pyproject.toml:113`) for `allowed-confusables`.",
+    "thin_wrapper": "pass \u2014 the plan adds no wrapper layer; the one production edit is a single-line correction inside an existing composer."
+  },
+  "section_digests": {
+    "_document": "36daeeb0e630e86780730ea885539e32c83a6cc7a0c296587f2aa95e52892dbc",
+    "s1": "928ab3ff1f9ed54d6961ca0d2ad7e28f9ebbc7ab56ec3fba1b9acdafa731a28b",
+    "s2": "e6a4992f7895a177a0f8d40ce238f1f35bd27d733207a08c31ab4f678ecced51"
+  },
+  "status": "ready",
+  "times_source": "run-record",
+  "timestamp": "2026-10-06T16:44:07.990406+00:00"
+}

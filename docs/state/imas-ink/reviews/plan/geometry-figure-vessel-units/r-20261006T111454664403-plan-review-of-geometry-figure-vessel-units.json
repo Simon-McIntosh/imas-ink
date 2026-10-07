@@ -1,0 +1,60 @@
+{
+  "absent_items": [],
+  "completed_at": "2026-10-06T11:20:09.217Z",
+  "dispatched_at": "2026-10-06T11:14:57Z",
+  "findings": [
+    {
+      "anchor": "imas_ink/_types.py:141",
+      "id": "reuse_search-1",
+      "reason": "the author must either fold vessel_shells into the viewport extent or drop the assurance and state the machine-dependent assumption that coils dominate the bbox.",
+      "text": "\u00a71 adds MachineGeometry.vessel_shells and asserts \"the viewport covers the shells\", but the viewport owner MachineGeometry.viewport derives its bounds only from wall_units (limiter units) and coil_rects and is not extended for the new field, so geometry_figure_mpl's ax.set_xlim/ylim (figures.py:207) clips any vessel skin outside the PF-coil bounding box",
+      "type": "reuse_search",
+      "would_change": true
+    },
+    {
+      "anchor": "imas_ink/three_d/coilset.py:363",
+      "id": "duplicate_owner-1",
+      "reason": "the plan already names this copy and it is 3D-only, so folding it in is a separate low-risk cleanup that does not belong in a figure node.",
+      "text": "the plan deletes walls.py:354 _safe_float (whose sole caller moved with the extractor) onto the shared _sentinel.safe_float, but the identical copy at coilset.py:363 remains, so the \"each piece keeps one owner\" invariant \u00a71 relies on is only half applied; the owner to extend is imas_ink/_sentinel.py:46 safe_float",
+      "type": "duplicate_owner",
+      "would_change": false
+    }
+  ],
+  "plan_fingerprint": "ce566a121f7492cec357d7d229dde8657c50afb879ddb6760094a3580c23666e",
+  "plan_slug": "geometry-figure-vessel-units",
+  "plan_version": 7,
+  "project": "imas-ink",
+  "responses": {
+    "duplicate_owner-1": {
+      "action": "declined",
+      "by": "reckon-build coordinator 1caa45fb",
+      "reason": "the reviewer marks it not plan-changing: plan \u00a71 already names the three_d/coilset.py copy as outside this plan, and folding a 3D-only guard is a separate change",
+      "when": "2026-10-06T11:20:34.524829+00:00"
+    },
+    "reuse_search-1": {
+      "action": "acted",
+      "by": "reckon-build coordinator 1caa45fb",
+      "reason": "carried in the ink-vessel-units node contract (done-when): MachineGeometry.viewport folds vessel_shells into its bounds and a test asserts a vessel skin outside the coil and limiter extent stays inside the axes limits; plan \u00a71 already states the viewport covers the shells",
+      "when": "2026-10-06T11:20:34.523579+00:00"
+    }
+  },
+  "review_run_id": "r-20261006T111454664403-plan-review-of-geometry-figure-vessel-units",
+  "reviewed_blob_sha": "bf58454c699c1aeb735c37c592a465c6d04dcd59",
+  "rubric": "design",
+  "rubric_items": {
+    "deep_module": "pass \u2014 the moved extractor, types and _offset_polygon each land in their role-appropriate module (_types.py, extract.py, geometry.py), hiding IDS reading and numpy polygon-offset behind the same small interfaces they had before.",
+    "duplicate_owner": "a finding \u2014 the plan consolidates walls.py's private _safe_float onto the shared sentinel guard but leaves the identical sibling copy in three_d/coilset.py, so the duplication it is removing survives one file away.",
+    "interface_budget": "pass \u2014 public_definitions 0, cli_options 0, mcp_views 0, refusal_families 0; each section names its one addition and states it retires nothing (MachineGeometry.vessel_shells; wall_linestyle beside the ax argument; trace_linestyle and the multi-series panel).",
+    "reuse_search": "a finding \u2014 the plan extends the existing owners it names (extract_vessel_shells, _select_description_2d, the WallOutline component, _render_wall_mpl/_render_wall_alt, ref_lcfs_linestyle) rather than adding parallel machinery, but it adds a vessel field without extending the viewport owner that decides what is drawn.",
+    "thin_wrapper": "pass \u2014 \u00a72's ax argument and \u00a73's color/label_axes keyword arguments extend the existing figure builders and private renderers in place; neither introduces a new layer over machinery that already does the work."
+  },
+  "section_digests": {
+    "_document": "1eb24fd8dcbb4b2f837fd6309b190a390a7f47549ab598ca1eea3cc172e19cae",
+    "s1": "7912fb4b81532d8cac033f058820b099cdb484e4a13ae629e98989b937d7ce2b",
+    "s2": "fbabda3644f5857e7b89bfa2f4f2c498953439c5a25e1370c5500d590d8bf837",
+    "s3": "2b0e1d1a47842109e153e22ef9de5498522e5b271976bd360d7d4de38697d49e"
+  },
+  "status": "ready",
+  "times_source": "run-record",
+  "timestamp": "2026-10-06T11:20:34.522005+00:00"
+}

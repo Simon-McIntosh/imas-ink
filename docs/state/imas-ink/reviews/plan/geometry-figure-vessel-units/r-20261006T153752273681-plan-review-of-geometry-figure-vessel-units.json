@@ -1,0 +1,41 @@
+{
+  "absent_items": [],
+  "completed_at": "2026-10-06T15:42:51.561Z",
+  "dispatched_at": "2026-10-06T15:37:54Z",
+  "findings": [
+    {
+      "anchor": "imas_ink/animate.py:11",
+      "id": "interface_budget-1",
+      "reason": "by the item's rule and the review's own prior standard (\u00a72/\u00a73 each state their added constant \"retires nothing, because\u2026\"), \u00a75 must state that the two flags extend the existing public function and retire nothing (sensor visibility is a new capability) and say whether the MCP animate view is deliberately left behind, which is a one-line text change to \u00a75.",
+      "text": "\u00a75 grows the public signature of the exported `animate_pulse` (`imas_ink/__init__.py:49`) with `show_probes` and `show_flux_loops`; its text (\"No other parameter changes\") bounds how many it adds but names no retirement, while the sibling MCP `geometry_figure` tool already carries both flags (`imas_ink/server/mcp.py:232`) and the MCP `animate_pulse` tool of the same capability does not (`imas_ink/server/mcp.py:351`), leaving the two surfaces divergent with no stated disposition",
+      "type": "interface_budget",
+      "would_change": true
+    }
+  ],
+  "plan_fingerprint": "e48bdbbcd12e9b5f0f04f7ff04ec233bb7487eeef68abf12542cff89f2dd0c69",
+  "plan_slug": "geometry-figure-vessel-units",
+  "plan_version": 23,
+  "project": "imas-ink",
+  "responses": {},
+  "review_run_id": "r-20261006T153752273681-plan-review-of-geometry-figure-vessel-units",
+  "reviewed_blob_sha": "a57103a6e77a4281ac3302a1a31146460fe953a2",
+  "rubric": "design",
+  "rubric_items": {
+    "deep_module": "pass \u2014 the plan adds no module; \u00a75 adds two keyword arguments to the existing `animate_pulse`, and \u00a71\u2013\u00a74 extended existing interfaces, so no complexity is spread across new wrappers.",
+    "duplicate_owner": "pass \u2014 `animate_pulse` remains the single animation owner and \u00a75 adds no parallel path; the landed \u00a71\u2013\u00a74 extend single owners (`extract_vessel_shells`, `InkStyle`, `geometry_figure_mpl`).",
+    "interface_budget": "a finding \u2014 public_definitions 0, cli_options 0, mcp_views 0, refusal_families 0; \u00a75 adds two keyword arguments to the exported `animate_pulse` without the \"retires nothing, because\u2026\" accounting that \u00a72 and \u00a73 carry for their added style constants.",
+    "reuse_search": "pass \u2014 \u00a75 reuses `equilibrium_figure_mpl`'s existing `show_probes`/`show_flux_loops` flags (`imas_ink/figures.py:329-330`) instead of adding drawing, and the landed \u00a71\u2013\u00a74 extend `extract_vessel_shells`, `WallOutline`, `geometry_figure_mpl`'s `ax` and the `InkStyle` fields in place.",
+    "thin_wrapper": "pass \u2014 \u00a75 extends `animate_pulse` in place, which is the honest change, rather than adding a layer over machinery it could extend."
+  },
+  "section_digests": {
+    "_document": "5747cdb0bbf0fc4519544ff876ea19be2a9985b2bfbbf00cc72960054b20e717",
+    "s1": "885edaf89b232e542c4e1df36f64f0b87ae2e7a6a87f0b11a27345ae9d047cf9",
+    "s2": "ede17583d4a9ed56464911987cb57df543fc803dc716c04a8392e26189bb61bf",
+    "s3": "a0fb9d204749a65e7fa4541d5822c2ba83a5600b1634e7d266bfccdd614a62b3",
+    "s4": "0761cdd3530485ff2ba710657112e32b2d9b8578636225e2ebc439e8d04b4019",
+    "s5": "83dcbb1d6a428e69f23facd57dea4fde202a826f55ee97e212738b369cb2e6bd"
+  },
+  "status": "ready",
+  "times_source": "run-record",
+  "timestamp": "2026-10-06T15:49:22.102367+00:00"
+}

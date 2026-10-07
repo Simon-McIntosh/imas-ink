@@ -1,0 +1,60 @@
+{
+  "absent_items": [],
+  "completed_at": "2026-10-06T11:05:15.738Z",
+  "dispatched_at": "2026-10-06T11:00:00Z",
+  "findings": [
+    {
+      "anchor": "imas_ink/three_d/walls.py:354",
+      "id": "duplicate_owner-1",
+      "reason": "the move either strands `extract_vessel_shells` on helpers that stayed in `three_d/walls.py` or forks them into `geometry.py`, so the plan must state the helper placement and consolidate on `_sentinel.safe_float` (or justify why the `0.0`-default variant must differ from the `nan` default).",
+      "text": "`_safe_float` forks the shared sentinel guard `safe_float` (`imas_ink/_sentinel.py:46`), and the plan moves its only in-tree caller `extract_vessel_shells` (`imas_ink/three_d/walls.py:151`) into `imas_ink/geometry.py` without naming where `_safe_float` or the also-shared `_offset_polygon` (`imas_ink/three_d/walls.py:323`, still used by the resident `synthesize_vessel_shell`) land; the moved function needs both, and `geometry.py`'s own docstring (\"no matplotlib or IMAS objects appear in this module\") is already strained by `coil_bboxes` (`imas_ink/geometry.py:96`)",
+      "type": "duplicate_owner",
+      "would_change": true
+    },
+    {
+      "anchor": "imas_ink/mpl.py:537",
+      "id": "thin_wrapper-1",
+      "reason": "the author must specify the extended `_render_timeseries_mpl` contract (how the first series' colour is passed to later series and how label/legend/x-label are suppressed), otherwise the second series recolours from the cycle and overwrites the panel's y-label, contradicting the plan's own done-when.",
+      "text": "\u00a73 says a later series is drawn \"through render_mpl ... in the first series' colour and its own style's trace_linestyle, with no label and no legend\", but `_render_timeseries_mpl` unconditionally sets the axes' y-label and x-label from the series it is handed and takes its line colour from matplotlib's default cycle, so the one change the plan names (adding `trace_linestyle`) cannot yield that behaviour",
+      "type": "thin_wrapper",
+      "would_change": true
+    }
+  ],
+  "plan_fingerprint": "0300f3f8d00ffa8ec94c1426f2b77059dc85cab99cb9a7c4b86f4094643da90d",
+  "plan_slug": "geometry-figure-vessel-units",
+  "plan_version": 5,
+  "project": "imas-ink",
+  "responses": {
+    "duplicate_owner-1": {
+      "action": "acted",
+      "by": "reckon-build coordinator 1caa45fb",
+      "reason": "plan v6 \u00a71 maps every moved piece: types into _types.py, extract_vessel_shells and _offset_polygon into extract.py (geometry.py keeps no IMAS objects), thickness through _sentinel.safe_float; walls.py's private _safe_float stays for its 3D callers",
+      "when": "2026-10-06T11:06:48.621205+00:00"
+    },
+    "thin_wrapper-1": {
+      "action": "acted",
+      "by": "reckon-build coordinator 1caa45fb",
+      "reason": "plan v6 \u00a73 specifies the renderer contract: _render_timeseries_mpl gains color and label_axes keywords, the panel loop passes the first line's colour and label_axes=False to later series, and render_mpl passes them through",
+      "when": "2026-10-06T11:06:48.622450+00:00"
+    }
+  },
+  "review_run_id": "r-20261006T105955421745-plan-review-of-geometry-figure-vessel-units",
+  "reviewed_blob_sha": "0f5bfc9572011fef3316d02c8c868d7e06d009a3",
+  "rubric": "design",
+  "rubric_items": {
+    "deep_module": "pass \u2014 the new behaviour (vessel skins) sits behind the one existing interface `extract_vessel_shells` and the `WallOutline` component, mirroring how `wall_units` already carries multi-unit limiter geometry into both renderers, so no surface is added without a hidden implementation behind it.",
+    "duplicate_owner": "a finding \u2014 the plan relocates `extract_vessel_shells` into `imas_ink/geometry.py` but leaves its helpers unmapped, and `_safe_float` (`imas_ink/three_d/walls.py:354`) already duplicates the shared owner `safe_float` (`imas_ink/_sentinel.py:46`).",
+    "interface_budget": "pass \u2014 `public_definitions` 0, `cli_options` 0, `mcp_views` 0, `refusal_families` 0; each of \u00a71/\u00a72/\u00a73 states in its own text why its one public addition retires nothing (\"no vessel representation today\", \"no style field sets the wall's line style today\", \"no style field sets a trace's line style today\"), so the sections account for their added surface.",
+    "reuse_search": "pass \u2014 the plan names `extract_vessel_shells` (`imas_ink/three_d/walls.py:151`) as the single owner of vessel reading and extends it rather than adding a second extractor, and it draws through the existing component path (`render_mpl` + the `WallOutline` component, `imas_ink/mpl.py:50`, `imas_ink/components.py:138`) instead of a new drawing call.",
+    "thin_wrapper": "a finding \u2014 \u00a73 overlays a list-panel contract on `_render_timeseries_mpl` (`imas_ink/mpl.py:537`) whose stated second-series behaviour (first series' colour, no label, no legend) the existing renderer cannot produce, and the plan does not say how it is extended to."
+  },
+  "section_digests": {
+    "_document": "1eb24fd8dcbb4b2f837fd6309b190a390a7f47549ab598ca1eea3cc172e19cae",
+    "s1": "4d52d985744517e8686e33266ee61722661b5502f32d41c7930a995d90a19e82",
+    "s2": "fbabda3644f5857e7b89bfa2f4f2c498953439c5a25e1370c5500d590d8bf837",
+    "s3": "ec35a98232242c92b269fbf8e5816ec814ad279b7664e62bfcaa09854ee2c079"
+  },
+  "status": "ready",
+  "times_source": "run-record",
+  "timestamp": "2026-10-06T11:06:48.617841+00:00"
+}
