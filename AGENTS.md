@@ -220,6 +220,15 @@ yet — the API stabilises at v0.1.0.
 - Prefer explicit over clever — future agents will read this code.
 - Library first, MCP server second. Everything must be importable as plain
   Python. MCP tools are thin wrappers over the library.
+- **Draw only from IDS.** imas-ink's inputs are IDS, or signals that carry
+  standard-name metadata. The `extract_*` functions read values, time bases,
+  units and names from the IDS and its data-dictionary metadata
+  (`extract_geometry`, `extract_signal_traces`), and a figure is built from
+  what they return. No unit, sign, channel or calibration conversion lives in
+  imas-ink: that belongs to whatever wrote the IDS. A caller that wants to plot
+  something no IDS carries has a data gap to close upstream, not a plotter
+  feature to add. Never hand a figure bare arrays with caller-chosen labels or
+  units to get around this.
 - **Build on common infrastructure.** Before implementing functionality,
   search for existing utilities. When a pattern is needed by multiple
   modules, extract it to a shared location and import from there.
