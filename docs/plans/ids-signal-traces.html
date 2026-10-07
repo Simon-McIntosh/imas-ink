@@ -1,0 +1,112 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="docs-project"   content="imas-ink">
+  <meta name="reckon-type" content="plan">
+  <meta name="plan-slug" content="ids-signal-traces">
+  <meta name="plan-title" content="IDS Signal Traces">
+  <meta name="plan-summary" content="Read a pulse's measured signals as traces straight from their IDS, units from the data dictionary, so trace figures never draw caller arrays">
+  <meta name="plan-status" content="draft">
+  <meta name="plan-roi" content="high">
+  <meta name="plan-effort-hours" content="1.0">
+  <meta name="plan-capability-version" content="1.0">
+  <meta name="plan-capability-class" content="general">
+  <meta name="plan-capability-reasoning" content="standard">
+  <meta name="plan-capability-verification" content="strict">
+  <meta name="plan-capability-risk" content="low">
+  <meta name="plan-owner" content="Simon McIntosh">
+  <meta name="plan-tags" content="figures">
+  <meta name="plan-informs" content="imas-ambix:jt60sa-signal-figures-from-ids">
+  <title>IDS Signal Traces | imas-ink</title>
+  <link rel="stylesheet" href="/_shared/foundation.css">
+  <link rel="stylesheet" href="/_shared/dashboard.css">
+</head>
+<body>
+  <main class="plan-doc">
+    <header>
+      <p class="eyebrow">Trace figures drawn from IDS</p>
+      <h1>IDS Signal Traces</h1>
+      <p class="lead">
+        imas-ink draws only from IDS inputs, or from signals carrying standard-name metadata (lead ruling,
+        2026-10-07). Its geometry path already works this way: <code>extract_geometry</code> reads the
+        <code>wall</code>, <code>pf_active</code> and <code>magnetics</code> IDS. Its only trace extractor,
+        <code>extract_time_traces</code>, reads equilibrium global quantities. Nothing reads a pulse's measured
+        signals, so imas-ambix's JT-60SA signal figures handed <code>TimeSeries</code> bare arrays. They took
+        values from a signal-map view, plotted raw EDDB channels, and labelled them with strings the caller chose.
+        This plan gives imas-ink the missing reader, so a caller hands over the IDS and imas-ink names the signal
+        and its unit itself.
+      </p>
+    </header>
+
+    <h2 id="s1">§1 — Read a dynamic signal's traces from its IDS</h2>
+    <section data-reckon="section" data-id="s1" data-effort-hours="1.0" data-capability-version="1.0" data-capability-class="general" data-capability-reasoning="standard" data-capability-verification="strict" data-capability-risk="low" data-status="implementable" data-links=""></section>
+    <p>
+      <code>imas_ink/extract.py</code> gains one public function, <code>extract_signal_traces(ids, path)</code>,
+      beside <code>extract_time_traces</code>, and exports it from <code>imas_ink</code>. It returns a list of
+      <code>TimeSeries</code>, one per filled signal the path names. Here <code>path</code> is a data-dictionary
+      path, relative to the IDS, to a signal node that carries <code>data</code>, and through any struct array on
+      the way. Examples: <code>coil/current</code> in <code>pf_active</code>, <code>ip</code> and
+      <code>flux_loop/flux</code> in <code>magnetics</code>.
+    </p>
+    <p>
+      The function reads everything it returns from the IDS:
+    </p>
+    <ul>
+      <li><strong>Values:</strong> the node's <code>data</code>.</li>
+      <li><strong>Time base:</strong> the IDS's own <code>time</code> when
+        <code>ids_properties.homogeneous_time</code> is 1, and the node's own <code>time</code> when it is 0. A
+        value of 2 has no time base, so the call raises <code>ValueError</code> naming the path rather than
+        guessing.</li>
+      <li><strong>Unit:</strong> the <code>data</code> leaf's data-dictionary metadata
+        (<code>node.data.metadata.units</code>, for example <code>A</code> or <code>Wb</code>).</li>
+      <li><strong>y-label:</strong> the struct-array element's <code>name</code> when it has a non-empty one (a
+        coil's <code>CS1</code>, a flux loop's <code>FL1</code>). Otherwise it is the path's leading component
+        (<code>ip</code>).</li>
+    </ul>
+    <p>
+      No series carries a legend label. An element whose <code>data</code> is empty, such as an unfed coil or an
+      unbound flux loop, is skipped rather than drawn as an empty panel. So the list holds exactly the signals the
+      IDS carries.
+    </p>
+    <p>
+      The function scales, filters and resamples nothing. A unit, sign or channel conversion belongs to whatever
+      wrote the IDS, never to the plotter. Display resolution remains <code>render_to_bytes</code>'s concern. The
+      result feeds the existing <code>time_trace_figure_mpl</code> unchanged: one panel per series, or several
+      series on one panel. The section adds one public name and retires nothing. The <code>TimeSeries</code> type
+      and the equilibrium extractor stay as they are.
+    </p>
+    <p>
+      Done-when: <code>tests/unit/ink/test_signal_traces.py</code> builds IDS in memory with
+      <code>imas.IDSFactory</code>, with no file and no corpus data, and asserts the following.
+    </p>
+    <ul>
+      <li>A <code>pf_active</code> with three coils, one of them unfed, yields two series. Their y-labels are the
+        coil names, their units are <code>A</code>, and their time is <code>ids.time</code> under homogeneous
+        time 1.</li>
+      <li>A <code>magnetics</code> <code>ip</code> yields one series with y-label <code>ip</code> and unit
+        <code>A</code>.</li>
+      <li>A <code>magnetics</code> under homogeneous time 0 takes each flux loop's own <code>flux.time</code>, with
+        unit <code>Wb</code>.</li>
+      <li>Homogeneous time 2 raises <code>ValueError</code>.</li>
+      <li>No returned series carries a label.</li>
+    </ul>
+    <p>
+      The negative control reads time from <code>ids.time</code> regardless of <code>homogeneous_time</code>; the
+      homogeneous-time-0 test must then fail. Two gates must add nothing against the base revision: <code>uv run
+      --no-sync pytest -p no:cacheprovider -q tests/unit</code> adds no failure, and <code>uv run --no-sync ruff
+      check imas_ink tests</code> adds no finding.
+    </p>
+
+    <section data-reckon="followups" id="followups" class="r-followups">
+<h2><span class="sec">§</span> Followups</h2>
+<article class="r-fu" data-id="f-isig-001" data-status="open" data-capability-version="1.0" data-capability-class="general" data-written-by="reckon-create" data-written-at="2026-10-07" data-recommends-skill="/reckon-build ids-signal-traces §1" data-resolved-at="" data-resolved-by="">
+    <h4 class="r-fu-title">Read a pulse's dynamic signals from its IDS</h4>
+    <div class="r-fu-body"><p>One node. imas-ambix's JT-60SA signal figures are redrawn through it once it lands.</p></div>
+    <pre class="r-fu-prompt">/reckon-build ids-signal-traces §1</pre>
+    </article>
+</section>
+  </main>
+</body>
+</html>
