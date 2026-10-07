@@ -7,6 +7,8 @@ sentinel values.
 
 from __future__ import annotations
 
+import re
+
 import numpy as np
 
 from ._compat import resolve_q95
@@ -18,6 +20,7 @@ from ._types import (
     TimeTraces,
     VesselShell,
 )
+from .components import TimeSeries
 from .geometry import _offset_polygon, coil_bboxes, wall_clip_vertices
 
 # contour_tree node critical_type codes (IMAS DDv4 magnetic-topology convention,
@@ -772,3 +775,123 @@ def extract_profiles_1d(eq_ids, time_index: int) -> RadialProfiles:
         ffprime=_safe_array("f_df_dpsi"),
         time=float(eq_ids.time[time_index]),
     )
+
+
+_INDEX_IN_PATH = re.compile(r"\[[^\]]*\]")
+
+
+def _is_struct_array(obj) -> bool:
+    """Return ``True`` for an imas-python struct array (not a scalar struct).
+
+    A data-dictionary path component that is a struct array names a class of
+    instances rather than one of them, so the signal reader enumerates every
+    element.  Duck-typed around the imas-python type so a mock IDS is simply
+    not a struct array.
+    """
+    try:
+        from imas.ids_structure import IDSStructArray
+    except Exception:  # imas not importable — treat as a scalar struct
+        return False
+    return isinstance(obj, IDSStructArray)
+
+
+def _iter_signal_nodes(obj, components, elements):
+    """Yield ``(node, struct_array_elements)`` for an unindexed path.
+
+    Walks *components* from *obj*, expanding every struct array it passes
+    through into its elements, so a path like ``coil/current`` yields one node
+    per coil and the list of struct-array elements it was reached through.
+    """
+    if not components:
+        yield obj, elements
+        return
+    child = getattr(obj, components[0])
+    if _is_struct_array(child):
+        for el in child:
+            yield from _iter_signal_nodes(el, components[1:], [*elements, el])
+    else:
+        yield from _iter_signal_nodes(child, components[1:], elements)
+
+
+def extract_signal_traces(ids, path: str) -> list[TimeSeries]:
+    """Read dynamic signal traces from an IDS along an unindexed DD path.
+
+    Returns one :class:`TimeSeries` per filled element of every struct array
+    the path passes through.  Everything the series carries is read from the
+    IDS — the value, its data-dictionary unit, and its y-label.  Nothing is
+    scaled, filtered or resampled.
+
+    Parameters
+    ----------
+    ids
+        IMAS IDS object (e.g. a ``pf_active`` or ``magnetics`` IDS).
+    path : str
+        Data-dictionary path **relative to the IDS**, in the data dictionary's
+        own unindexed grammar — the form ``IDSMetadata.path`` gives, e.g.
+        ``coil/current``, ``ip`` or ``flux_loop/flux``.  A path holding an
+        index (``coil[0]/current``) is refused with ``ValueError`` naming the
+        unindexed form, so a copied instance path fails loudly instead of
+        returning a different set of series.
+
+    Returns
+    -------
+    list[TimeSeries]
+        One series per filled signal the path names, in path order.  An
+        element whose ``data`` is empty (an unfed coil, an unbound flux loop)
+        is skipped.  No series carries a legend ``label``; the y-label is the
+        struct-array element's ``name`` when it has a non-empty one, else the
+        path's leading component.
+
+    Raises
+    ------
+    ValueError
+        If *path* holds an index, or if the IDS has no time base
+        (``ids_properties.homogeneous_time`` is 2).
+
+    Examples
+    --------
+    >>> series = extract_signal_traces(pf_ids, "coil/current")
+    >>> [(s.ylabel, s.units) for s in series]
+    [('CS1', 'A'), ('CS2', 'A')]
+    """
+    if "[" in path:
+        unindexed = _INDEX_IN_PATH.sub("", path)
+        raise ValueError(
+            f"signal path {path!r} is indexed; use the unindexed "
+            f"data-dictionary form {unindexed!r}"
+        )
+    components = [c for c in path.split("/") if c]
+    if not components:
+        raise ValueError("signal path must name a node carrying 'data'")
+
+    homogeneous = int(ids.ids_properties.homogeneous_time)
+    if homogeneous == 2:
+        raise ValueError(
+            f"signal path {path!r} has no time base: "
+            "ids_properties.homogeneous_time is 2"
+        )
+    # homogeneous_time 1 → the IDS's own time; 0 → the node's own time.
+    global_time = np.asarray(ids.time) if homogeneous == 1 else None
+
+    series: list[TimeSeries] = []
+    for node, elements in _iter_signal_nodes(ids, components, []):
+        data = np.asarray(node.data)
+        if data.size == 0:
+            continue  # unfed / unbound element — skipped, not drawn empty
+        time = global_time if global_time is not None else np.asarray(node.time)
+        name = ""
+        for el in elements:
+            candidate = str(getattr(el, "name", "")).strip()
+            if candidate:
+                name = candidate
+                break
+        series.append(
+            TimeSeries(
+                time=time,
+                values=data,
+                label="",
+                ylabel=name if name else components[0],
+                units=str(node.data.metadata.units),
+            )
+        )
+    return series
