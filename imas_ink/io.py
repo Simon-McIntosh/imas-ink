@@ -15,6 +15,15 @@ from .style import DEFAULT_STYLE, InkStyle
 if TYPE_CHECKING:
     import matplotlib.figure
 
+#: Metadata each vector format would otherwise stamp with the save time.
+#: ``None`` makes matplotlib omit the key, so an unchanged figure saves to
+#: identical bytes and a re-render shows no diff.
+_UNDATED_METADATA = {"svg": {"Date": None}, "pdf": {"CreationDate": None}}
+
+#: Fixed seed for the element ids matplotlib writes into an SVG, which are
+#: otherwise random on every save.
+_SVG_HASH_SALT = "imas-ink"
+
 
 def render_to_bytes(
     fig: matplotlib.figure.Figure,
@@ -41,7 +50,8 @@ def render_to_bytes(
     Returns
     -------
     bytes
-        Raw image data.
+        Raw image data.  An SVG or PDF carries no save date and an SVG's
+        element ids are seeded, so the same figure always yields the same bytes.
     """
     import matplotlib.pyplot as plt
 
@@ -54,9 +64,16 @@ def render_to_bytes(
         {
             "path.simplify": True,
             "path.simplify_threshold": style.path_simplify_threshold,
+            "svg.hashsalt": _SVG_HASH_SALT,
         }
     ):
-        fig.savefig(buf, format=format, dpi=dpi, bbox_inches="tight")
+        fig.savefig(
+            buf,
+            format=format,
+            dpi=dpi,
+            bbox_inches="tight",
+            metadata=_UNDATED_METADATA.get(format),
+        )
     plt.close(fig)
     buf.seek(0)
     return buf.read()
