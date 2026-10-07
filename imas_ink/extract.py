@@ -856,8 +856,7 @@ def extract_signal_traces(ids, path: str) -> list[TimeSeries]:
     if "[" in path:
         unindexed = _INDEX_IN_PATH.sub("", path)
         raise ValueError(
-            f"signal path {path!r} is indexed; use the unindexed "
-            f"data-dictionary form {unindexed!r}"
+            f"signal path {path!r} is indexed; use the unindexed data-dictionary form {unindexed!r}"
         )
     components = [c for c in path.split("/") if c]
     if not components:
@@ -866,8 +865,7 @@ def extract_signal_traces(ids, path: str) -> list[TimeSeries]:
     homogeneous = int(ids.ids_properties.homogeneous_time)
     if homogeneous == 2:
         raise ValueError(
-            f"signal path {path!r} has no time base: "
-            "ids_properties.homogeneous_time is 2"
+            f"signal path {path!r} has no time base: ids_properties.homogeneous_time is 2"
         )
     # homogeneous_time 1 → the IDS's own time; 0 → the node's own time.
     global_time = np.asarray(ids.time) if homogeneous == 1 else None
