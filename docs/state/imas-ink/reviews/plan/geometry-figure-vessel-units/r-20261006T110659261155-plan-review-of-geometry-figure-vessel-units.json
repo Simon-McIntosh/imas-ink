@@ -1,0 +1,88 @@
+{
+  "absent_items": [],
+  "completed_at": "2026-10-06T11:14:03.033Z",
+  "dispatched_at": "2026-10-06T11:07:03Z",
+  "findings": [
+    {
+      "anchor": "imas_ink/three_d/walls.py:354",
+      "id": "duplicate_owner-1",
+      "reason": "the stated rationale is factually wrong and the honest change is to delete the dead copy (and note the `coilset.py` one) rather than leave two private float guards beside the shared one.",
+      "text": "the plan keeps `_safe_float` because it \"stays for its 3D callers\", but its only caller is line 190 inside `extract_vessel_shells`, which \u00a71 moves to `imas_ink/extract.py`; after the move the guard has no caller in `walls.py`, and a third copy of the same guard lives at `imas_ink/three_d/coilset.py:363`, while the shared owner is `imas_ink/_sentinel.py:46` `safe_float`",
+      "type": "duplicate_owner",
+      "would_change": true
+    },
+    {
+      "anchor": "imas_ink/extract.py:69",
+      "id": "duplicate_owner-2",
+      "reason": "the owner to extend is `geometry.py`, and the plan's own quotation of geometry.py's \"keeps no IMAS objects\" docstring argues for placing the no-IMAS helper there, not against it.",
+      "text": "the plan parks the pure-numpy `_offset_polygon` in `extract.py`, whose docstring scopes it to \"IDS to dataclass extractor functions\", when `imas_ink/geometry.py` is the module that owns backend-neutral numpy polygon geometry (`close_polygon` `geometry.py:203`, `wall_clip_vertices` `geometry.py:69`, `points_in_polygon` `geometry.py:392)",
+      "type": "duplicate_owner",
+      "would_change": true
+    },
+    {
+      "anchor": "imas_ink/__init__.py:162",
+      "id": "duplicate_owner-3",
+      "reason": "the plan's claim that \"each piece keeps one owner\" and that the 2D path never loads the 3D stack requires pointing those three names at their new core homes (`_types.py`, `extract.py`).",
+      "text": "the move leaves `VesselShell`, `WallOutline2D` and `extract_vessel_shells` in the `_WALL_NAMES` lazy map (`__init__.py:124`, `:126`, `:128`), so top-level access still does `from .three_d import walls`, the one import \u00a71 exists to avoid, and the moved names now have a second, stale home",
+      "type": "duplicate_owner",
+      "would_change": true
+    },
+    {
+      "anchor": "/home/ITER/mcintos/Code/imas-ink/docs/plans/geometry-figure-vessel-units.html#s3",
+      "id": "interface_budget-1",
+      "reason": "one sentence settling whether `color`/`label_axes` become public on `render_mpl` or stay on the private renderer keeps this week's added surface accounted for.",
+      "text": "\u00a73 accounts for `trace_linestyle` retiring nothing but then has `render_mpl` \"pass the keywords through\", and `render_mpl` is a top-level public export (`imas_ink/__init__.py:112`), so the section grows a public signature without naming what that changes or why it cannot be avoided",
+      "type": "interface_budget",
+      "would_change": true
+    }
+  ],
+  "plan_fingerprint": "3877edc2cf417e343ebba924d7110095b086271595733bf5bf63f5a04d6bf8a9",
+  "plan_slug": "geometry-figure-vessel-units",
+  "plan_version": 6,
+  "project": "imas-ink",
+  "responses": {
+    "duplicate_owner-1": {
+      "action": "acted",
+      "by": "reckon-build coordinator 1caa45fb",
+      "reason": "plan v7 \u00a71 deletes walls.py's _safe_float, whose only caller moves, and notes the coilset.py copy as out of scope",
+      "when": "2026-10-06T11:14:46.033591+00:00"
+    },
+    "duplicate_owner-2": {
+      "action": "acted",
+      "by": "reckon-build coordinator 1caa45fb",
+      "reason": "plan v7 \u00a71 places the pure-numpy _offset_polygon in geometry.py beside close_polygon and points_in_polygon",
+      "when": "2026-10-06T11:14:46.034546+00:00"
+    },
+    "duplicate_owner-3": {
+      "action": "acted",
+      "by": "reckon-build coordinator 1caa45fb",
+      "reason": "plan v7 \u00a71 points the __init__.py lazy map entries for VesselShell, WallOutline2D and extract_vessel_shells at _types.py and extract.py",
+      "when": "2026-10-06T11:14:46.035478+00:00"
+    },
+    "interface_budget-1": {
+      "action": "acted",
+      "by": "reckon-build coordinator 1caa45fb",
+      "reason": "plan v7 \u00a73 keeps color and label_axes on the private _render_timeseries_mpl, called directly by the panel loop, so render_mpl's public signature does not change",
+      "when": "2026-10-06T11:14:46.036337+00:00"
+    }
+  },
+  "review_run_id": "r-20261006T110659261155-plan-review-of-geometry-figure-vessel-units",
+  "reviewed_blob_sha": "01b17d60a9ae30bbf7bae2e58fae87c8e3b824e5",
+  "rubric": "design",
+  "rubric_items": {
+    "deep_module": "pass \u2014 the whole vessel parse stays behind one function returning a list of `VesselShell`, and every addition is a parameter or field on an existing deep builder (`geometry_figure_mpl`, `time_trace_figure_mpl`, `MachineGeometry`), not a new shallow module.",
+    "duplicate_owner": "a finding \u2014 the relocation out of `three_d/walls.py` leaves three ownership defects: a dead `_safe_float` copy, a pure-geometry helper misfiled into `extract.py`, and the `__init__.py` lazy map still sourcing moved core names from `three_d.walls`.",
+    "interface_budget": "a finding \u2014 public_definitions 0, cli_options 0, mcp_views 0, refusal_families 0; \u00a71 and \u00a72 name why their new field and style constant retire nothing, but \u00a73 passes new keyword arguments through the public `render_mpl` without stating whether its signature grows, or why nothing can be.",
+    "reuse_search": "pass \u2014 the plan opens each mechanism it extends before proposing new work and cites them by owner: `extract_vessel_shells` (`imas_ink/three_d/walls.py:151`), `_select_description_2d` (`imas_ink/extract.py:322`), the `WallOutline`/`render_mpl` dispatch (`imas_ink/components.py:138`, `imas_ink/mpl.py:50`), and it reuses the existing dashed reference vocabulary `ref_lcfs_linestyle` (`imas_ink/style.py:145`) instead of adding one.",
+    "thin_wrapper": "pass \u2014 \u00a71 states it \"extends that one owner rather than adding a second extractor\", and \u00a72/\u00a73 extend the existing figure builders and the existing `render_mpl` dispatch, so no parallel layer is laid over machinery that already does the job."
+  },
+  "section_digests": {
+    "_document": "1eb24fd8dcbb4b2f837fd6309b190a390a7f47549ab598ca1eea3cc172e19cae",
+    "s1": "a43bc32a8f8b134ea9ca914e967f79eaf48e95503de86ca6680947997afda9d7",
+    "s2": "fbabda3644f5857e7b89bfa2f4f2c498953439c5a25e1370c5500d590d8bf837",
+    "s3": "acf0183b324851551fc15fcdb83a41d1b6219687c0e24f22e3b883ff6b67101b"
+  },
+  "status": "ready",
+  "times_source": "run-record",
+  "timestamp": "2026-10-06T11:14:46.032275+00:00"
+}

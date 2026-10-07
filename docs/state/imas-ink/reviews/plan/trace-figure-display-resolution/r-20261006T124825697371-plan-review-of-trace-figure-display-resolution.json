@@ -1,0 +1,73 @@
+{
+  "absent_items": [],
+  "completed_at": "2026-10-06T12:53:00.482Z",
+  "dispatched_at": "2026-10-06T12:48:28Z",
+  "findings": [
+    {
+      "anchor": "imas-ink/docs/plans/trace-figure-display-resolution.html#s1",
+      "id": "reuse_search-1",
+      "reason": "the matplotlib half of \u00a71 may be an rcParam change rather than a new module and style field, or the plan must state why path.simplify_threshold cannot reach the size and vertex target.",
+      "text": "\u00a71 adds a new imas_ink/_decimate.py min/max envelope and asserts the 1.7\u20133.4 MB SVGs come from \"every one of up to 310,077 cached samples per trace ... written as a path vertex\", but matplotlib already decimates drawn paths to display resolution through rcParams[\"path.simplify\"] / \"path.simplify_threshold\": measured on the repo's own venv, a 300,000-sample SVG line is 300,071 vertices / 7.4 MB with simplify off, 8,948 vertices / 232 KB at the default threshold 0.1111, and 1,053 vertices / 37 KB at threshold 1.0 \u2014 below the plan's own 4,000-vertex target. The plan cites no search and no comparison against this existing knob. The altair path (_render_timeseries_alt, imas_ink/alt.py:370) has no equivalent, so the module is still needed there.",
+      "type": "reuse_search",
+      "would_change": true
+    },
+    {
+      "anchor": "imas-ink/docs/plans/trace-figure-display-resolution.html#s2",
+      "id": "interface_budget-1",
+      "reason": "the section must account for the render_mpl keyword surface, or thread the flag to the private renderer without adding public surface, to meet the one-rule interface budget.",
+      "text": "\u00a72's stated mechanism, that time_trace_figure_mpl \"passes label_time=False for every panel but the bottom one\", can only reach _render_timeseries_mpl (imas_ink/mpl.py:549) through the exported dispatcher render_mpl (exported at imas_ink/__init__.py:112 and :288; called at imas_ink/figures.py:95 and :100), so it adds a keyword parameter to a public function; \u00a72 nevertheless says \"It adds no public name\" and names nothing retired or merged. (The \u00a71 trace_max_points InkStyle field IS accounted for \u2014 the section states why nothing can be retired \u2014 but \u00a72 is not.)",
+      "type": "interface_budget",
+      "would_change": true
+    },
+    {
+      "anchor": "imas-ink/docs/plans/trace-figure-display-resolution.html#s2",
+      "id": "duplicate_owner-1",
+      "reason": "the plan names the altair stack and deliberately scopes it out with a stated reason (a served MCP application, not the matplotlib figures this plan serves).",
+      "text": "the \"stack traces on one shared time axis\" concern has a second owner: the altair trace stack sets one \"Time [s]\" x-title per trace (imas_ink/alt.py:393) and concatenates one chart per panel (imas_ink/server/mcp.py:296\u2013299), reproducing at alt.py:393 the same repeated-label defect \u00a72 fixes at imas_ink/mpl.py:577, while \u00a71 is willing to edit alt.py for decimation but \u00a72 leaves this path unchanged.",
+      "type": "duplicate_owner",
+      "would_change": false
+    }
+  ],
+  "plan_fingerprint": "1bba410b6a5f6142fca67b246152799dc4957371b3abcd933ca738e44a6b0982",
+  "plan_slug": "trace-figure-display-resolution",
+  "plan_version": 1,
+  "project": "imas-ink",
+  "responses": {
+    "duplicate_owner-1": {
+      "action": "declined",
+      "by": "reckon-build coordinator 1caa45fb",
+      "reason": "repeat of the v0 finding declined with reason: the repeated altair title arises where the served MCP application concatenates charts in server/mcp.py, outside the matplotlib figures this plan serves",
+      "when": "2026-10-06T12:54:18.663323+00:00"
+    },
+    "interface_budget-1": {
+      "action": "acted",
+      "by": "reckon-build coordinator 1caa45fb",
+      "reason": "plan v2 \u00a72 has time_trace_figure_mpl call the private renderer directly for every panel, so the exported render_mpl gains no keyword",
+      "when": "2026-10-06T12:54:18.662047+00:00"
+    },
+    "reuse_search-1": {
+      "action": "acted",
+      "by": "reckon-build coordinator 1caa45fb",
+      "reason": "plan v2 \u00a71 uses matplotlib's path.simplify_threshold for the matplotlib half, set by render_to_bytes from a new InkStyle.path_simplify_threshold (1.0), and keeps the min/max envelope only for altair, which has no equivalent",
+      "when": "2026-10-06T12:54:18.660690+00:00"
+    }
+  },
+  "review_run_id": "r-20261006T124825697371-plan-review-of-trace-figure-display-resolution",
+  "reviewed_blob_sha": "7c3860e65bca42ae93aa73b572a1723f4b041251",
+  "rubric": "design",
+  "rubric_items": {
+    "deep_module": "pass \u2014 imas_ink/_decimate.py is one private function hiding the bin/min-max envelope behind an interface smaller than what it hides, shared by both renderers.",
+    "duplicate_owner": "a finding \u2014 the shared-time-axis concern has a second owner in the altair stack (imas_ink/alt.py:393), which \u00a72 leaves repeating the label.",
+    "interface_budget": "a finding \u2014 public_definitions 0, cli_options 0, mcp_views 0, refusal_families 0; \u00a72 adds a keyword to the exported render_mpl yet states it adds no public name and names nothing retired or merged.",
+    "reuse_search": "a finding \u2014 \u00a71 adds a new decimation module without citing matplotlib's existing path.simplify_threshold, which already reduces an SVG path to display resolution.",
+    "thin_wrapper": "pass \u2014 \u00a72 extends the existing _render_timeseries_mpl label mechanism rather than adding a parallel wrapper over it."
+  },
+  "section_digests": {
+    "_document": "d5af5cb3fe8c61df3ded004265989188b3060bfad50125ee173a35f7c837b924",
+    "s1": "07176adaeb4eeef1cf135531b8f4304eb54d9889479cc04996681d40d8039bda",
+    "s2": "ecc96d627220b76ffcd1174fbd79368c0aeb4b9cb94f93c57e5c61e1c0fb66b6"
+  },
+  "status": "ready",
+  "times_source": "run-record",
+  "timestamp": "2026-10-06T12:54:18.658556+00:00"
+}

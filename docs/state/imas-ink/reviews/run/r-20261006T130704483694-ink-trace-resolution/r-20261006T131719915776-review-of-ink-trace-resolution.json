@@ -1,0 +1,51 @@
+{
+  "absent": [],
+  "absent_items": [],
+  "added_failure_count": 0,
+  "added_failure_ids": [],
+  "completed_at": "2026-10-06T13:24:45.065Z",
+  "dispatched_at": "2026-10-06T13:17:21Z",
+  "findings": [
+    {
+      "file": "docs/evidence/fragments/trace-figure-display-resolution/ink-trace-resolution.html",
+      "line": "26",
+      "severity": "follow-on",
+      "text": "follow-on: the fragment and the manifest quote the head SVG as 32,819 bytes, but the same tree and pipeline yield 51,648 bytes here (stable across runs); both satisfy the 100 KB bound so the done-when holds, yet the quoted metric does not reproduce and should have been re-read from the run rather than asserted."
+    }
+  ],
+  "item_aggregate": 6,
+  "item_verdicts": {
+    "call_sites": "verified 6 production call site(s)",
+    "diff": "read commit by commit \u2014 bded8c1 the code and tests (+186/-4), 18bb10a the evidence fragment, 540f3be a base-arm count correction; the code matches the section, adding no other matplotlib code path.",
+    "done_when": "tests/unit/test_trace_resolution.py renders a 300,000-sample trace through time_trace_figure_mpl and render_to_bytes(format=\"svg\") asserting the SVG is under 100 KB, asserts the altair renderer emits at most trace_max_points points with the global minimum and maximum intact, and asserts a 500-sample series is drawn unchanged; all three pass here, and the declared mutation reddens the SVG test.",
+    "goal": "the landed change bounds trace figures to display resolution \u2014 imas_ink/style.py:166 adds path_simplify_threshold (1.0) and trace_max_points (4000), imas_ink/io.py:48 saves inside an rc_context applying path.simplify with the style threshold, and imas_ink/alt.py:378 draws a series longer than the bound through the single min/max envelope in imas_ink/_decimate.py:14.",
+    "manifest": "read; status complete, every declared field filled, both gate logs recorded with identical failure-id sets, a negative control named with its log, and the two constants and their defaults recorded.",
+    "write_paths": "read the manifest's seven declared paths; the diff over 596ad0f..540f3be touches exactly six (imas_ink/style.py, io.py, _decimate.py, alt.py, tests/unit/test_trace_resolution.py, docs/evidence/fragments/trace-figure-display-resolution/ink-trace-resolution.html) with no file outside the declaration; the declared figure directory is not written and the section requires no figure."
+  },
+  "justifications": {
+    "durability": "each added assertion fails under a specific regression \u2014 test_long_trace_svg_is_bounded reddens when render_to_bytes ignores the threshold (shown), test_altair_bounds_long_series_but_keeps_extremes reddens if the envelope drops an extreme, and test_altair_keeps_short_series_unchanged reddens if a sub-limit series is binned (tests/unit/test_trace_resolution.py:36,44,52).",
+    "evidence": "the reviewed manifest's baseline_suite (596ad0f) and after_suite (540f3be) logs both end '1 failed, 4 errors' with identical failure ids and the negative control reproduces exactly here (324,979 bytes, EXIT=1, only test_long_trace_svg_is_bounded reddens), but the fragment's quoted head SVG size (32,819 bytes, docs/evidence/fragments/trace-figure-display-resolution/ink-trace-resolution.html:26) does not reproduce \u2014 I measure 51,648 bytes stably, still under the 100 KB bound.",
+    "fit": "the private module imas_ink/_decimate.py:1 and private function _minmax_envelope follow the repository's existing private-module idiom (_cocos.py, _compat.py), the InkStyle fields carry mechanism comments, and no plan label, version, ticket or author attribution appears in any changed path.",
+    "goal_fidelity": "independently reproduced against the reviewed head \u2014 imas_ink/_decimate.py:40 bins into trace_max_points/2 equal-count bins returning min/max in time order, and imas_ink/io.py:48 applies path_simplify_threshold from style.path_simplify_threshold with no other matplotlib path.",
+    "reuse": "a capability search over imas_ink for decimation, downsampling, resampling, envelope and min/max found no owner of a trace-envelope reducer (imas_ink/three_d/primitives.py:211 resamples a polyline by arc length for geometry sweeps, a different capability), so _minmax_envelope is the first owner and both renderers reach it without forking.",
+    "scope_discipline": "git diff --name-only over 596ad0f..540f3be lists exactly the six declared source/test/fragment paths and nothing outside the manifest's declared write paths."
+  },
+  "project": "imas-ink",
+  "raw_text": "VERDICT goal: the landed change bounds trace figures to display resolution \u2014 imas_ink/style.py:166 adds path_simplify_threshold (1.0) and trace_max_points (4000), imas_ink/io.py:48 saves inside an rc_context applying path.simplify with the style threshold, and imas_ink/alt.py:378 draws a series longer than the bound through the single min/max envelope in imas_ink/_decimate.py:14.\nVERDICT done_when: tests/unit/test_trace_resolution.py renders a 300,000-sample trace through time_trace_figure_mpl and render_to_bytes(format=\"svg\") asserting the SVG is under 100 KB, asserts the altair renderer emits at most trace_max_points points with the global minimum and maximum intact, and asserts a 500-sample series is drawn unchanged; all three pass here, and the declared mutation reddens the SVG test.\nVERDICT write_paths: read the manifest's seven declared paths; the diff over 596ad0f..540f3be touches exactly six (imas_ink/style.py, io.py, _decimate.py, alt.py, tests/unit/test_trace_resolution.py, docs/evidence/fragments/trace-figure-display-resolution/ink-trace-resolution.html) with no file outside the declaration; the declared figure directory is not written and the section requires no figure.\nVERDICT manifest: read; status complete, every declared field filled, both gate logs recorded with identical failure-id sets, a negative control named with its log, and the two constants and their defaults recorded.\nVERDICT diff: read commit by commit \u2014 bded8c1 the code and tests (+186/-4), 18bb10a the evidence fragment, 540f3be a base-arm count correction; the code matches the section, adding no other matplotlib code path.\nCALL_SITES: imas_ink/server/mcp.py:185, imas_ink/server/mcp.py:234, imas_ink/server/mcp.py:302, imas_ink/server/mcp.py:349, imas_ink/server/mcp.py:465 (render_to_bytes callers; the added style parameter is optional and backward-compatible), imas_ink/alt.py:113 (TimeSeries dispatch reaching _render_timeseries_alt via render_alt)\nSCORE goal_fidelity: 20\nJUSTIFICATION goal_fidelity: independently reproduced against the reviewed head \u2014 imas_ink/_decimate.py:40 bins into trace_max_points/2 equal-count bins returning min/max in time order, and imas_ink/io.py:48 applies path_simplify_threshold from style.path_simplify_threshold with no other matplotlib path.\nSCORE evidence: 19\nJUSTIFICATION evidence: the reviewed manifest's baseline_suite (596ad0f) and after_suite (540f3be) logs both end '1 failed, 4 errors' with identical failure ids and the negative control reproduces exactly here (324,979 bytes, EXIT=1, only test_long_trace_svg_is_bounded reddens), but the fragment's quoted head SVG size (32,819 bytes, docs/evidence/fragments/trace-figure-display-resolution/ink-trace-resolution.html:26) does not reproduce \u2014 I measure 51,648 bytes stably, still under the 100 KB bound.\nSCORE scope_discipline: 20\nJUSTIFICATION scope_discipline: git diff --name-only over 596ad0f..540f3be lists exactly the six declared source/test/fragment paths and nothing outside the manifest's declared write paths.\nSCORE durability: 20\nJUSTIFICATION durability: each added assertion fails under a specific regression \u2014 test_long_trace_svg_is_bounded reddens when render_to_bytes ignores the threshold (shown), test_altair_bounds_long_series_but_keeps_extremes reddens if the envelope drops an extreme, and test_altair_keeps_short_series_unchanged reddens if a sub-limit series is binned (tests/unit/test_trace_resolution.py:36,44,52).\nSCORE fit: 20\nJUSTIFICATION fit: the private module imas_ink/_decimate.py:1 and private function _minmax_envelope follow the repository's existing private-module idiom (_cocos.py, _compat.py), the InkStyle fields carry mechanism comments, and no plan label, version, ticket or author attribution appears in any changed path.\nSCORE reuse: 20\nJUSTIFICATION reuse: a capability search over imas_ink for decimation, downsampling, resampling, envelope and min/max found no owner of a trace-envelope reducer (imas_ink/three_d/primitives.py:211 resamples a polyline by arc length for geometry sweeps, a different capability), so _minmax_envelope is the first owner and both renderers reach it without forking.\nFINDING docs/evidence/fragments/trace-figure-display-resolution/ink-trace-resolution.html:26 follow-on: the fragment and the manifest quote the head SVG as 32,819 bytes, but the same tree and pipeline yield 51,648 bytes here (stable across runs); both satisfy the 100 KB bound so the done-when holds, yet the quoted metric does not reproduce and should have been re-read from the run rather than asserted.\n",
+  "review_run_id": "r-20261006T131719915776-review-of-ink-trace-resolution",
+  "reviewed_base_sha": "596ad0f8775720daa5beb69063ee1e24a3d4730d",
+  "reviewed_head_sha": "540f3be611b83195038d7e6b6ba5a360164bf716",
+  "reviewed_run_id": "r-20261006T130704483694-ink-trace-resolution",
+  "scores": {
+    "durability": 20,
+    "evidence": 19,
+    "fit": 20,
+    "goal_fidelity": 20,
+    "reuse": 20,
+    "scope_discipline": 20
+  },
+  "status": "parsed",
+  "times_source": "run-record",
+  "timestamp": "2026-10-06T13:22:52.063713+00:00",
+  "total": 119
+}

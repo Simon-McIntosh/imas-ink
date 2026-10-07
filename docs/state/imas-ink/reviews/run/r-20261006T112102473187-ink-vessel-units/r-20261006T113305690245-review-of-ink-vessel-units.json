@@ -1,0 +1,51 @@
+{
+  "absent": [],
+  "absent_items": [],
+  "added_failure_count": 0,
+  "added_failure_ids": [],
+  "completed_at": "2026-10-06T11:38:16.067Z",
+  "dispatched_at": "2026-10-06T11:33:08Z",
+  "findings": [
+    {
+      "file": "imas_ink/extract.py",
+      "line": "516",
+      "severity": "follow-on",
+      "text": "the annular branch returns shells only when both outline_inner and outline_outer are filled, so an annular vessel unit with just one of the two populated (a representation the IMAS wall IDS permits) falls through to the centreline/outline fallback and the filled skin is silently dropped, rendering nothing for that unit."
+    }
+  ],
+  "item_aggregate": 6,
+  "item_verdicts": {
+    "call_sites": "verified 7 production call site(s)",
+    "diff": "read commit 03d9593 against base 5eb401b, 11 files, all inside scope; relocates WallOutline2D/VesselShell to _types.py, extract_vessel_shells to extract.py and _offset_polygon to geometry.py, adds the annular outline path, and wires both renderers plus the viewport.",
+    "done_when": "the done_when nominates `pytest tests/unit tests/three_d` adding no failure and `ruff check imas_ink tests` exiting 0; tests/three_d does not exist (the named pytest path exits 4) and ruff reports 55 pre-existing findings (non-zero exit), so the worker ran `pytest tests/unit` and recorded both deviations in the manifest.",
+    "goal": "the node goal is to draw a wall's annular vacuum-vessel skins in the 2D geometry figure through the relocated extract_vessel_shells; imas_ink/extract.py:473 returns one VesselShell per filled annular outline (extract.py:514) and imas_ink/figures.py:185 passes them into the WallOutline the 2D figure draws.",
+    "manifest": "read; it records `pytest tests/unit` head 393 passed / 1 failed / 4 errors against base 387 / 1 / 4 with identical ids, ruff 55 findings (delta 0), and a negative control that reddens 4 tests.",
+    "write_paths": "read the manifest's 11 declared paths; every path in the diff is one of them and no file outside them changed."
+  },
+  "justifications": {
+    "durability": "tests/unit/test_vessel_units.py:751 etc. fail if the annular path regresses \u2014 the manifest's negative control (extract.py:514 made to ignore outline_inner/outer) reddens 4 of the 6 tests \u2014 though the altair test builds its WallOutline directly and the centreline/thickness branch is untested.",
+    "evidence": "imas_ink/figures.py and the manifest evidence the pytest arm (head/base 1 failed + 4 errors, identical ids) but the done_when's nominated command `tests/unit tests/three_d` exits 4 and its ruff `exits 0` is unmet (55 pre-existing findings), so the gate ran substituted.",
+    "fit": "the moved code follows the surrounding idiom of imas_ink/geometry.py:233 and imas_ink/_types.py:15, adds no forbidden name or plan label, and only the pre-existing local `import numpy` in _offset_polygon sits oddly beside geometry.py's module-level import.",
+    "goal_fidelity": "imas_ink/extract.py:514 reads the selected description_2d entry's annular outline_inner/outer into two shells and imas_ink/figures.py:185 draws them, which is the goal.",
+    "reuse": "WallOutline2D/VesselShell move onto imas_ink/_types.py, extract_vessel_shells onto imas_ink/extract.py and _offset_polygon onto imas_ink/geometry.py, each extending the owner of its capability; the residual private _safe_float at imas_ink/three_d/coilset.py:363 duplicates imas_ink/_sentinel.py:46 but is pre-existing and named out of scope by the plan, and no added definition forks an existing owner.",
+    "scope_discipline": "all 11 changed files are inside the manifest's declared write paths (imas_ink/_types.py, extract.py, geometry.py, three_d/walls.py, __init__.py, components.py, mpl.py, alt.py, figures.py, tests/unit/test_vessel_units.py, the evidence fragment)."
+  },
+  "project": "imas-ink",
+  "raw_text": "VERDICT goal: the node goal is to draw a wall's annular vacuum-vessel skins in the 2D geometry figure through the relocated extract_vessel_shells; imas_ink/extract.py:473 returns one VesselShell per filled annular outline (extract.py:514) and imas_ink/figures.py:185 passes them into the WallOutline the 2D figure draws.\nVERDICT done_when: the done_when nominates `pytest tests/unit tests/three_d` adding no failure and `ruff check imas_ink tests` exiting 0; tests/three_d does not exist (the named pytest path exits 4) and ruff reports 55 pre-existing findings (non-zero exit), so the worker ran `pytest tests/unit` and recorded both deviations in the manifest.\nVERDICT write_paths: read the manifest's 11 declared paths; every path in the diff is one of them and no file outside them changed.\nVERDICT manifest: read; it records `pytest tests/unit` head 393 passed / 1 failed / 4 errors against base 387 / 1 / 4 with identical ids, ruff 55 findings (delta 0), and a negative control that reddens 4 tests.\nVERDICT diff: read commit 03d9593 against base 5eb401b, 11 files, all inside scope; relocates WallOutline2D/VesselShell to _types.py, extract_vessel_shells to extract.py and _offset_polygon to geometry.py, adds the annular outline path, and wires both renderers plus the viewport.\nCALL_SITES: imas_ink/extract.py:607 extract_geometry, imas_ink/figures.py:185 geometry_figure_mpl, imas_ink/figures.py:707 equilibrium_chart_alt, imas_ink/mpl.py:_render_wall_mpl, imas_ink/alt.py:_render_wall_alt, imas_ink/three_d/scene.py:303, imas_ink/three_d/coilset.py:273\nSCORE goal_fidelity: 19\nJUSTIFICATION goal_fidelity: imas_ink/extract.py:514 reads the selected description_2d entry's annular outline_inner/outer into two shells and imas_ink/figures.py:185 draws them, which is the goal.\nSCORE evidence: 16\nJUSTIFICATION evidence: imas_ink/figures.py and the manifest evidence the pytest arm (head/base 1 failed + 4 errors, identical ids) but the done_when's nominated command `tests/unit tests/three_d` exits 4 and its ruff `exits 0` is unmet (55 pre-existing findings), so the gate ran substituted.\nSCORE scope_discipline: 20\nJUSTIFICATION scope_discipline: all 11 changed files are inside the manifest's declared write paths (imas_ink/_types.py, extract.py, geometry.py, three_d/walls.py, __init__.py, components.py, mpl.py, alt.py, figures.py, tests/unit/test_vessel_units.py, the evidence fragment).\nSCORE durability: 18\nJUSTIFICATION durability: tests/unit/test_vessel_units.py:751 etc. fail if the annular path regresses \u2014 the manifest's negative control (extract.py:514 made to ignore outline_inner/outer) reddens 4 of the 6 tests \u2014 though the altair test builds its WallOutline directly and the centreline/thickness branch is untested.\nSCORE fit: 18\nJUSTIFICATION fit: the moved code follows the surrounding idiom of imas_ink/geometry.py:233 and imas_ink/_types.py:15, adds no forbidden name or plan label, and only the pre-existing local `import numpy` in _offset_polygon sits oddly beside geometry.py's module-level import.\nSCORE reuse: 19\nJUSTIFICATION reuse: WallOutline2D/VesselShell move onto imas_ink/_types.py, extract_vessel_shells onto imas_ink/extract.py and _offset_polygon onto imas_ink/geometry.py, each extending the owner of its capability; the residual private _safe_float at imas_ink/three_d/coilset.py:363 duplicates imas_ink/_sentinel.py:46 but is pre-existing and named out of scope by the plan, and no added definition forks an existing owner.\nFINDING imas_ink/extract.py:516 follow-on: the annular branch returns shells only when both outline_inner and outline_outer are filled, so an annular vessel unit with just one of the two populated (a representation the IMAS wall IDS permits) falls through to the centreline/outline fallback and the filled skin is silently dropped, rendering nothing for that unit.\n",
+  "review_run_id": "r-20261006T113305690245-review-of-ink-vessel-units",
+  "reviewed_base_sha": "5eb401b64ebc5a9aa41a319982d4a0b25c25faa7",
+  "reviewed_head_sha": "03d95931f92cb43703ddc221d56456c64f79b282",
+  "reviewed_run_id": "r-20261006T112102473187-ink-vessel-units",
+  "scores": {
+    "durability": 18,
+    "evidence": 16,
+    "fit": 18,
+    "goal_fidelity": 19,
+    "reuse": 19,
+    "scope_discipline": 20
+  },
+  "status": "parsed",
+  "times_source": "run-record",
+  "timestamp": "2026-10-06T11:37:32.764014+00:00",
+  "total": 110
+}

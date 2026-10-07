@@ -1,0 +1,59 @@
+{
+  "absent_items": [],
+  "completed_at": "2026-10-06T13:00:27.022Z",
+  "dispatched_at": "2026-10-06T12:54:30Z",
+  "findings": [
+    {
+      "anchor": "imas_ink/alt.py:377",
+      "id": "reuse_search-1",
+      "reason": "the plan's \u00a71 motivation and its constant's justification are both wrong for altair; the honest change names the existing row-limit mechanism (disable it, or bind `trace_max_points` to it in the plan text and docstring) rather than silently sitting under a limit the plan never mentions.",
+      "text": "the plan's altair premise is inverted and its new constant is coupled to an unmentioned existing mechanism: `_render_timeseries_alt` builds `df` from every sample (alt.py:377) into `alt.Chart(df)` (alt.py:386, alt.py:404), but altair's default data transformer raises `MaxRowsError` above 5000 rows \u2014 verified in the repo venv (altair 6.1.0) that `alt.Chart(DataFrame of 300000 rows).mark_line().encode(...).to_dict()` raises `MaxRowsError: The number of rows in your dataset (300000) is greater than the maximum allowed (5000)`; imas-ink never calls `alt.data_transformers.disable_max_rows()` (no `max_rows`/`data_transformers` reference anywhere in `imas_ink/`), so today the altair trace renderer does not write a 1.7\u20133.4 MB chart, it errors at render; the plan then fixes it by picking `trace_max_points = 4000` \u2014 just under altair's 5000 throw \u2014 while presenting that constant as freely settable style, so a user override above 5000 re-breaks the renderer, and no census of the altair row limit (alt.py:377, alt.py:386, alt.py:404) or pointer to `MaxRowsError`/`disable_max_rows` appears in the plan",
+      "type": "reuse_search",
+      "would_change": true
+    },
+    {
+      "anchor": "imas_ink/figures.py:139",
+      "id": "duplicate_owner-1",
+      "reason": "one generalised control retires the label on both matplotlib stacks in a single pass, whereas a trace-only keyword leaves `\u03c8_norm` to need its own flag later and the plan's own argument (\"extends that mechanism\") is only half-honoured.",
+      "text": "\u00a72 adds a trace-specific `label_time` keyword for one of the two `sharex` stacks that repeat an axis label, leaving the sibling unsuppressed: `radial_profile_figure_mpl` builds a `sharex=True` stack (figures.py:139) and calls `render_mpl(ax_i, rp)` per panel (figures.py:143), whose renderer `_render_radialprofile_mpl` sets `ax.set_xlabel(\"\u03c8_norm\")` unconditionally on every panel (mpl.py:590), the same repeated-label defect the plan repairs at `_render_timeseries_mpl` (mpl.py:577) for `time_trace_figure_mpl` (figures.py:89, figures.py:95, figures.py:100); the census of the repeated-shared-axis-label type is therefore two live matplotlib stacks (time traces and radial profiles), and the altair stack repeats `Time [s]` too (alt.py:393, concatenated in imas_ink/server/mcp.py:300) \u2014 the plan acknowledges and declines the altair one but is silent on the radial-profile instance; the owner to extend is the shared axis-label control in the mpl renderers (mpl.py:549, mpl.py:583), generalised to a per-axis label flag, with `radial_profile_figure_mpl` sharing it",
+      "type": "duplicate_owner",
+      "would_change": true
+    }
+  ],
+  "plan_fingerprint": "b1c31b1be6d817f9328d05b2fb75f77412b398fbc136ec3481e0456332145cf6",
+  "plan_slug": "trace-figure-display-resolution",
+  "plan_version": 2,
+  "project": "imas-ink",
+  "responses": {
+    "duplicate_owner-1": {
+      "action": "acted",
+      "by": "reckon-build coordinator 1caa45fb",
+      "reason": "plan v3 \u00a72 generalises the keyword to label_x on both private renderers (_render_timeseries_mpl and _render_radialprofile_mpl), driven by both stacked builders, and tests both stacks",
+      "when": "2026-10-06T13:01:19.006664+00:00"
+    },
+    "reuse_search-1": {
+      "action": "acted",
+      "by": "reckon-build coordinator 1caa45fb",
+      "reason": "plan v3 \u00a71 states altair's default transformer refuses more than 5,000 rows (MaxRowsError), so a long series cannot be drawn in altair today, and sets trace_max_points to 4000, below that limit, so the envelope makes it renderable",
+      "when": "2026-10-06T13:01:19.005379+00:00"
+    }
+  },
+  "review_run_id": "r-20261006T125427353376-plan-review-of-trace-figure-display-resolution",
+  "reviewed_blob_sha": "975f7d3304128c9356f23eed811786f0b0378752",
+  "rubric": "design",
+  "rubric_items": {
+    "deep_module": "pass \u2014 the one new module `imas_ink/_decimate.py` hides the min/max binning behind a single private function and adds no spread of wrappers over shared machinery.",
+    "duplicate_owner": "a finding \u2014 \u00a72 suppresses the shared-axis label with a trace-specific keyword while the sibling `sharex` stack `radial_profile_figure_mpl` repeats its axis label with no suppression path; the owner to extend is the shared axis-label control, not a trace-only flag.",
+    "interface_budget": "pass \u2014 public_definitions 0, cli_options 0, mcp_views 0, refusal_families 0; \u00a71 states why nothing can be retired (\"no style field bounds a figure's path resolution today\") for its two new `InkStyle` constants and \u00a72 states it adds no public name.",
+    "reuse_search": "a finding \u2014 the plan searched matplotlib (and reuses `path.simplify_threshold` correctly) but not altair's own row-limit machinery: the altair trace path cannot \"plot every sample\", it raises at render above 5000 rows, so the mechanism that already gates altair trace size is `alt.data_transformers` / `MaxRowsError`, not a new envelope constant.",
+    "thin_wrapper": "pass \u2014 \u00a72 extends the existing private-keyword mechanism (`_render_timeseries_mpl.label_axes`, mpl.py:554) rather than clearing labels after drawing, and \u00a71 adds no matplotlib code path of its own."
+  },
+  "section_digests": {
+    "_document": "d5af5cb3fe8c61df3ded004265989188b3060bfad50125ee173a35f7c837b924",
+    "s1": "88825b7603ae55083257439cdea9c515746ebabfd5099e2710422b90c7997547",
+    "s2": "564922e518d4e22303901d5414bcadcd6af9a5dc15e2767a1d043a6ff32334e7"
+  },
+  "status": "ready",
+  "times_source": "run-record",
+  "timestamp": "2026-10-06T13:01:19.003695+00:00"
+}

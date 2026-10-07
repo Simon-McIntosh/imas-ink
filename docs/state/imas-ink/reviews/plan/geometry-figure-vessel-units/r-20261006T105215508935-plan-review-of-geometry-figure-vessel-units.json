@@ -1,0 +1,74 @@
+{
+  "absent_items": [],
+  "completed_at": "2026-10-06T10:57:23.508Z",
+  "dispatched_at": "2026-10-06T10:52:24Z",
+  "findings": [
+    {
+      "anchor": "imas_ink/__init__.py:7",
+      "id": "reuse_search-1",
+      "reason": "the plan must either relocate `VesselShell`/`extract_vessel_shells` to a neutral module or state why the 2D core may depend on the 3D subpackage.",
+      "text": "\u00a71 types the core `MachineGeometry` field with `VesselShell` and has `extract_geometry` call `extract_vessel_shells`, both owned by `imas_ink/three_d/walls.py`; `imas_ink/__init__.py:7` documents that `imas_ink.three_d` \"is also not eagerly imported\", yet importing `imas_ink.three_d.walls` pulls the whole 3D subpackage (verified: `import imas_ink.extract, imas_ink.figures` leaves `imas_ink.three_d` out of `sys.modules`, while `import imas_ink.three_d.walls` loads it) \u2014 the reuse inverts the core\u21923D boundary the package maintains.",
+      "type": "reuse_search",
+      "would_change": true
+    },
+    {
+      "anchor": "imas_ink/figures.py:88",
+      "id": "deep_module-1",
+      "reason": "the plan should state which series owns the axes label/legend or make label emission explicit for the multi-series case.",
+      "text": "\u00a73 lets a panel be a list of `TimeSeries` \"drawn on the same axes through render_mpl\", but the loop at `figures.py:88` calls `render_mpl` once per panel and `_render_timeseries_mpl` (`imas_ink/mpl.py:537`) sets the y-axis label and legend on every call, so drawing two series on one axes silently overwrites the label with the second series' and the done-when (asserts lines/dash/colour only) never exercises labelling; the interface hides the conflict instead of resolving it.",
+      "type": "deep_module",
+      "would_change": true
+    },
+    {
+      "anchor": "imas-ink/docs/plans/geometry-figure-vessel-units.html:78",
+      "id": "interface_budget-1",
+      "reason": "the sections must fix or drop the conditional constant and justify trace_color as a distinct name rather than reusing wall_color.",
+      "text": "\u00a71 says \"A new InkStyle constant is added only if the vessel needs a weight distinct from the wall\", leaving a public-definition addition indeterminate inside a section declared `implementable`; \u00a73 at line 134 adds `InkStyle.trace_color` defined as \"the ink black the wall uses\", i.e. the existing `wall_color = \"#000000\"` (`imas_ink/style.py:47`), a duplicate value rather than a merge; against a supplied budget of 0 in all four families the plan nets ~5 new public names and retires none, and \u00a71's conditional constant cannot be accounted for in the section's own text.",
+      "type": "interface_budget",
+      "would_change": true
+    }
+  ],
+  "plan_fingerprint": "69a028033b14d8da3eb7c3ae0ecac9a77222ffb02cbe684dc9f73e89df6ed93f",
+  "plan_slug": "geometry-figure-vessel-units",
+  "plan_version": 4,
+  "project": "imas-ink",
+  "responses": {
+    "deep_module-1": {
+      "action": "acted",
+      "by": "reckon-build coordinator 1caa45fb",
+      "reason": "plan v5 \u00a73: the first series owns the panel's y-label, units and time label; later series draw lines only in the first's colour with no label or legend; the done-when asserts the label and the absence of a legend",
+      "when": "2026-10-06T10:58:54.214667+00:00"
+    },
+    "interface_budget-1": {
+      "action": "acted",
+      "by": "reckon-build coordinator 1caa45fb",
+      "reason": "plan v5 settles both: \u00a71 adds no style constant (the vessel uses wall_color and wall_linewidth) and \u00a73 drops trace_color, keeping only trace_linestyle with its retirement accounting",
+      "when": "2026-10-06T10:58:54.215742+00:00"
+    },
+    "reuse_search-1": {
+      "action": "acted",
+      "by": "reckon-build coordinator 1caa45fb",
+      "reason": "plan v5 \u00a71 moves WallOutline2D, VesselShell and extract_vessel_shells into core imas_ink/geometry.py, three_d/walls.py imports them, and the done-when asserts imas_ink.three_d stays out of sys.modules",
+      "when": "2026-10-06T10:58:54.213045+00:00"
+    }
+  },
+  "review_run_id": "r-20261006T105215508935-plan-review-of-geometry-figure-vessel-units",
+  "reviewed_blob_sha": "56e2f5945d03fe910952fbc7c400744e3ada6bc6",
+  "rubric": "design",
+  "rubric_items": {
+    "deep_module": "a finding \u2014 no new module is added, but the new \"panel is one TimeSeries or a list\" interface on `time_trace_figure_mpl` hides an unresolved label/axis-label/legend conflict between two `render_mpl` calls on one axes.",
+    "duplicate_owner": "pass \u2014 the plan extends the single vessel extractor (`three_d/walls.py`) and the single 2D wall component (`components.py`) and names both `WallOutline(...)` construction sites (`figures.py:181`, `figures.py:702`); it forks no shared mechanism.",
+    "interface_budget": "a finding \u2014 public_definitions 0, cli_options 0, mcp_views 0, refusal_families 0; the plan adds ~5 new public names across three sections (MachineGeometry.vessel_shells, WallOutline.vessel_shells, InkStyle.wall_linestyle, InkStyle.trace_color, InkStyle.trace_linestyle) plus two new kwargs, and while each section says it \"retires nothing\", \u00a71 leaves one InkStyle constant conditional and unresolved, and \u00a73's trace_color simply restates the existing wall_color value rather than merging with it.",
+    "reuse_search": "a finding \u2014 the plan does search the owning module and extends `extract_vessel_shells` (`imas_ink/three_d/walls.py:151`), `_select_description_2d` (`imas_ink/extract.py:322`) and `WallOutline` (`imas_ink/components.py:138`), but it reuses `VesselShell` from a subpackage the core deliberately keeps out of its eager import graph without addressing the layering cost.",
+    "thin_wrapper": "pass \u2014 every change is a parameter or field on an existing owner (`geometry_figure_mpl`, `_render_wall_mpl`, `_render_wall_alt`, `_render_timeseries_mpl/_alt`, `MachineGeometry`, `WallOutline`), not a new layer over one."
+  },
+  "section_digests": {
+    "_document": "1eb24fd8dcbb4b2f837fd6309b190a390a7f47549ab598ca1eea3cc172e19cae",
+    "s1": "76f22701ebcb6c249b976c268aa9663bf52e616a254f2b557be90e98c04b6732",
+    "s2": "fbabda3644f5857e7b89bfa2f4f2c498953439c5a25e1370c5500d590d8bf837",
+    "s3": "4d57bd02c305ec54005bdf80b4e3a9a87eed033e39adfd738f5b3e28dbaa9e13"
+  },
+  "status": "ready",
+  "times_source": "run-record",
+  "timestamp": "2026-10-06T10:58:54.210140+00:00"
+}

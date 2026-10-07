@@ -1,0 +1,47 @@
+{
+  "absent_items": [],
+  "completed_at": "2026-10-06T11:46:26.758Z",
+  "dispatched_at": "2026-10-06T11:39:38Z",
+  "findings": [
+    {
+      "anchor": "imas_ink/figures.py:88",
+      "id": "reuse_search-1",
+      "reason": "the owner to extend is `render_mpl`; forwarding the colour/label overrides through it keeps one composition path and avoids a cross-module private import, whereas the plan's stated reason (\"the public render_mpl signature does not change\") is a preference for signature stability, not a reason the owner cannot be extended.",
+      "text": "\u00a73 has `time_trace_figure_mpl`'s panel loop call the private `_render_timeseries_mpl` (`imas_ink/mpl.py:546`) directly for each later series and adds two private-only keyword arguments (`color`, `label_axes`) to it, building a second composition path beside the public `render_mpl` dispatch (`imas_ink/mpl.py:50`) that the package documents as its composition primitive (\"Agents can also compose layers ... using render_mpl(ax, component)\", `imas_ink/figures.py:12-13`); this is the single instance of this type I found \u2014 \u00a72's `ax` argument is the standard matplotlib extension of a whole-figure builder and does not bypass the dispatch",
+      "type": "reuse_search",
+      "would_change": true
+    }
+  ],
+  "plan_fingerprint": "f8605c9f41e8d1bb73f44a2999b71491cf01c629278f4cd69501696ad8f264be",
+  "plan_slug": "geometry-figure-vessel-units",
+  "plan_version": 11,
+  "project": "imas-ink",
+  "responses": {
+    "reuse_search-1": {
+      "action": "declined",
+      "by": "reckon-build coordinator 1caa45fb",
+      "reason": "the v6 review asked that render_mpl's public signature not grow; time_trace_figure_mpl is imas-ink's own figure builder and calling its module's private renderer for the later series of a panel keeps the public composition primitive unchanged while giving the builder the colour and labelling control it needs; external callers still compose through render_mpl",
+      "when": "2026-10-06T11:46:54.979925+00:00"
+    }
+  },
+  "review_run_id": "r-20261006T113935474788-plan-review-of-geometry-figure-vessel-units",
+  "reviewed_blob_sha": "e32c16b9c58f058eccdf47ce4e13fbdead562a0a",
+  "rubric": "design",
+  "rubric_items": {
+    "deep_module": "pass \u2014 no new module is proposed; the plan extends existing",
+    "duplicate_owner": "pass \u2014 no shared infrastructure is duplicated. Placement,",
+    "interface_budget": "pass \u2014 public_definitions 0, cli_options 0, mcp_views 0,",
+    "reuse_search": "a finding \u2014 \u00a73 builds a private composition path beside the",
+    "thin_wrapper": "pass \u2014 \u00a72 and \u00a73 extend `geometry_figure_mpl`,"
+  },
+  "section_digests": {
+    "_document": "6bea487eaf69c0b9f02e064cfe3b05e70e6ff792145ca87e902a8171462ec735",
+    "s1": "885edaf89b232e542c4e1df36f64f0b87ae2e7a6a87f0b11a27345ae9d047cf9",
+    "s2": "733440b4fdd4b2ee530dfe88d0c1a14ee29605846014791f9a30be0ce2c830c9",
+    "s3": "82953fa5186b388f4c4507e6340a631886cf7b9e27f03190bd0dfbd3065b54a9",
+    "s4": "83f30ebed90740d881f62877caeb9fed68a4ade47211529427df8a1fc6554550"
+  },
+  "status": "ready",
+  "times_source": "run-record",
+  "timestamp": "2026-10-06T11:46:54.978133+00:00"
+}
