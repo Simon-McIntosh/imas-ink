@@ -1,0 +1,43 @@
+{
+  "absent": [],
+  "absent_items": [],
+  "added_failure_count": 0,
+  "added_failure_ids": [],
+  "completed_at": "2026-10-07T02:31:04.485Z",
+  "dispatched_at": "2026-10-07T02:23:03Z",
+  "findings": [],
+  "item_aggregate": 6,
+  "item_verdicts": {
+    "call_sites": "one caller-facing change: the imas_ink package namespace gains the export. extract_signal_traces returns the existing TimeSeries type fed unchanged to the existing time_trace_figure_mpl path; no call site of extract_time_traces or extract_geometry changes. No import cycle introduced; the whole suite importing imas_ink is green at both arms.",
+    "diff": "read in full: a new re import, _INDEX_IN_PATH regex, _is_struct_array, _iter_signal_nodes and extract_signal_traces in imas_ink/extract.py, plus the two-line export in imas_ink/__init__.py, and the new test file. No existing function altered; components.py, _types.py and extract_time_traces are untouched across the range.",
+    "done_when": "Six in-memory IDSFactory tests present at head (absent at base) and all six pass: pf_active with one unfed coil yields two series named CS1/CS2 with unit A and time ids.time; magnetics ip yields one series with y-label ip and unit A; homogeneous_time 0 flux loops take each flux_loop/flux.time with unit Wb; homogeneous_time 2 raises ValueError naming ip; coil[0]/current raises ValueError naming coil/current; no series carries a label. Reproduced: head tests/unit -> 425 passed, 6 skipped, 0 failed, EXIT=0.",
+    "goal": "extract_signal_traces(ids, path) is added to imas_ink/extract.py and exported from imas_ink; it returns one TimeSeries per filled element of every struct array an unindexed IDS-visible path passes through, reading value, unit and y-label from the IDS and time from ids.time under homogeneous_time 1 or the node's own time under 0; an indexed path and homogeneous_time 2 raise ValueError. Met and independently reproduced.",
+    "manifest": "read; status complete; commits 1511dd4 (feature) and 7270848 (evidence fragment) sit at the reviewed worktree's detached HEAD at 7270848, not merged. baseline_suite and after_suite both present and complete with 0 failures, log paths resolve; negative_control_log named and independently reproduced; no retry_failures, blockers or follow_ons.",
+    "write_paths": "git diff --stat df18016..7270848 lists exactly four paths, all within the reviewed node's grant: imas_ink/extract.py (+123), imas_ink/__init__.py (+2), tests/unit/ink/test_signal_traces.py (+113), docs/evidence/fragments/ids-signal-traces/ink-ids-signal-traces.html (+13). No path outside the grant was written; the reviewed worktree is clean at HEAD 7270848."
+  },
+  "justifications": {
+    "durability": "The negative control is live: an independent mutation that reads ids.time regardless of homogeneous_time reddens exactly the homogeneous-time-0 test. The behaviour is pinned by six in-memory tests and the whole suite is green at both arms, so the addition is behaviour-neutral to everything else.",
+    "evidence": "Base and head full unit suites independently reproduced in scratch extractions, the negative control reproduced by an independent mutation, module.__file__ confirmed at each arm, and ruff reproduced at both arms.",
+    "fit": "Both commit subjects are conventional with non-empty bodies, neither carries an AI co-author trailer, and neither carries a plan, stage, sprint or ticket identifier; the changed source and tests carry no plan/stage labels; the evidence fragment follows the reckon evidence-fragment convention.",
+    "goal_fidelity": "Plan section 1's done-when is met in full and independently reproduced at both arms.",
+    "reuse": "The function is built on the existing TimeSeries type from imas_ink/components.py and is exported beside extract_time_traces; no new type, module, dependency or duplicated reader is introduced, and extract_time_traces, components.py and _types.py are unchanged across the range.",
+    "scope_discipline": "The whole change across base..head is exactly the four declared changed paths and nothing else; the reviewed manifest's changed_paths are a subset of its granted write paths and its worktree is clean at HEAD 7270848."
+  },
+  "project": "imas-ink",
+  "raw_text": "VERDICT goal: extract_signal_traces(ids, path) added and exported; returns one TimeSeries per filled struct-array element, value/unit/y-label read from the IDS, time from ids.time under homogeneous_time 1 or the node's own time under 0; indexed path and homogeneous_time 2 raise ValueError. Reproduced head 425 passed / base 419 passed.\nVERDICT done_when: six in-memory tests (absent at base) all pass at head; head tests/unit 425 passed, 6 skipped, 0 failed, EXIT=0; base tests/unit -> 419 passed, 6 skipped, 0 failed, EXIT=0. Reproduced in $TMPDIR scratch extractions with module.__file__ under each scratch tree.\nVERDICT write_paths: git diff --stat df18016..7270848 is exactly imas_ink/extract.py, imas_ink/__init__.py, tests/unit/ink/test_signal_traces.py, docs/evidence/fragments/ids-signal-traces/ink-ids-signal-traces.html -- all within the grant; worktree clean at HEAD 7270848.\nVERDICT manifest: read; status complete; commits 1511dd4/7270848 at the detached worktree HEAD, not merged; baseline_suite/after_suite present, complete, 0 failures; negative control named and reproduced.\nVERDICT diff: read in full; new source is additive only, no existing function altered; TimeSeries reused from components.py; extract_time_traces/components.py/_types.py unchanged.\nCALL_SITES: only the imas_ink export is new; no existing call site changes.\nSCORE goal_fidelity: 20\nJUSTIFICATION goal_fidelity: section 1 done-when met in full and independently reproduced.\nSCORE evidence: 20\nJUSTIFICATION evidence: base 419 passed, head 425 passed, both EXIT=0 in scratch extractions with module.__file__ under the scratch trees; independent mutation reproduces the negative control (1 failed, 5 passed, EXIT=1, the homogeneous-time-0 test only); ruff check green at both arms; the reviewed run's own gate logs reconcile with the manifest.\nSCORE scope_discipline: 20\nJUSTIFICATION scope_discipline: diff --stat is exactly the four declared paths and nothing besides; all within the grant; the reviewed worktree is clean.\nSCORE durability: 20\nJUSTIFICATION durability: the negative control is live and reproduced by an independent mutation; the behaviour is pinned by six tests; the full suite is green at both arms so the addition does not regress anything else.\nSCORE fit: 20\nJUSTIFICATION fit: conventional subjects with bodies, no AI trailer, no plan/ticket identifiers, no plan/stage labels in the changed source or tests, evidence fragment follows the reckon convention.\nSCORE reuse: 20\nJUSTIFICATION reuse: reuses the existing TimeSeries type and the existing extractor module; adds no new type, module, dependency or duplicated reader and retires nothing.\n",
+  "review_run_id": "r-20261007T022259186665-review-of-ink-ids-signal-traces",
+  "reviewed_base_sha": "df18016c71ae60a64eecb8620ab1c321d5658429",
+  "reviewed_head_sha": "72708480d61df0411fd6d8f273f9575396329692",
+  "reviewed_run_id": "r-20261007T020753009348-ink-ids-signal-traces",
+  "scores": {
+    "durability": 20,
+    "evidence": 20,
+    "fit": 20,
+    "goal_fidelity": 20,
+    "reuse": 20,
+    "scope_discipline": 20
+  },
+  "status": "parsed",
+  "timestamp": "2026-10-07T02:28:00+00:00",
+  "total": 120
+}

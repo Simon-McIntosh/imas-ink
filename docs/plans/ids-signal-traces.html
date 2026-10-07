@@ -22,7 +22,7 @@
   <title>IDS Signal Traces | imas-ink</title>
   <link rel="stylesheet" href="/_shared/foundation.css">
   <link rel="stylesheet" href="/_shared/dashboard.css">
-<meta name="plan-version" content="3">
+<meta name="plan-version" content="4">
 <meta name="plan-modified" content="2026-10-07">
 <meta name="plan-section-declarations" content="{&quot;s1&quot;:&quot;done&quot;}">
 </head>
@@ -61,7 +61,10 @@
 </section>
   <section data-reckon="comments" id="comments" class="r-comments">
 <div class="r-comment" data-section="s1" data-id="c-run-r-20261007T020753009348-ink-ids-signal-traces" data-who="reckon-build" data-when="2026-10-07T02:21:27.167Z">
-    <div class="r-comment-body"><p>imas_ink/extract.py gains extract_signal_traces(ids, path), exported from imas_ink — one TimeSeries per filled element of every struct array an unindexed IDS-relative path passes through, values/unit/y-label read from the IDS and time taken from ids.time under homogeneous_time 1 or the node&#x27;s own time under 0, refusing an indexed path and homogeneous_time 2 with ValueError; six in-memory tests pass.</p></div>
+    <div class="r-comment-body"><p>imas_ink/extract.py gains extract_signal_traces(ids, path), exported from imas_ink — one TimeSeries per filled element of every struct array an unindexed IDS-relative path passes through, values/unit/y-label read from the IDS and time taken from ids.time under homogeneous_time 1 or the node's own time under 0, refusing an indexed path and homogeneous_time 2 with ValueError; six in-memory tests pass.</p></div>
+</div>
+<div class="r-comment" data-section="s1" data-id="c-run-r-20261007T022259186665-review-of-ink-ids-signal-traces" data-who="reckon-build" data-when="2026-10-07T02:31:04.485Z">
+    <div class="r-comment-body"><p>Review of run r-20261007T020753009348-ink-ids-signal-traces (plan imas-ink:ids-signal-traces §1) stored as a parsed record scoring all six dimensions 20/20 (total 120), reviewed_base_sha df18016 and reviewed_head_sha 7270848, added_failure_count 0 with added_failure_ids empty, no findings. All six plan done-when items independently reproduced.</p></div>
 </div>
 </section>
 </main>
