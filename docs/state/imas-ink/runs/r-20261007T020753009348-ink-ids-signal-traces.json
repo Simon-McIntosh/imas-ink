@@ -1,0 +1,608 @@
+{
+  "agent": {
+    "alias": "dsv4.1-flash",
+    "backend": "clive",
+    "effective_input_window": 230144,
+    "effort": "high",
+    "launch": "cli",
+    "local": true,
+    "model": "deepseek-v4.1-flash",
+    "sandbox": "worktree-full",
+    "usable_input_window": 230144
+  },
+  "attempt": 1,
+  "attempt_kind": "dispatch",
+  "backend": "clive",
+  "base_sha": "df18016c71ae60a64eecb8620ab1c321d5658429",
+  "boundary_waiver": null,
+  "brief": null,
+  "budget": {
+    "cost_usd": null,
+    "cost_usd_cumulative": null,
+    "cost_usd_imputed": true,
+    "detail": "no rate-limit event in the stream yet",
+    "headroom": "unknown",
+    "rate_limit_period_minutes": null,
+    "rate_limit_type": null,
+    "refusal": false,
+    "resets_at": null,
+    "surpassed_threshold": null,
+    "threshold_status": null,
+    "tokens": {
+      "cache_creation_input_tokens": 0,
+      "cache_creation_input_tokens_cumulative": 0,
+      "cache_read_input_tokens": 0,
+      "cache_read_input_tokens_cumulative": 0,
+      "fallback_credit": null,
+      "inference_geo": "",
+      "input_tokens": 6380805,
+      "input_tokens_cumulative": 6380805,
+      "output_tokens": 40978,
+      "output_tokens_cumulative": 40978,
+      "service_tier": "standard",
+      "speed": "standard"
+    },
+    "utilisation_pct": null
+  },
+  "changed_lines": {
+    "added": 13,
+    "files": 1,
+    "removed": 0
+  },
+  "clone_matches": [],
+  "commit_list_shortfall": {
+    "declared": 2,
+    "kind": "presented_commits_subset_of_manifest",
+    "message": "run 'r-20261007T020753009348-ink-ids-signal-traces' has a passing gate presenting 1 commit(s) of the 2 its manifest declares; missing: 1511dd42e4784b8883bad04c0018d1dddd9fbacc. The out-of-scope boundary check runs against the presented commits, so an incomplete presentation narrows it. This is a report, not a refusal — present the full list, or the boundary check may not cover the node's work",
+    "missing": [
+      "1511dd42e4784b8883bad04c0018d1dddd9fbacc"
+    ],
+    "presented": 1
+  },
+  "commit_resolution": null,
+  "commits": [
+    "72708480d61df0411fd6d8f273f9575396329692"
+  ],
+  "completed_at": "2026-10-07T02:21:27.167Z",
+  "completed_at_source": "terminal_event",
+  "dispatched_at": "2026-10-07T02:08:00Z",
+  "disposition": null,
+  "dispute_count": 0,
+  "duration_measurement": null,
+  "execution_fit": {
+    "allowed": true,
+    "execution_capable": true,
+    "matched_measure": "pytest -p",
+    "override": false,
+    "role": "implement",
+    "status": "compatible"
+  },
+  "failure_classification": null,
+  "follow_on_paths": [],
+  "gate": "passed",
+  "gate_check": {
+    "command": "uv run --no-sync pytest -p no:cacheprovider -q tests/unit",
+    "exit_status": 0,
+    "log_digest": null,
+    "log_path": "/home/ITER/mcintos/.config/reckon/crew/runs/r-20261007T020753009348-ink-ids-signal-traces/gate_pytest_unit.log"
+  },
+  "impl_move": {
+    "at_complete": 1.0,
+    "at_dispatch": 0.0,
+    "plan": "ids-signal-traces",
+    "verdict": "moved"
+  },
+  "lane_advisory": {
+    "backend": "clive",
+    "burn_multiple": null,
+    "cheaper_lane": {
+      "detail": "",
+      "lane": null,
+      "state": "not_evaluated"
+    },
+    "detail": "'clive' is unmetered, so it has no window to exhaust; the local lane's scarcity is throughput, which it does not publish",
+    "horizon_ends_at": "2026-10-07T02:47:53.345453+00:00",
+    "horizon_seconds": 2400,
+    "metered": false,
+    "observed_at": null,
+    "precedes_horizon": null,
+    "projected_exhaustion_at": null,
+    "resets_at": null,
+    "seconds_until_reset": null,
+    "state": "quiet",
+    "utilisation_pct": null
+  },
+  "lane_declaration": {
+    "backend": null,
+    "headroom": null,
+    "metered": false,
+    "observed_at": null,
+    "read_at": "2026-10-07T02:07:53Z",
+    "resolved_backend": "clive",
+    "utilisation_pct": null
+  },
+  "lane_reading": {
+    "age_seconds": 13,
+    "binding_observed": "unknown",
+    "detail": "",
+    "generating": 3,
+    "headroom": 13,
+    "mean_context": 140000,
+    "observed_at": "2026-10-07T02:07:40Z",
+    "state": "fresh",
+    "suggested_shelf_life_seconds": 45,
+    "throughput": {
+      "age_seconds": 13,
+      "aggregate_tokens_per_second": 388.769,
+      "detail": "",
+      "mean_tokens_per_second": 80.994,
+      "observed_at": "2026-10-07T02:07:40Z",
+      "runs": 4.8,
+      "state": "measured"
+    },
+    "waiting": 0
+  },
+  "lane_receipt": {
+    "effective_context_window": "unmeasured",
+    "notional_cost_usd": "unmeasured",
+    "observed_at": "2026-10-07T02:21:27.167Z",
+    "quota_state": "unmeasured",
+    "quota_windows": [],
+    "rate_basis": "unmeasured",
+    "unmeasured": {
+      "effective_context_window": "missing_rollout",
+      "notional_cost_usd": "missing_rollout",
+      "quota_windows": "unmetered",
+      "rate_basis": "missing_rollout"
+    }
+  },
+  "lineage": null,
+  "local": true,
+  "manifest_path": "/home/ITER/mcintos/.config/reckon/crew/runs/r-20261007T020753009348-ink-ids-signal-traces/manifest.md",
+  "member": "disposable-r-20261007T020753009348-ink-ids-signal-traces",
+  "negative_control": {
+    "added_failure_ids": [
+      "tests/unit/ink/test_signal_traces.py::test_flux_loops_take_each_nodes_own_time_under_homogeneous_time_zero"
+    ],
+    "baseline_failure_ids": [],
+    "comparison_arm": "after_suite",
+    "control_exit_status": 1,
+    "control_failure_ids": [
+      "tests/unit/ink/test_signal_traces.py::test_flux_loops_take_each_nodes_own_time_under_homogeneous_time_zero"
+    ],
+    "declaration": "make extract_signal_traces read time from ids.time regardless of homogeneous_time; the homogeneous-time-0 flux-loop test must then fail",
+    "head_failure_ids": [],
+    "log": "/home/ITER/mcintos/.config/reckon/crew/runs/r-20261007T020753009348-ink-ids-signal-traces/negative_control.log",
+    "resolved_log": "/home/ITER/mcintos/.config/reckon/crew/runs/r-20261007T020753009348-ink-ids-signal-traces/negative_control.log",
+    "test_paths": [
+      "tests/unit/ink/test_signal_traces.py"
+    ],
+    "verdict": "matched"
+  },
+  "no_commit": null,
+  "node": "ink-ids-signal-traces",
+  "node_definition": {
+    "brief": "",
+    "brief_path": "",
+    "brief_sha256": "",
+    "coordinator": {
+      "authoring_turn": {
+        "source": "claude-code-session-transcript",
+        "status": "measured",
+        "tokens": {
+          "cache_creation_input_tokens": 1408,
+          "cached_input_tokens": 402077,
+          "input_tokens": 403487,
+          "output_tokens": 936,
+          "reasoning_output_tokens": 153,
+          "total_tokens": 404423,
+          "uncached_input_tokens": 2
+        }
+      },
+      "harness": "claude-code",
+      "runtime_session_id": "1caa45fb-fbb8-4737-b47e-bf483c56289e",
+      "session_id": "1caa45fb-fbb8-4737-b47e-bf483c56289e"
+    },
+    "done_when": "imas_ink/extract.py defines extract_signal_traces(ids, path) and imas_ink exports it. It returns one TimeSeries per filled element of every struct array the unindexed data-dictionary path passes through: values from the node's data; time from ids.time when ids_properties.homogeneous_time is 1 and from the node's own time when it is 0; ValueError for 2; unit from node.data.metadata.units; ylabel from the element's non-empty name, else the path's leading component; no label. Empty data is skipped, and a path containing '[' raises ValueError naming the unindexed form. No scaling, filtering or resampling.\ntests/unit/ink/test_signal_traces.py builds IDS in memory with imas.IDSFactory and asserts six things: a pf_active with three coils, one unfed, yields two series named by coil with unit A and time ids.time; a magnetics ip yields one series 'ip' in A; a magnetics under homogeneous time 0 takes each flux loop's own flux.time with unit Wb; homogeneous time 2 raises; the coil current path written with an index in square brackets after coil raises; no series has a label.\nGates: 'uv run --no-sync pytest -p no:cacheprovider -q tests/unit' adds no failure and 'uv run --no-sync ruff check imas_ink tests' adds no finding, both against the base revision. Run them in place: this host is already a compute node (SLURM_JOB_ID set).",
+    "estimated_hours": 1.0,
+    "goal": "Read a pulse's dynamic signals as TimeSeries straight from their IDS",
+    "id": "ink-ids-signal-traces",
+    "lane_declaration": {
+      "backend": null,
+      "headroom": null,
+      "metered": false,
+      "observed_at": null,
+      "read_at": "2026-10-07T02:07:53Z",
+      "resolved_backend": "clive",
+      "utilisation_pct": null
+    },
+    "lane_reading": {
+      "age_seconds": 13,
+      "binding_observed": "unknown",
+      "detail": "",
+      "generating": 3,
+      "headroom": 13,
+      "mean_context": 140000,
+      "observed_at": "2026-10-07T02:07:40Z",
+      "state": "fresh",
+      "suggested_shelf_life_seconds": 45,
+      "throughput": {
+        "age_seconds": 13,
+        "aggregate_tokens_per_second": 388.769,
+        "detail": "",
+        "mean_tokens_per_second": 80.994,
+        "observed_at": "2026-10-07T02:07:40Z",
+        "runs": 4.8,
+        "state": "measured"
+      },
+      "waiting": 0
+    },
+    "manifest_path": "/home/ITER/mcintos/.config/reckon/crew/runs/r-20261007T020753009348-ink-ids-signal-traces/manifest.md",
+    "negative_control": "make extract_signal_traces read time from ids.time regardless of homogeneous_time; the homogeneous-time-0 flux-loop test must then fail",
+    "plan": "ids-signal-traces",
+    "requested_backend": null,
+    "requires_decisions": [],
+    "role": "implement",
+    "section": "§1",
+    "spec_level": "exact",
+    "time_budget": "40m",
+    "token_budget": null,
+    "write_paths": [
+      "imas_ink/extract.py",
+      "imas_ink/__init__.py",
+      "tests/unit/ink/test_signal_traces.py",
+      "docs/evidence/fragments/ids-signal-traces/ink-ids-signal-traces.html",
+      "docs/figures/ids-signal-traces/ink-ids-signal-traces"
+    ]
+  },
+  "orchestrator_lane_override": null,
+  "orientation_input_tokens": 1102897.0,
+  "outcome": "",
+  "pace": {
+    "allowance": null,
+    "bar": null,
+    "clocks": {
+      "five_hour": {
+        "age_seconds": null,
+        "observed_at": null,
+        "period": "five_hour",
+        "resets_at": null,
+        "state": "unknown",
+        "utilisation": null,
+        "window_minutes": null
+      },
+      "seven_day": {
+        "age_seconds": null,
+        "observed_at": null,
+        "period": "seven_day",
+        "resets_at": null,
+        "state": "unknown",
+        "utilisation": null,
+        "window_minutes": null
+      }
+    },
+    "group": null,
+    "hold": null,
+    "lane": "clive",
+    "member": null,
+    "node": "ink-ids-signal-traces",
+    "policy": {
+      "drain_lead_hours": 12.0,
+      "pace_multiple": 1.1
+    },
+    "reason": "the lane declares no budget group, so no wallet paced it",
+    "recorded_at": "2026-10-07T02:07:56.843167+00:00",
+    "score": 0.64375,
+    "source": null,
+    "state": "unknown"
+  },
+  "picker_selection": {
+    "action": "route",
+    "answering_model": "typesafe/jev-1.13-20260917",
+    "backend": "clive",
+    "comment": "",
+    "confidence": 0.92,
+    "decision_source": "jev",
+    "effort": "high",
+    "excluded": [
+      {
+        "availability": "not-probed",
+        "backend": "native",
+        "budget_reason": null,
+        "burn_multiple": null,
+        "congestion": null,
+        "days_to_reset": null,
+        "effort": "high",
+        "family": "in-harness",
+        "local": false,
+        "model": null,
+        "outcomes": {
+          "failed": 0,
+          "not-run": 0,
+          "passed": 0,
+          "unknown": 0
+        },
+        "pace_allowance": null,
+        "reasons": [
+          "in-harness-backend"
+        ],
+        "resets_at": null,
+        "utilisation_pct": null,
+        "worker_slots": null
+      }
+    ],
+    "fallback_reason": null,
+    "family": "local",
+    "jev_latency_ms": 1653.213,
+    "jev_model": "typesafe/jev-1.13",
+    "latency_ms": 2868.298,
+    "model": "deepseek-v4.1-flash",
+    "offered": [
+      {
+        "availability": "unknown",
+        "backend": "claude",
+        "budget_reason": null,
+        "burn_multiple": null,
+        "congestion": null,
+        "days_to_reset": null,
+        "effort": "high",
+        "family": "claude",
+        "local": false,
+        "model": "claude-sonnet-5-5",
+        "outcomes": {
+          "failed": 0,
+          "not-run": 0,
+          "passed": 0,
+          "unknown": 0
+        },
+        "pace_allowance": null,
+        "reason": "eligible",
+        "reasons": [],
+        "resets_at": null,
+        "utilisation_pct": null,
+        "worker_slots": null
+      },
+      {
+        "availability": "unknown",
+        "backend": "claude-haiku",
+        "budget_reason": null,
+        "burn_multiple": null,
+        "congestion": null,
+        "days_to_reset": null,
+        "effort": "high",
+        "family": "claude",
+        "local": false,
+        "model": "claude-haiku-4-5-20251001",
+        "outcomes": {
+          "failed": 0,
+          "not-run": 0,
+          "passed": 0,
+          "unknown": 0
+        },
+        "pace_allowance": null,
+        "reason": "eligible",
+        "reasons": [],
+        "resets_at": null,
+        "utilisation_pct": null,
+        "worker_slots": null
+      },
+      {
+        "availability": "unknown",
+        "backend": "claude-opus",
+        "budget_reason": null,
+        "burn_multiple": null,
+        "congestion": null,
+        "days_to_reset": null,
+        "effort": "high",
+        "family": "claude",
+        "local": false,
+        "model": "claude-opus-5-5",
+        "outcomes": {
+          "failed": 0,
+          "not-run": 0,
+          "passed": 0,
+          "unknown": 0
+        },
+        "pace_allowance": null,
+        "reason": "eligible",
+        "reasons": [],
+        "resets_at": null,
+        "utilisation_pct": null,
+        "worker_slots": null
+      },
+      {
+        "availability": "served",
+        "backend": "clive",
+        "budget_reason": null,
+        "burn_multiple": null,
+        "congestion": {
+          "admission_verdict": "open",
+          "running": 3,
+          "slots_state": "measured",
+          "stale": false,
+          "waiting": 0
+        },
+        "days_to_reset": null,
+        "effort": "high",
+        "family": "local",
+        "local": true,
+        "model": "deepseek-v4.1-flash",
+        "outcomes": {
+          "failed": 5,
+          "not-run": 0,
+          "passed": 4,
+          "unknown": 0
+        },
+        "pace_allowance": null,
+        "reason": "eligible",
+        "reasons": [],
+        "resets_at": null,
+        "utilisation_pct": null,
+        "worker_slots": 15
+      },
+      {
+        "availability": "unknown",
+        "backend": "codex",
+        "budget_reason": "recorded account-window reading is stale",
+        "burn_multiple": null,
+        "congestion": null,
+        "days_to_reset": null,
+        "effort": "high",
+        "family": "codex",
+        "local": false,
+        "model": "gpt-6-sol",
+        "outcomes": {
+          "failed": 0,
+          "not-run": 0,
+          "passed": 0,
+          "unknown": 0
+        },
+        "pace_allowance": null,
+        "reason": "eligible",
+        "reasons": [],
+        "resets_at": null,
+        "utilisation_pct": null,
+        "worker_slots": null
+      },
+      {
+        "availability": "unknown",
+        "backend": "codex-astra",
+        "budget_reason": "recorded account-window reading is stale",
+        "burn_multiple": null,
+        "congestion": null,
+        "days_to_reset": null,
+        "effort": "high",
+        "family": "codex",
+        "local": false,
+        "model": "gpt-6-astra",
+        "outcomes": {
+          "failed": 0,
+          "not-run": 0,
+          "passed": 0,
+          "unknown": 0
+        },
+        "pace_allowance": null,
+        "reason": "eligible",
+        "reasons": [],
+        "resets_at": null,
+        "utilisation_pct": null,
+        "worker_slots": null
+      },
+      {
+        "availability": "unknown",
+        "backend": "codex-luna",
+        "budget_reason": "recorded account-window reading is stale",
+        "burn_multiple": null,
+        "congestion": null,
+        "days_to_reset": null,
+        "effort": "high",
+        "family": "codex",
+        "local": false,
+        "model": "gpt-6-luna",
+        "outcomes": {
+          "failed": 0,
+          "not-run": 0,
+          "passed": 0,
+          "unknown": 0
+        },
+        "pace_allowance": null,
+        "reason": "eligible",
+        "reasons": [],
+        "resets_at": null,
+        "utilisation_pct": null,
+        "worker_slots": null
+      }
+    ],
+    "probabilities": {
+      "claude": 0.01,
+      "claude-haiku": 0.01,
+      "claude-opus": 0,
+      "clive": 0.92,
+      "codex": 0,
+      "codex-astra": 0,
+      "codex-luna": 0,
+      "hold": 0.06
+    },
+    "rendered_token_estimate": 1192,
+    "usage": {
+      "cost": 0.000132006,
+      "input_tokens": 3143,
+      "output_tokens": 89
+    }
+  },
+  "plan": "ids-signal-traces",
+  "plan_impl_at_dispatch": 0.0,
+  "plan_link": null,
+  "promoted_by": null,
+  "promoted_revision": "72708480d61df0411fd6d8f273f9575396329692",
+  "resume_waiver": null,
+  "review": {
+    "absent": [],
+    "reviewed_base_sha": "df18016c71ae60a64eecb8620ab1c321d5658429",
+    "reviewed_head_sha": "72708480d61df0411fd6d8f273f9575396329692",
+    "scores": {
+      "durability": 20,
+      "evidence": 20,
+      "fit": 20,
+      "goal_fidelity": 20,
+      "reuse": 20,
+      "scope_discipline": 20
+    },
+    "status": "parsed",
+    "total": 120
+  },
+  "review_tier": "none",
+  "role": "implement",
+  "route_mode": "explicit",
+  "run_id": "r-20261007T020753009348-ink-ids-signal-traces",
+  "scope_acceptances": null,
+  "scope_changed": false,
+  "section": "§1",
+  "session": "1caa45fb-fbb8-4737-b47e-bf483c56289e",
+  "session_harness": "claude",
+  "session_id": "50886aca-c519-4dae-9a0c-beb30a267f22",
+  "session_model": "deepseek-v4.1-flash",
+  "shadow_controlled": null,
+  "shadow_patch": "",
+  "spec_level": "exact",
+  "stalled": false,
+  "suite_delta": null,
+  "tests_added": 6,
+  "throughput": {
+    "cumulative_cached_input_tokens": 0,
+    "cumulative_input_tokens": 6380805,
+    "detail": "generation and wall clock reported separately by the backend; utilisation divided by the configured lane window 230144",
+    "elapsed_seconds": 792.536,
+    "generated_tokens": 40978,
+    "generation_seconds": 533.886,
+    "input_budget_tokens": 230144,
+    "input_utilisation_pct": 60.1,
+    "machine_seconds": 258.65,
+    "peak_input_tokens": 138229,
+    "tokens_per_second": 76.75,
+    "wall_tokens_per_second": 51.7
+  },
+  "time_budget": "40m",
+  "tool_steps": 61.0,
+  "unplanned_reason": null,
+  "unreconciled_override": null,
+  "wall_seconds": 807,
+  "watch_override": null,
+  "worker_exit": {
+    "attempt": 1,
+    "ended_during": "working",
+    "exit_code": 0,
+    "exited_at": "2026-10-07T02:21:31Z",
+    "last_record_type": "result",
+    "launched_at": "2026-10-07T02:08:07Z",
+    "recorded_by": "supervisor",
+    "run_id": "r-20261007T020753009348-ink-ids-signal-traces",
+    "signal": null,
+    "signal_name": null,
+    "stream_records_seen": 8402,
+    "worker_pid": 1499290
+  },
+  "worker_seconds": 783,
+  "worker_seconds_source": "stream_events",
+  "worktree_retention": null
+}
