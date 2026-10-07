@@ -78,6 +78,7 @@ from .contours import ContourExtractor
 from .extract import (
     extract_geometry,
     extract_profiles_1d,
+    extract_signal_traces,
     extract_slice,
     extract_time_traces,
 )
@@ -265,6 +266,7 @@ __all__ = [
     "extract_geometry",
     "extract_profiles_1d",
     # extractors
+    "extract_signal_traces",
     "extract_slice",
     # 3D equilibrium (lazy — from imas_ink.three_d.equilibrium)
     "extract_slice_2d",

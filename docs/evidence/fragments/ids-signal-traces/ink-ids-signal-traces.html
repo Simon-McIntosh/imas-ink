@@ -1,0 +1,13 @@
+<section data-reckon="evidence-fragment" id="ink-ids-signal-traces">
+  <h2 id="ink-ids-signal-traces-heading">Read a signal's traces from its IDS</h2>
+  <p id="ink-ids-signal-traces-landing">
+    <code>imas_ink/extract.py</code> gains
+    <code>extract_signal_traces(ids, path)</code>, exported from
+    <code>imas_ink</code>: one <code>TimeSeries</code> per filled element of
+    every struct array an unindexed, IDS-relative data-dictionary path passes
+    through, reading values, unit and y-label from the IDS alone. Six tests in
+    <code>tests/unit/ink/test_signal_traces.py</code> (pf_active coils, magnetics
+    ip, homogeneous-time-0 flux loops, the time-base and indexed-path refusals,
+    no label) pass.
+  </p>
+</section>
