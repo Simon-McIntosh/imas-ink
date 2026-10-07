@@ -1,0 +1,47 @@
+{
+  "absent": [],
+  "absent_items": [],
+  "added_failure_count": null,
+  "added_failure_ids": [],
+  "added_failures_note": "unmeasured: the reviewed manifest names no base gate log, so the added-failure count was not taken",
+  "base_log_revision": null,
+  "completed_at": "2026-10-07T16:23:45.578Z",
+  "dispatched_at": "2026-10-07T16:09:35Z",
+  "findings": [],
+  "head_log_revision": null,
+  "item_aggregate": 6,
+  "item_verdicts": {
+    "call_sites": "no production call sites found",
+    "diff": "There is no diff: the reviewed run made no commit and its worktree is clean at HEAD 9666abf3, so git diff base..head is empty.",
+    "done_when": "The node's done-when asks for a manifest recording the runs' outputs, the commit or its absence, and the files and bytes under docs/state/imas-ink/reviews/; the manifest records no commit, a no-op import and the tree unchanged, and every count in it reproduces.",
+    "goal": "The node's goal is to commit this project's staging-only plan reviews into docs/state/imas-ink/reviews/; the census of the host store found 29 recognised records and imported 0, because the committed tree already carries all 29 at the node's base revision.",
+    "manifest": "Read; status complete; commits none and changed_paths empty, matching the no-op; tests and test_logs name the census command and its three logs; negative_control_log is none with a reason; follow_ons names a reckon tooling heuristic; blockers none.",
+    "write_paths": "The granted write path is docs/state/imas-ink/reviews; the import wrote nothing there (imported 0) and git status is clean, so no path outside the grant was touched."
+  },
+  "justifications": {
+    "durability": "The outcome is a no-op whose durable evidence is the three logged census/import runs under the reviewed run directory; nothing in the tree changes, so there is no behaviour to pin beyond the reproducible census.",
+    "evidence": "Re-ran import_host_reviews.py --project imas-ink in a scratch tree; it reproduced 29 recognised records, 0 non-records, 0 delivered-without-record, 0 refused, and the staging and committed review-run-id sets are identical at 29.",
+    "fit": "The manifest carries a conventional landing line with no AI trailer and no plan/stage label, and its counts reconcile with the logs it cites.",
+    "goal_fidelity": "The brief's step 3 permits no commit when nothing is listed to import, and the census independently reproduces 0 to import and 0 refused, so the no-op is the goal met.",
+    "reuse": "The node drove the existing scripts/import_host_reviews.py and wrote no new code, duplicating no owner.",
+    "scope_discipline": "The reviewed worktree is clean at HEAD 9666abf3, no commit was made and no file outside the granted path docs/state/imas-ink/reviews was written."
+  },
+  "project": "imas-ink",
+  "raw_text": "VERDICT goal: the node's goal is to commit this project's staging-only plan reviews into docs/state/imas-ink/reviews/; the census of the host store /home/ITER/mcintos/.config/reckon/crew/reviews/imas-ink found 29 recognised records and imported 0, because the committed tree already carries all 29 at the node's base revision.\nVERDICT done_when: the node's done-when asks for a manifest recording the runs' outputs, the commit or its absence, and the files and bytes under docs/state/imas-ink/reviews/; the manifest records no commit, a no-op import and the tree unchanged, and every count in it reproduces.\nVERDICT write_paths: the node's granted write path is docs/... actually docs/state/imas-ink/reviews; the import wrote nothing there (imported 0) and git status is clean, so no path outside the grant was touched.\nVERDICT manifest: read; status complete; commits none and changed_paths empty, matching the no-op; tests and test_logs name the census command and its three logs; negative_control_log is none with a reason; follow_ons names a reckon tooling heuristic, blockers none.\nVERDICT diff: there is no diff -- the reviewed run made no commit and its worktree is clean at HEAD 9666abf3; git diff base..head is empty.\nCALL_SITES: none\nSCORE goal_fidelity: 20\nJUSTIFICATION goal_fidelity: the brief's step 3 permits no commit when nothing is listed to import, and the census independently reproduces 0 to import and 0 refused, so the no-op is the goal met.\nSCORE evidence: 20\nJUSTIFICATION evidence: I re-ran /home/ITER/mcintos/Code/reckon/scripts/import_host_reviews.py --project imas-ink in a scratch tree and it reproduced 29 recognised records, 0 non-records, 0 delivered-without-record and 0 refused, and the staging and committed review-run-id sets are identical at 29.\nSCORE scope_discipline: 20\nJUSTIFICATION scope_discipline: the reviewed worktree /home/ITER/mcintos/Code/.reckon-worktrees/imas-ink-5ff1f8d15673/9cf43820/imas-ink-staging-only-reviews-committed is clean at HEAD 9666abf3, no commit was made and no file outside the grant was written.\nSCORE durability: 19\nJUSTIFICATION durability: the outcome is a no-op whose durable evidence is the three logged runs under the reviewed run directory, but nothing in the tree changes, so there is no behaviour to pin beyond the reproducible census.\nSCORE fit: 20\nJUSTIFICATION fit: the manifest carries a conventional, bodiless-free landing line with no AI trailer and no plan/stage label, and its counts reconcile with the logs it cites.\nSCORE reuse: 20\nJUSTIFICATION reuse: the node drove the existing scripts/import_host_reviews.py and wrote no new code, duplicating no owner.\n",
+  "review_run_id": "r-20261007T160931193940-review-of-imas-ink-staging-only-reviews-committed",
+  "reviewed_base_sha": "9666abf3f956dc7bcf4d573d36114cba63cba183",
+  "reviewed_head_sha": "9666abf3f956dc7bcf4d573d36114cba63cba183",
+  "reviewed_run_id": "r-20261007T155126796382-imas-ink-staging-only-reviews-committed",
+  "scores": {
+    "durability": 19,
+    "evidence": 20,
+    "fit": 20,
+    "goal_fidelity": 20,
+    "reuse": 20,
+    "scope_discipline": 20
+  },
+  "status": "parsed",
+  "times_source": "run-record",
+  "timestamp": "2026-10-07T16:25:55.518878+00:00",
+  "total": 119
+}
